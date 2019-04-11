@@ -47,12 +47,12 @@ client.on('message', async msg => {
   if (!msg.guild) return;
   // User who sent the message does not have administrative commands in this server, ignore the command
   //if (!msg.member.hasPermission('ADMINISTRATOR')) return;
-  if (!msg.member.hasPermission('ADMINISTRATOR') && !msg.member.roles.find(r => r.name.toLowerCase() === "moderators")) return;
+  const isModerator = msg.member.hasPermission('ADMINISTRATOR') || !!msg.member.roles.find(r => r.name.toLowerCase() === "moderators");
 
   const args = msg.content.slice(config.prefix.length).trim().split(' ');
   const command = args.shift().toLowerCase();
 
-  if (msg.channel.name.toLowerCase() === 'shiny-bot'){
+  if (isModerator && msg.channel.name.toLowerCase() === 'shiny-bot'){
     if (command === 'help') {
       msg.channel.send(`Current commands:
   \`\`\`http
