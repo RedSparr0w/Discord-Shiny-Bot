@@ -27,16 +27,14 @@ client.on('ready', () => {
   // Shiny Squad Server
   guild = client.guilds.get(config.guild);
 
-  // Start our functions that run on the hour, when the timer next reaches the closest hour
-  /*
-  getShinyStatusList(guild);
+  // Start our functions that run now and on the hour every hour
+  updateChannelNames(guild);
   setTimeout(()=>{
-    getShinyStatusList(guild);
+    updateChannelNames(guild);
     setInterval(() => {
-      getShinyStatusList(guild);
-    }, 60 * 60 * 1000 /* 1 Hour *//*);
-  }, new Date().setMinutes(60, 0, 0) - Date.now());
-  */
+      updateChannelNames(guild);
+    }, 60 * 60 * 1000 /* 1 Hour */);
+  }, new Date().setMinutes(60, 0, 0) - Date.now() /* Closest Hour */);
 });
 
 client.on('message', async msg => {
@@ -61,6 +59,8 @@ client.on('message', async msg => {
   !ping: Pong, Check the bot is still responding
   !list [status]: Will send a complete list showing the status of every shiny Pokemon, Filtered by status
     - status (optional): confirmed, ok, warning, danger.
+  !update: Update the channel names to reflect their current shiny status.
+  !rename: (alias) !update
   \`\`\``);
     }
     else if (command === 'ping') {
@@ -87,8 +87,10 @@ client.on('message', async msg => {
         msg.channel.send('Nothing to report!');
       }
     }
-    else if (command === 'rename' || command === 'update') {
-
+    else if (command === 'update' || command === 'rename') {
+      msg.channel.send(`Updating channel names with current shiny status...`);
+      updateChannelNames(guild);
+      msg.channel.send(`Complete!`);
     }
   } else {
     if (command === 'list') {

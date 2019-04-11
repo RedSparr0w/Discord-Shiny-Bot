@@ -40,7 +40,19 @@ function getSymbolFromDate(date){
     return statusSymbols.danger;
 }
 
+async function updateChannelNames(guild, pokemonList){
+  pokemonList = pokemonList || await getShinyStatusList(guild);
+  const channels = guild.channels.filter(c => c.type == 'text');
+  channels.forEach(channel => {
+    const pokemonName = channel.name.replace(/-[^-]+$/, '');
+    if (pokemonName in pokemonList){
+      channel.edit({ name: pokemonName + '-' + pokemonList[pokemonName].symbol })
+    }
+  });
+}
+
 function getShinyStatusList(guild){
+  debug("Fetching latest shiny list");
   const isMatch = /^Most Recent (Sighting|Egg Hatch): (\w{3,9} \d{1,2}, \d{2,4})$/;
   const pokemonList = {};
   const channels = guild.channels.filter(c => c.type == 'text');
@@ -67,12 +79,12 @@ function getShinyStatusList(guild){
       	});
         if (++i >= channels.size){
           resolve(pokemonList);
-          debug("Sent latest shiny list");
+          debug("Fetched latest shiny list");
         }
       }).catch(e => {
         if (++i >= channels.size){
           resolve(pokemonList);
-          debug("Sent latest shiny list");
+          debug("Fetched latest shiny list");
         }
         switch (e.message){
           case 'Missing Access':
@@ -83,12 +95,12 @@ function getShinyStatusList(guild){
       });
     });
   });
-  debug("Fetching latest shiny list");
 }
 
 module.exports = {
   splitter,
   statusSymbols,
   getSymbolFromDate,
+  updateChannelNames,
   getShinyStatusList,
 }
