@@ -127,7 +127,7 @@ client.on('message', msg => {
   if (!msg.guild) return;
   // User who sent the message does not have administrative commands in this server, ignore the command
   //if (!msg.member.hasPermission('ADMINISTRATOR')) return;
-  if (!msg.member.roles.find(r => r.name.toLowerCase() === "moderators")) return;
+  if (!msg.member.hasPermission('ADMINISTRATOR') && !msg.member.roles.find(r => r.name.toLowerCase() === "moderators")) return;
 
   const args = msg.content.slice(config.prefix.length).trim().split(' ');
   const command = args.shift().toLowerCase();
