@@ -14,6 +14,7 @@ const {
   getSymbolFromDate,
   updateChannelNames,
   getShinyStatusList,
+  Months,
 } = require('./helpers.js');
 
 let guild;
@@ -113,6 +114,23 @@ client.on('message', async msg => {
       } else {
         msg.channel.send('Nothing to report!');
       }
+    }
+    else if (isModerator && command in Months) {
+      msg.delete().then().catch(e=>error('Error deleting message:\n', e));
+      if (!args)
+        return msg.channel.send(`Must specify date - apr 10 2019?`);
+      let month = command;
+      const date = new Date(Date.parse(`${month} ${args[0]}, ${args[1] || new Date().getFullYear()}`));
+      msg.channel.fetchMessages({
+      	limit: 100 // Fetch last 100 messages.
+      }).then((msgCollection) => {
+      	msgCollection.forEach((m) => {
+      		if (m.pinned == true){
+            m.unpin();
+          }
+        });
+      });
+      msg.channel.send(`Most Recent Sighting: ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`).then(m=>m.pin());
     }
   }
 });
