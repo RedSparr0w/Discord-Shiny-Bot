@@ -12,6 +12,7 @@ const {
   splitter,
   statusSymbols,
   getSymbolFromDate,
+  updateChannelNames,
   getShinyStatusList,
 } = require('./helpers.js');
 
