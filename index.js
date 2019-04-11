@@ -87,7 +87,7 @@ client.on('message', async msg => {
         msg.channel.send('Nothing to report!');
       }
     }
-    else if (command === 'rename' || command === 'update') {3
+    else if (command === 'rename' || command === 'update') {
 
     }
   } else {
