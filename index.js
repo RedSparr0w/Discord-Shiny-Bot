@@ -8,94 +8,14 @@ const {
   warn,
   error,
 } = require('./functions.js');
+const {
+  splitter,
+  statusSymbols,
+  getSymbolFromDate,
+  getShinyStatusList,
+} = require('./helpers.js');
 
 let guild;
-
-
-function splitter(str, l){
-    var strs = [];
-    while(str.length > l){
-        var pos = str.substring(0, l).lastIndexOf('\n');
-        pos = pos <= 0 ? l : pos;
-        strs.push(str.substring(0, pos));
-        var i = str.indexOf('\n', pos)+1;
-        if(i < pos || i > pos+l)
-            i = pos;
-        str = str.substring(i);
-    }
-    strs.push(str);
-    return strs;
-}
-
-function getSymbolFromDate(date){
-  today = new Date();
-  if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 5))
-    return '✅';
-  else if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 10))
-    return '☑️';
-  else if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 15))
-    return '⚠️';
-  else
-    return '🚫';
-}
-
-function getLatestShinyList(guild){
-  const isMatch = /^Most Recent (Sighting|Egg Hatch): (\w{3,9} \d{1,2}, \d{2,4})$/;
-  const pokemonList = {};
-  const channels = guild.channels.filter(c => c.type == 'text');
-  let i = 0;
-  channels.forEach(channel => {
-    if (channel.type === "text"){
-      channel.fetchMessages({
-      	limit: 100 // Fetch last 50 messages.
-      }).then((msgCollection) => { // Resolve promise
-      	msgCollection.forEach((msg) => { // forEach on message collection
-      		if (msg.pinned == true && isMatch.test(msg.content)){
-            //console.log(channel.name.replace(/-[^-]+$/, ':') + msg.content.replace(/^.+\:/, ''))
-            const date = new Date(Date.parse(msg.content.match(isMatch)[2]))
-            const name = channel.name.replace(/-[^-]+$/, '');
-            pokemonList[name] = {
-              date,
-              dateStr: msg.content.match(isMatch)[2],
-              symbol: getSymbolFromDate(date),
-              channel: '' + channel,
-            }
-            channel.edit({ name: name + '-' + pokemonList[name].symbol });
-            return;
-          }
-      	});
-        if (++i >= channels.size){
-          output = [];
-          Object.keys(pokemonList).sort().forEach(p => {
-            output.push(pokemonList[p].symbol + ' ' + pokemonList[p].dateStr + ' - ' + pokemonList[p].channel);
-          })
-          splitter(output.join('\n'), 1980).forEach(m => {
-            guild.channels.find(channel => channel.name === 'shiny-bot').send(m);
-          });
-          debug("Sent latest shiny list");
-        }
-      }).catch(e => {
-        if (++i >= channels.size){
-          output = [];
-          Object.keys(pokemonList).sort().forEach(p => {
-            output.push(pokemonList[p].symbol + ' ' + pokemonList[p].dateStr + ' - ' + pokemonList[p].channel);
-          })
-          splitter(output.join('\n'), 1980).forEach(m => {
-            guild.channels.find(channel => channel.name === 'shiny-bot').send(m);
-          });
-          debug("Sent latest shiny list");
-        }
-        switch (e.message){
-          case 'Missing Access':
-            break;
-          default:
-            error('Failed to fetch messages for this channel:\n', e);
-        }
-      });
-    }
-  });
-  debug("Fetching latest shiny list");
-}
 
 client.on('error', (err) => error(err.message));
 client.on('warn', (warning) => warn(warning));
@@ -109,17 +29,17 @@ client.on('ready', () => {
 
   // Start our functions that run on the hour, when the timer next reaches the closest hour
   /*
-  getLatestShinyList(guild);
+  getShinyStatusList(guild);
   setTimeout(()=>{
-    getLatestShinyList(guild);
+    getShinyStatusList(guild);
     setInterval(() => {
-      getLatestShinyList(guild);
+      getShinyStatusList(guild);
     }, 60 * 60 * 1000 /* 1 Hour *//*);
   }, new Date().setMinutes(60, 0, 0) - Date.now());
   */
 });
 
-client.on('message', msg => {
+client.on('message', async msg => {
   // Ignore bots
   if (msg.author.bot) return;
   // Message is not a command, ignore it
@@ -139,15 +59,57 @@ client.on('message', msg => {
   \`\`\`http
   !help: This list
   !ping: Pong, Check the bot is still responding
-  !list: Will send a complete list showing the status of every shiny Pokemon
+  !list [status]: Will send a complete list showing the status of every shiny Pokemon, Filtered by status
+    - status (optional): confirmed, ok, warning, danger.
   \`\`\``);
     }
     else if (command === 'ping') {
       msg.channel.send('Pong');
     }
     else if (command === 'list') {
-      msg.channel.send('Fetching latest shiny status...');
-      getLatestShinyList(guild);
+      msg.delete()
+      // return only the requested pokemon by status
+      const filterSymbols = args.filter(a=>a in statusSymbols).map(a=>statusSymbols[a]);
+      const filters = new RegExp(filterSymbols.join('|'));
+      msg.channel.send(`Fetching current Pokemon with ${filterSymbols.join(' ')} shiny status...`);
+
+      // Gather information of pokemon statuses
+      const pokemonList = await getShinyStatusList(guild);
+      const output = [];
+      Object.keys(pokemonList).sort().filter(p=>filters.test(pokemonList[p].symbol)).forEach(p => {
+        output.push(pokemonList[p].symbol + ' ' + pokemonList[p].dateStr + ' - ' + pokemonList[p].channel);
+      });
+      if (output.length > 0){
+        splitter(output.join('\n'), 1980).forEach(m => {
+          msg.channel.send(m);
+        });
+      } else {
+        msg.channel.send('Nothing to report!');
+      }
+    }
+    else if (command === 'rename' || command === 'update') {3
+
+    }
+  } else {
+    if (command === 'list') {
+      // return only warning and danger status pokemon
+      const filterSymbols = ['warning', 'danger'].map(a=>statusSymbols[a]);
+      const filters = new RegExp(filterSymbols.join('|'));
+      msg.channel.send(`Fetching current Pokemon with ${filterSymbols.join(' ')} shiny status...`);
+
+      // Gather information of pokemon statuses
+      const pokemonList = await getShinyStatusList(guild);
+      const output = [];
+      Object.keys(pokemonList).sort().filter(p=>filters.test(pokemonList[p].symbol)).forEach(p => {
+        output.push(pokemonList[p].symbol + ' ' + pokemonList[p].dateStr + ' - ' + pokemonList[p].channel);
+      });
+      if (output.length > 0){
+        splitter(output.join('\n'), 1980).forEach(m => {
+          msg.channel.send(m);
+        });
+      } else {
+        msg.channel.send('Nothing to report!');
+      }
     }
   }
 });
