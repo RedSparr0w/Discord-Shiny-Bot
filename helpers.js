@@ -41,14 +41,17 @@ function getSymbolFromDate(date){
 }
 
 async function updateChannelNames(guild, pokemonList){
+  debug('Updating channel names...');
   pokemonList = pokemonList || await getShinyStatusList(guild);
   const channels = guild.channels.filter(c => c.type == 'text');
   channels.forEach(channel => {
     const pokemonName = channel.name.replace(/-[^-]+$/, '');
-    if (pokemonName in pokemonList){
+    if (pokemonName in pokemonList && !channel.name.includes(pokemonList[pokemonName].symbol)){
+      debug('Updated channel status ' + channel.name + '→' + pokemonList[pokemonName].symbol );
       channel.edit({ name: pokemonName + '-' + pokemonList[pokemonName].symbol })
     }
   });
+  debug('Updated channel names');
 }
 
 function getShinyStatusList(guild){
