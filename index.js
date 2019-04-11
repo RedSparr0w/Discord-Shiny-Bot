@@ -41,9 +41,8 @@ function getSymbolFromDate(date){
 
 function getLatestShinyList(guild){
   const isMatch = /^Most Recent (Sighting|Egg Hatch): (\w{3,9} \d{1,2}, \d{2,4})$/;
-  const pokemonList = [];
+  const pokemonList = {};
   const channels = guild.channels.filter(c => c.type == 'text');
-  console.log("total channels:", channels.size)
   let i = 0;
   channels.forEach(channel => {
     if (channel.type === "text"){
@@ -53,18 +52,38 @@ function getLatestShinyList(guild){
       	msgCollection.forEach((msg) => { // forEach on message collection
       		if (msg.pinned == true && isMatch.test(msg.content)){
             //console.log(channel.name.replace(/-[^-]+$/, ':') + msg.content.replace(/^.+\:/, ''))
-            date = new Date(Date.parse(msg.content.match(isMatch)[2]))
-            pokemonList.push(channel.name.replace(/-[^-]+$/, '') + ': ' +  msg.content.match(isMatch)[2] + ' - ' + getSymbolFromDate(date));
+            const date = new Date(Date.parse(msg.content.match(isMatch)[2]))
+            const name = channel.name.replace(/-[^-]+$/, '');
+            pokemonList[name] = {
+              date,
+              dateStr: msg.content.match(isMatch)[2],
+              symbol: getSymbolFromDate(date),
+              channel: '' + channel,
+            }
             return;
           }
       	});
-        if (++i >= channels.size)
-          splitter(pokemonList.sort().join('\n'), 1980).forEach(m => {
+        if (++i >= channels.size){
+          output = [];
+          Object.keys(pokemonList).sort().forEach(p => {
+            output.push(pokemonList[p].symbol + ' ' + pokemonList[p].dateStr + ' - ' + pokemonList[p].channel);
+          })
+          splitter(output.join('\n'), 1980).forEach(m => {
             guild.channels.find(channel => channel.name === 'shiny-bot').send(m);
           });
+          debug("Sent latest shiny list");
+        }
       }).catch(e => {
-        if (++i >= channels.size)
-          console.log(splitter(pokemonList.sort().join('\n'), 1980));
+        if (++i >= channels.size){
+          output = [];
+          Object.keys(pokemonList).sort().forEach(p => {
+            output.push(pokemonList[p].symbol + ' ' + pokemonList[p].dateStr + ' - ' + pokemonList[p].channel);
+          })
+          splitter(output.join('\n'), 1980).forEach(m => {
+            guild.channels.find(channel => channel.name === 'shiny-bot').send(m);
+          });
+          debug("Sent latest shiny list");
+        }
         switch (e.message){
           case 'Missing Access':
             break;
@@ -74,7 +93,7 @@ function getLatestShinyList(guild){
       });
     }
   });
-  log("Latest shiny list");
+  debug("Fetching latest shiny list");
 }
 
 client.on('error', (err) => error(err.message));
@@ -88,14 +107,15 @@ client.on('ready', () => {
   guild = client.guilds.get(config.guild);
 
   // Start our functions that run on the hour, when the timer next reaches the closest hour
+  /*
   getLatestShinyList(guild);
   setTimeout(()=>{
     getLatestShinyList(guild);
     setInterval(() => {
       getLatestShinyList(guild);
-    }, 60 * 60 * 1000 /* 1 Hour */);
-
+    }, 60 * 60 * 1000 /* 1 Hour *//*);
   }, new Date().setMinutes(60, 0, 0) - Date.now());
+  */
 });
 
 client.on('message', msg => {
@@ -107,20 +127,27 @@ client.on('message', msg => {
   if (!msg.guild) return;
   // User who sent the message does not have administrative commands in this server, ignore the command
   //if (!msg.member.hasPermission('ADMINISTRATOR')) return;
-  console.log()
   if (!msg.member.roles.find(r => r.name.toLowerCase() === "moderators")) return;
 
   const args = msg.content.slice(config.prefix.length).trim().split(' ');
   const command = args.shift().toLowerCase();
 
-  if (command === 'help') {
-    msg.channel.send('```http\n!help: Show this message\n!list: Get a full list of the state of shiny pokemon```');
-  }
-  else if (command === 'ping') {
-    msg.channel.send('pong');
-  }
-  else if (command === 'list') {
-    getLatestShinyList();
+  if (msg.channel.name.toLowerCase() === 'shiny-bot'){
+    if (command === 'help') {
+      msg.channel.send(`Current commands:
+  \`\`\`http
+  !help: This list
+  !ping: Pong, Check the bot is still responding
+  !list: Will send a complete list showing the status of every shiny Pokemon
+  \`\`\``);
+    }
+    else if (command === 'ping') {
+      msg.channel.send('Pong');
+    }
+    else if (command === 'list') {
+      msg.channel.send('Fetching latest shiny status...');
+      getLatestShinyList(guild);
+    }
   }
 });
 
