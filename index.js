@@ -60,6 +60,7 @@ function getLatestShinyList(guild){
               symbol: getSymbolFromDate(date),
               channel: '' + channel,
             }
+            channel.edit({ name: name + '-' + pokemonList[name].symbol });
             return;
           }
       	});
