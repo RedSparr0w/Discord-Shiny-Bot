@@ -73,7 +73,10 @@ client.on('message', async msg => {
       // return only the requested pokemon by status
       const filterSymbols = args.filter(a=>a in statusSymbols).map(a=>statusSymbols[a]);
       const filters = new RegExp(filterSymbols.join('|'));
-      msg.channel.send(`Fetching current Pokemon with ${filterSymbols.join(' ')} shiny status...`);
+      if (!!filterSymbols.length)
+        msg.channel.send(`Fetching current Pokemon with ${filterSymbols.join(' ')} shiny status...`);
+      else
+        msg.channel.send(`Fetching all Pokemon current shiny status...`);
 
       // Gather information of pokemon statuses
       const pokemonList = await getShinyStatusList(guild);
@@ -118,7 +121,7 @@ client.on('message', async msg => {
     else if (isModerator && command in Months) {
       msg.delete().then().catch(e=>error('Error deleting message:\n', e));
       if (!args)
-        return msg.channel.send(`Must specify date - apr 10 2019?`);
+        return msg.channel.send(`Must specify date - \`${prefix}apr 10 [2019?]\``);
       let month = command;
       const date = new Date(Date.parse(`${month} ${args[0]}, ${args[1] || new Date().getFullYear()}`));
       msg.channel.fetchMessages({
@@ -130,7 +133,10 @@ client.on('message', async msg => {
           }
         });
       });
-      msg.channel.send(`Most Recent Sighting: ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`).then(m=>m.pin());
+      msg.channel.send(`Most Recent Sighting: ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`).then(m=>{
+        m.pin();
+        updateChannelNames(guild);
+      });
     }
   }
 });
