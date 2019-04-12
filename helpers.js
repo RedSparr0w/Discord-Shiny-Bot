@@ -23,8 +23,8 @@ function splitter(str, l){
 
 const statusSymbols = {
   confirmed: '✅',
-  ok: '☑️',
-  warning: '⚠️',
+  ok: '☑',
+  warning: '⚠',
   danger: '🚫',
 }
 
