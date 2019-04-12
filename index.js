@@ -125,7 +125,7 @@ client.on('message', async msg => {
       	limit: 100 // Fetch last 100 messages.
       }).then((msgCollection) => {
       	msgCollection.forEach((m) => {
-      		if (m.pinned == true){
+          if (m.pinned == true){
             m.unpin();
           }
         });
