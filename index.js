@@ -53,7 +53,7 @@ client.on('message', async msg => {
   const args = msg.content.slice(config.prefix.length).trim().split(' ');
   const command = args.shift().toLowerCase();
 
-  if (isModerator && msg.channel.name.toLowerCase() === 'shiny-bot'){
+  if (isModerator && msg.channel.id === '565700476444606465'){
     if (command === 'help') {
       msg.channel.send(`Current commands:
   \`\`\`http
