@@ -76,7 +76,6 @@ function getShinyStatusList(guild){
               channel: '' + channel,
               channelName: channel.name,
             }
-            //channel.edit({ name: name + '-' + pokemonList[name].symbol });
             return;
           }
       	});
@@ -100,31 +99,11 @@ function getShinyStatusList(guild){
   });
 }
 
-Months = {
-  'jan': 0,
-  'feb': 1,
-  'mar': 2,
-  'apr': 3,
-  'may': 4,
-  'jun': 5,
-  'jul': 6,
-  'aug': 7,
-  'sep': 8,
-  'oct': 9,
-  'nov': 10,
-  'dec': 11,
-  0: 'January',
-  1: 'February',
-  2: 'March',
-  3: 'April',
-  4: 'May',
-  5: 'June',
-  6: 'July',
-  7: 'August',
-  8: 'September',
-  9: 'October',
-  10: 'November',
-  11: 'December',
+function isModerator(msg){
+  if (!msg.guild)
+    return false
+  else
+    return msg.member.hasPermission('ADMINISTRATOR') || !!msg.member.roles.find(r => r.name.toLowerCase() === "moderators")
 }
 
 module.exports = {
@@ -133,5 +112,5 @@ module.exports = {
   getSymbolFromDate,
   updateChannelNames,
   getShinyStatusList,
-  Months,
+  isModerator,
 }
