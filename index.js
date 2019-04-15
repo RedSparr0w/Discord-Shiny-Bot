@@ -50,18 +50,18 @@ client.on('message', async msg => {
   //if (!msg.member.hasPermission('ADMINISTRATOR')) return;
   const isModerator = msg.member.hasPermission('ADMINISTRATOR') || !!msg.member.roles.find(r => r.name.toLowerCase() === "moderators");
 
-  const args = msg.content.slice(config.prefix.length).trim().split(' ');
+  let args = msg.content.slice(config.prefix.length).trim().split(' ');
   const command = args.shift().toLowerCase();
 
   if (isModerator && msg.channel.id === '565700476444606465'){
     if (command === 'help') {
       msg.channel.send(`Current commands:
   \`\`\`http
-  !help: This list
-  !ping: Pong, Check the bot is still responding
-  !list [status]: Will send a complete list showing the status of every shiny Pokemon, Filtered by status
-    - status (optional): confirmed, ok, warning, danger.
-  !update: Update the channel names to reflect their current shiny status.
+  !help: This message.
+  !ping: Pong, Check the bot is still responding.
+  !list [status]: Will reply with a list filtered by shiny status for each Pokémon.
+    - status (optional): all, confirmed, ok, warning(default), danger(default).
+  !update: Update Pokémon channel names to reflect the current shiny status.
   !rename: (alias) !update
   \`\`\``);
     }
@@ -71,12 +71,14 @@ client.on('message', async msg => {
     else if (command === 'list') {
       msg.delete()
       // return only the requested pokemon by status
+      if (!isModerator || !args.length)
+        args = ['warning', 'danger'];
       const filterSymbols = args.filter(a=>a in statusSymbols).map(a=>statusSymbols[a]);
       const filters = new RegExp(filterSymbols.join('|'));
       if (!!filterSymbols.length)
-        msg.channel.send(`Fetching current Pokemon with ${filterSymbols.join(' ')} shiny status...`);
+        msg.channel.send(`Fetching Pokémon with ${filterSymbols.join(' ')} shiny status...`);
       else
-        msg.channel.send(`Fetching all Pokemon current shiny status...`);
+        msg.channel.send(`Fetching the current shiny status of all Pokémon...`);
 
       // Gather information of pokemon statuses
       const pokemonList = await getShinyStatusList(guild);
@@ -99,10 +101,15 @@ client.on('message', async msg => {
     }
   } else {
     if (command === 'list') {
+      if (!isModerator || !args.length)
+        args = ['warning', 'danger'];
       // return only warning and danger status pokemon
-      const filterSymbols = ['warning', 'danger'].map(a=>statusSymbols[a]);
+      const filterSymbols = args.filter(a=>a in statusSymbols).map(a=>statusSymbols[a]);
       const filters = new RegExp(filterSymbols.join('|'));
-      msg.channel.send(`Fetching current Pokemon with ${filterSymbols.join(' ')} shiny status...`);
+      if (!!filterSymbols.length)
+        msg.channel.send(`Fetching Pokémon with ${filterSymbols.join(' ')} shiny status...`);
+      else
+        msg.channel.send(`Fetching the current shiny status of all Pokémon...`);
 
       // Gather information of pokemon statuses
       const pokemonList = await getShinyStatusList(guild);
