@@ -64,8 +64,8 @@ function getShinyStatusList(guild){
     channels.forEach(channel => {
       channel.fetchMessages({
       	limit: 100 // Fetch last 100 messages.
-      }).then((msgCollection) => {
-      	msgCollection.forEach((msg) => {
+      }).then((messages) => {
+      	messages.forEach((msg) => {
       		if (msg.pinned == true && isMatch.test(msg.content)){
             const date = new Date(Date.parse(msg.content.match(isMatch)[2]))
             const name = channel.name.replace(/-[^-]+$/, '');

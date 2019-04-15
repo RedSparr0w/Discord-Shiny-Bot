@@ -9,6 +9,9 @@ const {
   warn,
   error,
 } = require('./functions.js');
+const {
+  updateChannelNames,
+} = require('./helpers.js');
 
 client.on('error', (err) => error(err.message))
   .on('warn', (warning) => warn(warning))

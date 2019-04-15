@@ -86,9 +86,8 @@ const commands = {
     if (!msg.guild) return msg.author.send('This command cannot be used via DM.');
 
     msg.delete().then().catch(e=>error('Error deleting message:\n', e));
-    if (!args)
+    if (!args.length)
       return msg.channel.send(`Must specify date - \`${prefix}apr 10 [2019?]\``).then(m=>{m.delete()});
-    let month = command;
     const date = new Date(Date.parse(`${month} ${args[0]}, ${args[1] || new Date().getFullYear()}`));
     msg.channel.fetchMessages({
       limit: 100 // Fetch last 100 messages.
