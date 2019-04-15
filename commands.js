@@ -17,9 +17,9 @@ const {
 const commands = {
   ping: (msg)=>{
     if (!msg.guild)
-      msg.author.send('Pong')
-    else if (isModerator(msg))
-      msg.channel.send('Pong')
+      return msg.author.send('Pong')
+    if (isModerator(msg))
+      return msg.channel.send('Pong')
   },
   help: (msg)=>{
     // Moderators only
@@ -37,15 +37,16 @@ const commands = {
 !rename: (alias) !update
 \`\`\``);
   },
-  list: async (msg)=>{
+  list: async (msg, args)=>{
     // Must be sent via guild channel
     if (!msg.guild) return msg.author.send('This command cannot be used via DM.');
 
     msg.delete()
     // return only the requested pokemon by status
+    // Only moderators can specify a filter
     if (!isModerator(msg) || !args.length)
       args = ['warning', 'danger'];
-    const filterSymbols = args.filter(a=>a in statusSymbols).map(a=>statusSymbols[a]);
+    const filterSymbols = args.filter(status=>status in statusSymbols).map(status=>statusSymbols[status]);
     const filters = new RegExp(filterSymbols.join('|'));
     if (!!filterSymbols.length)
       msg.channel.send(`Fetching Pokémon with ${filterSymbols.join(' ')} shiny status...`);
@@ -55,8 +56,8 @@ const commands = {
     // Gather information of pokemon statuses
     const pokemonList = await getShinyStatusList(msg.guild);
     const output = [];
-    Object.keys(pokemonList).sort().filter(p=>filters.test(pokemonList[p].symbol)).forEach(p => {
-      output.push(pokemonList[p].symbol + ' ' + pokemonList[p].dateStr + ' - ' + pokemonList[p].channel);
+    Object.keys(pokemonList).sort().filter(pokemon=>filters.test(pokemonList[pokemon].symbol)).forEach(pokemon => {
+      output.push(pokemonList[pokemon].symbol + ' ' + pokemonList[pokemon].dateStr + ' - ' + pokemonList[pokemon].channel);
     });
     // If the list isn't empty, send it out.
     if (!!output.length){
@@ -77,7 +78,8 @@ const commands = {
     updateChannelNames(msg.guild);
     msg.channel.send(`Complete!`);
   },
-  latestsighting: (msg, args, month)=>{
+  // Cannot be called directly as the function contains a capital letter
+  latestSighting: (msg, args, month)=>{
     // Moderators only
     if (!isModerator(msg)) return;
       // Must be sent via guild channel
@@ -106,18 +108,18 @@ const commands = {
 
 const alias = {
   rename: commands.update,
-  jan: commands.latestsighting,
-  feb: commands.latestsighting,
-  mar: commands.latestsighting,
-  apr: commands.latestsighting,
-  may: commands.latestsighting,
-  jun: commands.latestsighting,
-  jul: commands.latestsighting,
-  aug: commands.latestsighting,
-  sep: commands.latestsighting,
-  oct: commands.latestsighting,
-  nov: commands.latestsighting,
-  dec: commands.latestsighting,
+  jan: commands.latestSighting,
+  feb: commands.latestSighting,
+  mar: commands.latestSighting,
+  apr: commands.latestSighting,
+  may: commands.latestSighting,
+  jun: commands.latestSighting,
+  jul: commands.latestSighting,
+  aug: commands.latestSighting,
+  sep: commands.latestSighting,
+  oct: commands.latestSighting,
+  nov: commands.latestSighting,
+  dec: commands.latestSighting,
 }
 
 module.exports = { ...alias, ...commands}
