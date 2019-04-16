@@ -103,7 +103,7 @@ function isModerator(msg){
   if (!msg.guild)
     return false
   else
-    return msg.member.hasPermission('ADMINISTRATOR') || !!msg.member.roles.find(r => r.name.toLowerCase() === "moderators")
+    return msg.member.hasPermission('ADMINISTRATOR') || !!msg.member.roles.find(r => r.id === "564184580488298536")
 }
 
 module.exports = {
