@@ -18,7 +18,7 @@ client.on('error', (err) => error(err.message))
   .on('ready', () => {
     info(`Logged in as ${client.user.tag}!`);
     client.user.setStatus('online');
-    client.user.setActivity(`Hunting shiny Pokémon`);
+    client.user.setActivity('Hunting shiny Pokémon');
 
     // Shiny Squad Server
     let guild = client.guilds.get(config.guild);
