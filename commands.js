@@ -74,6 +74,7 @@ const commands = {
     // Must be sent via guild channel
     if (!msg.guild) return msg.author.send('This command cannot be used via DM.');
 
+    msg.delete()
     msg.channel.send(`Updating channel names with current shiny status...`);
     updateChannelNames(msg.guild);
     msg.channel.send(`Complete!`);
