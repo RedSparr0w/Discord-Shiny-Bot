@@ -1,10 +1,30 @@
-const {
-  log,
-  info,
-  debug,
-  warn,
-  error,
-} = require('./functions.js');
+function padNumber(num, len = 2, padding = '0'){
+  return num.toString().padStart(len, padding);
+}
+
+function dateTime(date = new Date()){
+  return `${date.getFullYear()}-${padNumber(date.getMonth() + 1)}-${padNumber(date.getDate())} ${padNumber(date.getHours())}:${padNumber(date.getMinutes())}:${padNumber(date.getSeconds())}`;
+}
+
+function log(...args){
+  console.log(`\x1b[1m\x1b[37m[log][${dateTime()}]\x1b[0m`, ...args)
+}
+
+function info(...args){
+  console.info(`\x1b[1m\x1b[36m[info][${dateTime()}]\x1b[0m`, ...args)
+}
+
+function debug(...args){
+  console.debug(`\x1b[1m\x1b[34m[debug][${dateTime()}]\x1b[0m`, ...args)
+}
+
+function warn(...args){
+  console.warn(`\x1b[1m\x1b[33m[warning][${dateTime()}]\x1b[0m`, ...args)
+}
+
+function error(...args){
+  console.error(`\x1b[1m\x1b[31m[error][${dateTime()}]\x1b[0m`, ...args)
+}
 
 function splitter(str, l){
     var strs = [];
@@ -99,18 +119,17 @@ function getShinyStatusList(guild){
   });
 }
 
-function isModerator(msg){
-  if (!msg.guild)
-    return false
-  else
-    return msg.member.hasPermission('ADMINISTRATOR') || !!msg.member.roles.find(r => r.id === "564184580488298536")
-}
-
 module.exports = {
+  padNumber,
+  dateTime,
+  log,
+  info,
+  debug,
+  warn,
+  error,
   splitter,
   statusSymbols,
   getSymbolFromDate,
   updateChannelNames,
   getShinyStatusList,
-  isModerator,
 }

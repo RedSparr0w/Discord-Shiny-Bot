@@ -1,18 +1,14 @@
 {
   "name": "shiny-squad-discord-bot",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "RedSparr0w",
   "license": "ISC",
   "dependencies": {
     "discord.js": "^11.4.2"
-  },
-  "engines": {
-    "node": "10.7.0",
-    "npm": "6.9.0"
   }
 }
