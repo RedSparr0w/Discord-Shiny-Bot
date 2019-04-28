@@ -7,6 +7,7 @@ const {
   debug,
   warn,
   error,
+  updateChannelNames,
 } = require('./helpers.js')
 
 const client = new Discord.Client();
@@ -23,6 +24,20 @@ const cooldowns = new Discord.Collection();
 
 client.once('ready', () => {
   info(`Logged in as ${client.user.tag}!`);
+
+
+  // Start our functions that run on the hour, when the timer next reaches the closest hour
+  setTimeout(()=>{
+    client.guilds.forEach(guild=>{
+      updateLocationNicknames(guild);
+    })
+    // Then continue to run every hour (on the hour)
+    setInterval(() => {
+      client.guilds.forEach(guild=>{
+        updateLocationNicknames(guild);
+      })
+    }, 60 * 60 * 1000 /* 1 Hour */);
+  }, new Date().setMinutes(60, 0, 0) - Date.now());
 });
 
 client.on('error', (err) => error(err.message))
