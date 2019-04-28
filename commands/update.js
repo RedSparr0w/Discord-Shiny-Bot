@@ -8,7 +8,7 @@ module.exports = {
   guildOnly   : true,
   cooldown    : 3,
   botperms    : ['MANAGE_CHANNELS', 'MANAGE_MESSAGES', 'SEND_MESSAGES'],
-  userperms   : ['MANAGE_CHANNELS', 'MANAGE_MESSAGES'],
+  userperms   : ['MANAGE_MESSAGES'],
   execute     : async (msg, args) => {
     msg.delete().catch(e=>error('Unable to delete message:\n', e));
 

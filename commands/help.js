@@ -9,7 +9,7 @@ module.exports = {
   guildOnly   : false,
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES', 'EMBED_LINKS'],
-  userperms   : ['MANAGE_CHANNELS', 'MANAGE_MESSAGES'],
+  userperms   : ['MANAGE_MESSAGES'],
   execute     : async (msg, args) => {
     const data = [];
     const commands = msg.client.commands.filter(command => {
