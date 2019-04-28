@@ -7,7 +7,7 @@ const {
   debug,
   warn,
   error,
-  updateChannelNames,
+  updateLocationNicknames,
 } = require('./helpers.js')
 
 const client = new Discord.Client();
