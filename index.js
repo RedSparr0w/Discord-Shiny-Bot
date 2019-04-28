@@ -7,7 +7,7 @@ const {
   debug,
   warn,
   error,
-  updateLocationNicknames,
+  updateChannelNames,
 } = require('./helpers.js')
 
 const client = new Discord.Client();
@@ -29,12 +29,12 @@ client.once('ready', () => {
   // Start our functions that run on the hour, when the timer next reaches the closest hour
   setTimeout(()=>{
     client.guilds.forEach(guild=>{
-      updateLocationNicknames(guild);
+      updateChannelNames(guild);
     })
     // Then continue to run every hour (on the hour)
     setInterval(() => {
       client.guilds.forEach(guild=>{
-        updateLocationNicknames(guild);
+        updateChannelNames(guild);
       })
     }, 60 * 60 * 1000 /* 1 Hour */);
   }, new Date().setMinutes(60, 0, 0) - Date.now());
