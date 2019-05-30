@@ -114,7 +114,7 @@ function getShinyStatusList(guild){
           case 'Missing Access':
             break;
           default:
-            error('Failed to fetch messages for this channel:\n', e);
+            error('Failed to fetch messages for this channel:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`);
         }
       });
     });

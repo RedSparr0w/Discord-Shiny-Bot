@@ -40,7 +40,7 @@ client.once('ready', () => {
   }, new Date().setMinutes(60, 0, 0) - Date.now());
 });
 
-client.on('error', (err) => error(err.message))
+client.on('error', (err) => error('Error Thrown:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`))
   .on('warn', (warning) => warn(warning))
   .on('message', message => {
     // Either not a command or a bot, ignore
@@ -96,8 +96,8 @@ client.on('error', (err) => error(err.message))
 
     try {
       command.execute(message, args, commandName);
-    } catch (err) {
-      error('Error executing command:', err);
+    } catch (e) {
+      error('Error executing command:', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`);
       message.reply('There was an error trying to execute that command!');
     }
   });
