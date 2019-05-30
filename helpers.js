@@ -101,7 +101,7 @@ function getShinyStatusList(guild){
                 date,
                 dateStr: msg.content.match(isMatch)[2],
                 symbol: getSymbolFromDate(date),
-              }
+              },
             }
             return;
           }
