@@ -83,18 +83,19 @@ function getShinyStatusList(guild){
   const channels = guild.channels.filter(channel => channel.type == 'text');
   let i = 0;
   return new Promise(function(resolve, reject) {
-    channels.filter(channel => channel.name != channel.name.replace(/[-\W]+$/, ''))
+    channels.filter(channel => channel.name != channel.name.replace(/\W+$/, ''))
       .forEach(channel => {
         channel.fetchMessages({
         	limit: 100 // Fetch last 100 messages.
         }).then((messages) => {
-          const name = channel.name.replace(/[-\W]+$/, '');
+          const name = channel.name.replace(/\W+$/, '');
           pokemonList[name] = {
             channel: '' + channel,
             channelName: channel.name,
             dateStr: '',
             symbol: statusSymbols['unconfirmed'],
           }
+          debug('Fetched messages for channel:', name);
         	messages.forEach((msg) => {
         		if (msg.pinned == true && isMatch.test(msg.content)){
               const date = new Date(Date.parse(msg.content.match(isMatch)[2]))
