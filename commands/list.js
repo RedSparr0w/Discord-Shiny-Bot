@@ -27,7 +27,7 @@ module.exports = {
     // Gather information of pokemon statuses
     const pokemonList = await getShinyStatusList(msg.guild);
     const output = [];
-    Object.keys(pokemonList).sort().filter(pokemon=>filters.test(pokemonList[pokemon].symbol)).forEach(pokemon => {
+    Object.keys(pokemonList).sort().filter(pokemon=>filters.test(pokemonList[pokemon].channelName)).forEach(pokemon => {
       output.push(pokemonList[pokemon].symbol + ' ' + pokemonList[pokemon].dateStr + ' - ' + pokemonList[pokemon].channel);
     });
 
