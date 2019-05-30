@@ -83,7 +83,7 @@ function getShinyStatusList(guild){
   const channels = guild.channels.filter(c => c.type == 'text');
   let i = 0;
   return new Promise(function(resolve, reject) {
-    channels.forEach(channel => {
+    channels.filter(channel => channel.name != channel.name.replace(/[-\W]+$/, '')).forEach(channel => {
       channel.fetchMessages({
       	limit: 100 // Fetch last 100 messages.
       }).then((messages) => {
