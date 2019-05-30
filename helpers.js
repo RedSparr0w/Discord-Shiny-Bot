@@ -65,7 +65,7 @@ function getSymbolFromDate(date){
 async function updateChannelNames(guild, pokemonList){
   debug('Updating channel names...');
   pokemonList = pokemonList || await getShinyStatusList(guild);
-  const channels = guild.channels.filter(channel => channel.type == 'text');
+  const channels = guild.channels.filter(channel => channel.type == 'text').filter(channel => channel.name != channel.name.replace(/\W+$/, ''));
   channels.forEach(channel => {
     const pokemonName = channel.name.replace(/[-\W]+$/, '');
     if (pokemonName in pokemonList && !channel.name.includes(pokemonList[pokemonName].symbol)){
@@ -80,11 +80,10 @@ function getShinyStatusList(guild){
   debug("Fetching latest shiny list");
   const isMatch = /^Most Recent (Sighting|Egg Hatch): (\w{3,9} \d{1,2}, \d{2,4})$/;
   const pokemonList = {};
-  const channels = guild.channels.filter(channel => channel.type == 'text');
+  const channels = guild.channels.filter(channel => channel.type == 'text').filter(channel => channel.name != channel.name.replace(/\W+$/, ''));
   let i = 0;
   return new Promise(function(resolve, reject) {
-    channels.filter(channel => channel.name != channel.name.replace(/\W+$/, ''))
-      .forEach(channel => {
+    channels.forEach(channel => {
         channel.fetchMessages({
         	limit: 100 // Fetch last 100 messages.
         }).then((messages) => {
@@ -95,7 +94,6 @@ function getShinyStatusList(guild){
             dateStr: '',
             symbol: statusSymbols['unconfirmed'],
           }
-          debug('Fetched messages for channel:', name);
         	messages.forEach((msg) => {
         		if (msg.pinned == true && isMatch.test(msg.content)){
               const date = new Date(Date.parse(msg.content.match(isMatch)[2]))
@@ -110,6 +108,7 @@ function getShinyStatusList(guild){
               return;
             }
         	});
+
           if (++i >= channels.size){
             resolve(pokemonList);
             debug("Fetched latest shiny list");
