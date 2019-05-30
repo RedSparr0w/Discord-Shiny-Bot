@@ -67,7 +67,7 @@ async function updateChannelNames(guild, pokemonList){
   pokemonList = pokemonList || await getShinyStatusList(guild);
   const channels = guild.channels.filter(c => c.type == 'text');
   channels.forEach(channel => {
-    const pokemonName = channel.name.replace(/-[^-]+$/, '');
+    const pokemonName = channel.name.replace(/[-\W]+$/, '');
     if (pokemonName in pokemonList && !channel.name.includes(pokemonList[pokemonName].symbol)){
       debug('Updated channel status ' + channel.name + '→' + pokemonList[pokemonName].symbol );
       channel.edit({ name: pokemonName + '-' + pokemonList[pokemonName].symbol })
