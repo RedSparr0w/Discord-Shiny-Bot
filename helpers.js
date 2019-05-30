@@ -91,6 +91,8 @@ function getShinyStatusList(guild){
         pokemonList[name] = {
           channel: '' + channel,
           channelName: channel.name,
+          dateStr: '',
+          symbol: statusSymbols['unconfirmed'],
         }
       	messages.forEach((msg) => {
       		if (msg.pinned == true && isMatch.test(msg.content)){
