@@ -2,7 +2,12 @@ const { error, updateChannelNames } = require('../helpers.js')
 
 module.exports = {
   name        : 'jan',
-  aliases     : ['feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
+  aliases     : [
+    // Short months
+    'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec',
+    // Full months
+    'january', 'february', 'march', 'april', 'june', 'july', 'august', 'september', 'october', 'november', 'december',
+  ],
   description : 'Set the latest sighting of a shiny Pokémon',
   args        : ['day', 'year?'],
   guildOnly   : true,
