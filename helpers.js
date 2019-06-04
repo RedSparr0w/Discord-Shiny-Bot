@@ -67,10 +67,11 @@ async function updateChannelNames(guild, pokemonList){
   pokemonList = pokemonList || await getShinyStatusList(guild);
   const channels = guild.channels.filter(channel => channel.type == 'text').filter(channel => channel.name != channel.name.replace(/\W+$/, ''));
   channels.forEach(channel => {
-    const pokemonName = channel.name.replace(/[-\W]+$/, '');
+    const pokemonName = channel.name.replace(/\W+$/, '');
     if (pokemonName in pokemonList && !channel.name.includes(pokemonList[pokemonName].symbol)){
+      const updatedChannelName = channel.name.replace(/[^-]+$/, `${pokemonList[pokemonName].symbol}`);
       debug('Updated channel status ' + channel.name + '→' + pokemonList[pokemonName].symbol );
-      channel.edit({ name: pokemonName + '-' + pokemonList[pokemonName].symbol })
+      channel.edit({ name: updatedChannelName })
     }
   });
   debug('Updated channel names');
