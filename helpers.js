@@ -69,6 +69,7 @@ async function updateChannelNames(guild, pokemonList){
   channels.forEach(channel => {
     const pokemonName = channel.name.replace(/\W+$/, '');
     if (pokemonName in pokemonList && !channel.name.includes(pokemonList[pokemonName].symbol)){
+      // replace everything after the last dash with the new symbol (should only replace the old symbol)
       const updatedChannelName = channel.name.replace(/[^-]+$/, `${pokemonList[pokemonName].symbol}`);
       debug('Updated channel status ' + channel.name + '→' + pokemonList[pokemonName].symbol );
       channel.edit({ name: updatedChannelName })
