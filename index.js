@@ -40,7 +40,7 @@ client.once('ready', () => {
   }, new Date().setMinutes(60, 0, 0) - Date.now());
 });
 
-client.on('error', (err) => error('Error Thrown:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`))
+client.on('error', (e) => error('Error Thrown:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`))
   .on('warn', (warning) => warn(warning))
   .on('message', message => {
     // Either not a command or a bot, ignore
