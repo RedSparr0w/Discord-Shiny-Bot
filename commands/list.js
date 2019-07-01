@@ -20,7 +20,7 @@ module.exports = {
     const filters = new RegExp(filterSymbols.join('|'), 'gi');
 
     if (!!filterSymbols.length)
-      msg.channel.send(`Fetching Pokémon with ${filterSymbols.join(' ')} shiny status...`);
+      msg.channel.send(`Fetching Pokémon with ${filterSymbols.join(' ')} status...`);
     else
       msg.channel.send(`Fetching the current shiny status of all Pokémon...`);
 
