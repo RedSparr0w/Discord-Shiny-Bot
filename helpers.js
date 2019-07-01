@@ -48,6 +48,7 @@ const statusSymbols = {
   danger: '🚫',
   new: '🆕',
   unconfirmed: '🕒',
+  research: '📦',
 }
 
 function getSymbolFromDate(date){

@@ -4,7 +4,7 @@ module.exports = {
   name        : 'list',
   aliases     : ['shinystatus'],
   description : 'Short description',
-  args        : ['all, confirmed, ok, warning, danger, new, unconfirmed?', ],
+  args        : ['all, confirmed, ok, warning, danger, unconfirmed, new, research?', ],
   guildOnly   : true,
   cooldown    : 3,
   botperms    : ['MANAGE_MESSAGES', 'SEND_MESSAGES'],
