@@ -80,7 +80,7 @@ async function updateChannelNames(guild, pokemonList){
 }
 
 function getShinyStatusList(guild){
-  debug("Fetching latest shiny list");
+  debug('Fetching latest shiny list');
   const isMatch = /^Most Recent (Sighting|Egg Hatch): (\w{3,9} \d{1,2}, \d{2,4})$/;
   const pokemonList = {};
   const channels = guild.channels.filter(channel => channel.type == 'text').filter(channel => channel.name != channel.name.replace(/\W+$/, ''));
@@ -114,12 +114,12 @@ function getShinyStatusList(guild){
 
           if (++i >= channels.size){
             resolve(pokemonList);
-            debug("Fetched latest shiny list");
+            debug('Fetched latest shiny list');
           }
         }).catch(e => {
           if (++i >= channels.size){
             resolve(pokemonList);
-            debug("Fetched latest shiny list");
+            debug('Fetched latest shiny list');
           }
           switch (e.message){
             case 'Missing Access':
