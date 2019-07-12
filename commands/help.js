@@ -12,13 +12,11 @@ module.exports = {
   userperms   : ['MANAGE_MESSAGES'],
   execute     : async (msg, args) => {
     const data = [];
-    const commands = msg.client.commands.filter(command => {
-      return msg.channel.type === 'dm' ? !command.guildOnly : true
-    });
+    const commands = msg.client.commands.filter(command => msg.channel.type === 'dm' ? !command.guildOnly : true);
 
     if (!args.length) {
       commands.forEach(command => data.push(`${prefix}${command.name}${command.args.map(arg=>` [${arg}]`).join('')}: ${command.description}`));
-      return msg.channel.send(data, { code: 'http', split: true })
+      return msg.channel.send(data, { code: 'http', split: true });
     }
 
     const name = args[0].toLowerCase();
@@ -28,14 +26,14 @@ module.exports = {
       return msg.channel.send('That is not a valid command!');
     }
 
-    let embed = new Discord.RichEmbed()
+    const embed = new Discord.RichEmbed()
       .setTitle(`***\`${prefix}help ${command.name}\`***`)
       .setColor('#3498db')
       .addField('❯ Description', `\`${command.description}\``)
       .addField('❯ Usage', `\`\`\`css\n${prefix}${command.name}${command.args.map(arg=>` [${arg}]`).join('')}\`\`\``)
       .addField('❯ Aliases', `\`${command.aliases.join('`, `') || '-'}\``, true)
       .addField('❯ Cooldown', `\`${command.cooldown || 3} second(s)\``, true)
-      .addField('❯ Guild Only', `\`${command.guildOnly}\``, true)
+      .addField('❯ Guild Only', `\`${command.guildOnly}\``, true);
     msg.channel.send({ embed });
   },
 };

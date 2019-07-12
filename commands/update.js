@@ -1,4 +1,4 @@
-const { error, updateChannelNames } = require('../helpers.js')
+const { error, updateChannelNames } = require('../helpers.js');
 
 module.exports = {
   name        : 'update',
@@ -16,4 +16,4 @@ module.exports = {
     updateChannelNames(msg.guild);
     msg.channel.send(`Complete!`);
   }
-}
+};

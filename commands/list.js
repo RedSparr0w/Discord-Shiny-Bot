@@ -1,4 +1,4 @@
-const { error, statusSymbols, getShinyStatusList } = require('../helpers.js')
+const { error, statusSymbols, getShinyStatusList } = require('../helpers.js');
 
 module.exports = {
   name        : 'list',
@@ -19,7 +19,7 @@ module.exports = {
     const filterSymbols = args.filter(status=>status in statusSymbols).map(status=>statusSymbols[status]);
     const filters = new RegExp(filterSymbols.join('|'), 'gi');
 
-    if (!!filterSymbols.length)
+    if (filterSymbols.length)
       msg.channel.send(`Fetching Pokémon with ${filterSymbols.join(' ')} status...`);
     else
       msg.channel.send(`Fetching the current shiny status of all Pokémon...`);
@@ -28,14 +28,14 @@ module.exports = {
     const pokemonList = await getShinyStatusList(msg.guild);
     const output = [];
     Object.keys(pokemonList).sort().filter(pokemon=>filters.test(pokemonList[pokemon].channelName)).forEach(pokemon => {
-      output.push(pokemonList[pokemon].symbol + ' ' + pokemonList[pokemon].dateStr + ' - ' + pokemonList[pokemon].channel);
+      output.push(`${pokemonList[pokemon].symbol} ${  pokemonList[pokemon].dateStr} - ${  pokemonList[pokemon].channel}`);
     });
 
     // Check if the list is empty
-    if (!!output.length){
+    if (output.length){
       msg.channel.send(output, { split: true });
     } else {
       msg.channel.send('Nothing to report!');
     }
   }
-}
+};

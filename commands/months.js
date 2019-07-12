@@ -1,4 +1,4 @@
-const { error, updateChannelNames } = require('../helpers.js')
+const { error, updateChannelNames } = require('../helpers.js');
 
 module.exports = {
   name        : 'jan',
@@ -33,4 +33,4 @@ module.exports = {
       }).catch(e=>error('Unable to pin message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
     });
   }
-}
+};

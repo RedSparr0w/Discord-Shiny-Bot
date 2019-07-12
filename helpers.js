@@ -7,32 +7,32 @@ function dateTime(date = new Date()){
 }
 
 function log(...args){
-  console.log(`\x1b[1m\x1b[37m[log][${dateTime()}]\x1b[0m`, ...args)
+  console.log(`\x1b[1m\x1b[37m[log][${dateTime()}]\x1b[0m`, ...args);
 }
 
 function info(...args){
-  console.info(`\x1b[1m\x1b[36m[info][${dateTime()}]\x1b[0m`, ...args)
+  console.info(`\x1b[1m\x1b[36m[info][${dateTime()}]\x1b[0m`, ...args);
 }
 
 function debug(...args){
-  console.debug(`\x1b[1m\x1b[34m[debug][${dateTime()}]\x1b[0m`, ...args)
+  console.debug(`\x1b[1m\x1b[34m[debug][${dateTime()}]\x1b[0m`, ...args);
 }
 
 function warn(...args){
-  console.warn(`\x1b[1m\x1b[33m[warning][${dateTime()}]\x1b[0m`, ...args)
+  console.warn(`\x1b[1m\x1b[33m[warning][${dateTime()}]\x1b[0m`, ...args);
 }
 
 function error(...args){
-  console.error(`\x1b[1m\x1b[31m[error][${dateTime()}]\x1b[0m`, ...args)
+  console.error(`\x1b[1m\x1b[31m[error][${dateTime()}]\x1b[0m`, ...args);
 }
 
 function splitter(str, l){
-    var strs = [];
+    const strs = [];
     while(str.length > l){
-        var pos = str.substring(0, l).lastIndexOf('\n');
+        let pos = str.substring(0, l).lastIndexOf('\n');
         pos = pos <= 0 ? l : pos;
         strs.push(str.substring(0, pos));
-        var i = str.indexOf('\n', pos)+1;
+        let i = str.indexOf('\n', pos)+1;
         if(i < pos || i > pos+l)
             i = pos;
         str = str.substring(i);
@@ -49,10 +49,10 @@ const statusSymbols = {
   new: '🆕',
   unconfirmed: '🕒',
   research: '📦',
-}
+};
 
 function getSymbolFromDate(date){
-  today = new Date();
+  const today = new Date();
   if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 5))
     return statusSymbols.confirmed;
   else if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 10))
@@ -72,8 +72,8 @@ async function updateChannelNames(guild, pokemonList){
     if (pokemonName in pokemonList && !channel.name.includes(pokemonList[pokemonName].symbol)){
       // replace everything after the last dash with the new symbol (should only replace the old symbol)
       const updatedChannelName = channel.name.replace(/[^-]+$/, `${pokemonList[pokemonName].symbol}`);
-      debug('Updated channel status ' + channel.name + '→' + pokemonList[pokemonName].symbol );
-      channel.edit({ name: updatedChannelName })
+      debug(`Updated channel status ${channel.name}→${pokemonList[pokemonName].symbol}`);
+      channel.edit({ name: updatedChannelName });
     }
   });
   debug('Updated channel names');
@@ -88,18 +88,18 @@ function getShinyStatusList(guild){
   return new Promise(function(resolve, reject) {
     channels.forEach(channel => {
         channel.fetchMessages({
-        	limit: 100 // Fetch last 100 messages.
+          limit: 100, // Fetch last 100 messages.
         }).then((messages) => {
           const name = channel.name.replace(/\W+$/, '');
           pokemonList[name] = {
-            channel: '' + channel,
+            channel: `${channel}`,
             channelName: channel.name,
             dateStr: '',
             symbol: statusSymbols['unconfirmed'],
-          }
-        	messages.forEach((msg) => {
-        		if (msg.pinned == true && isMatch.test(msg.content)){
-              const date = new Date(Date.parse(msg.content.match(isMatch)[2]))
+          };
+          messages.forEach((msg) => {
+            if (msg.pinned == true && isMatch.test(msg.content)){
+              const date = new Date(Date.parse(msg.content.match(isMatch)[2]));
               pokemonList[name] = {
                 ...pokemonList[name],
                 ...{
@@ -107,10 +107,10 @@ function getShinyStatusList(guild){
                   dateStr: msg.content.match(isMatch)[2],
                   symbol: getSymbolFromDate(date),
                 },
-              }
+              };
               return;
             }
-        	});
+          });
 
           if (++i >= channels.size){
             resolve(pokemonList);
@@ -145,4 +145,4 @@ module.exports = {
   getSymbolFromDate,
   updateChannelNames,
   getShinyStatusList,
-}
+};

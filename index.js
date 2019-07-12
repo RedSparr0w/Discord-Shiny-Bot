@@ -2,9 +2,7 @@ const fs = require('fs');
 const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
 const {
-  log,
   info,
-  debug,
   warn,
   error,
   updateChannelNames,
@@ -32,12 +30,12 @@ client.once('ready', async() => {
   setTimeout(()=>{
     client.guilds.forEach(guild=>{
       updateChannelNames(guild);
-    })
+    });
     // Then continue to run every hour (on the hour)
     setInterval(() => {
       client.guilds.forEach(guild=>{
         updateChannelNames(guild);
-      })
+      });
     }, 60 * 60 * 1000 /* 1 Hour */);
   }, new Date().setMinutes(60, 0, 0) - Date.now());
 });

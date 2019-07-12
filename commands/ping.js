@@ -7,7 +7,5 @@ module.exports = {
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES'],
   userperms   : ['MANAGE_MESSAGES'],
-  execute     : async (msg, args) => {
-    return msg.channel.send('Pong')
-  }
-}
+  execute     : async (msg, args) => msg.channel.send('Pong')
+};

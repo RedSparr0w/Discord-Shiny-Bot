@@ -1,4 +1,4 @@
-const { dateTime } = require('../helpers.js')
+const { dateTime } = require('../helpers.js');
 
 module.exports = {
   name        : 'time',
@@ -10,7 +10,7 @@ module.exports = {
   botperms    : ['SEND_MESSAGES'],
   userperms   : ['MANAGE_MESSAGES'],
   execute     : async (msg, args) => {
-    const data = ['Current server time:', `\`${dateTime()}\``]
-    return msg.channel.send(data)
+    const data = ['Current server time:', `\`${dateTime()}\``];
+    return msg.channel.send(data);
   }
-}
+};
