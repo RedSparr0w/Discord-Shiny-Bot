@@ -1,4 +1,5 @@
 const { error, updateChannelNames } = require('../helpers.js');
+const { addUserReport, addUserVerification } = require('../database.js');
 
 module.exports = {
   name        : 'jan',
@@ -32,5 +33,14 @@ module.exports = {
         updateChannelNames(msg.guild);
       }).catch(e=>error('Unable to pin message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
     });
+
+    // Add 1 point to the verifier
+    addUserVerification(msg.author.id);
+    // Await "Thank You" message, then add 1 point to the reporter
+    const filter = m => m.author.id === msg.author.id && m.mentions.users.size;
+    // errors: ['time'] treats ending because of the time limit as an error
+    msg.channel.awaitMessages(filter, { max: 1, time: 120000, errors: ['time'] })
+      .then(collected => addUserReport(collected.first().mentions.users.first().id))
+      .catch(collected => error('No thanks given after 2 minutes'));
   }
 };
