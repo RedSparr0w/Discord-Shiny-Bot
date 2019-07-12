@@ -8,7 +8,8 @@ const {
   warn,
   error,
   updateChannelNames,
-} = require('./helpers.js')
+} = require('./helpers.js');
+const { setupDB } = require('./database.js');
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -22,8 +23,9 @@ for (const file of commandFiles) {
 
 const cooldowns = new Discord.Collection();
 
-client.once('ready', () => {
+client.once('ready', async() => {
   info(`Logged in as ${client.user.tag}!`);
+  await setupDB();
 
 
   // Start our functions that run on the hour, when the timer next reaches the closest hour

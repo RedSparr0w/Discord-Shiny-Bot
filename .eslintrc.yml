@@ -1,0 +1,31 @@
+parserOptions:
+  ecmaVersion: 9
+
+env:
+  node: true
+  es6: true
+
+extends:
+  - "eslint:recommended"
+
+rules:
+  # Disable some rules from eslint:recommended.
+  no-console: "off"
+  no-empty: ["error", { "allowEmptyCatch": true }]
+
+  # Allow unused parameters. In callbacks, removing them seems to obscure what the functions are doing.
+  no-unused-vars: ["error", {"args": "none"}]
+
+  # Use semicolons. (may change later)
+  semi: ["error", "always"]
+
+  # Preferences
+  arrow-body-style: ['error', 'as-needed']
+  func-style: ['error', 'declaration', { 'allowArrowFunctions': true }]
+  no-var: 'error'
+  prefer-const: 'error'
+  prefer-template: 'error'
+
+  # Keep whitespace cleaned up.
+  no-trailing-spaces: "error"
+  eol-last: "error"
