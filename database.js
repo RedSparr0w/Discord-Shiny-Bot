@@ -11,16 +11,16 @@ async function setupDB(){
   return;
 }
 
-async function getUserReports(user, table = 'reports'){
+async function getPoints(user, table){
   const db = await getDB();
   const results = await db.get(`SELECT * FROM ${table} WHERE user=?`, user) || { user, points: 0 };
   db.close();
   return results;
 }
 
-async function addUserReport(user, table = 'reports'){
+async function addPoints(user, table){
   const db = await getDB();
-  let { points } = await getUserReports(user, table);
+  let { points } = await getPoints(user, table);
 
   user = {
     $user:user,
@@ -28,15 +28,24 @@ async function addUserReport(user, table = 'reports'){
   };
   await db.run(`INSERT OR REPLACE INTO ${table} (user, points) VALUES ($user, $points)`, user);
   db.close();
-  return;
+  return points;
+}
+
+// ALIASES
+async function getUserReports(user){
+  return await getPoints(user, 'reports');
+}
+
+async function addUserReport(user){
+  return await addPoints(user, 'reports');
 }
 
 async function getUserVerifications(user){
-  return await getUserReports(user, 'verifications');
+  return await getPoints(user, 'verifications');
 }
 
 async function addUserVerification(user){
-  return await addUserReport(user, 'verifications');
+  return await addPoints(user, 'verifications');
 }
 
 async function getTop(amount = 10, table = 'reports'){
@@ -50,9 +59,11 @@ async function getTop(amount = 10, table = 'reports'){
 
 module.exports = {
   setupDB,
-  addUserReport,
+  getPoints,
+  addPoints,
   getUserReports,
-  addUserVerification,
+  addUserReport,
   getUserVerifications,
+  addUserVerification,
   getTop,
 };
