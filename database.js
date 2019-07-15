@@ -31,23 +31,6 @@ async function addPoints(user, table){
   return points;
 }
 
-// ALIASES
-async function getUserReports(user){
-  return await getPoints(user, 'reports');
-}
-
-async function addUserReport(user){
-  return await addPoints(user, 'reports');
-}
-
-async function getUserVerifications(user){
-  return await getPoints(user, 'verifications');
-}
-
-async function addUserVerification(user){
-  return await addPoints(user, 'verifications');
-}
-
 async function getTop(amount = 10, table = 'reports'){
   // amount must be between 1 - 50
   amount = Math.max(1, Math.min(50, amount));
@@ -56,6 +39,12 @@ async function getTop(amount = 10, table = 'reports'){
   db.close();
   return results;
 }
+
+// ALIASES
+const getUserReports = async (user) => await getPoints(user, 'reports');
+const addUserReport = async (user) => await addPoints(user, 'reports');
+const getUserVerifications = async (user) => await getPoints(user, 'verifications');
+const addUserVerification = async (user) => await addPoints(user, 'verifications');
 
 module.exports = {
   setupDB,
