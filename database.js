@@ -39,10 +39,20 @@ async function addUserVerification(user){
   return await addUserReport(user, 'verifications');
 }
 
+async function getTop(amount = 10, table = 'reports'){
+  // amount must be between 1 - 50
+  amount = Math.max(1, Math.min(50, amount));
+  const db = await getDB();
+  const results = await db.all(`SELECT * FROM ${table} ORDER BY points DESC LIMIT ${amount}`);
+  db.close();
+  return results;
+}
+
 module.exports = {
   setupDB,
   addUserReport,
   getUserReports,
   addUserVerification,
   getUserVerifications,
+  getTop,
 };
