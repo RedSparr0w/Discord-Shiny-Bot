@@ -3,7 +3,7 @@ const { error, statusSymbols, getShinyStatusList } = require('../helpers.js');
 module.exports = {
   name        : 'list',
   aliases     : ['shinystatus'],
-  description : 'Short description',
+  description : 'List Pokemon with the specified current status',
   args        : ['all, confirmed, ok, warning, danger, unconfirmed, new, research?', ],
   guildOnly   : true,
   cooldown    : 3,
@@ -13,7 +13,7 @@ module.exports = {
     msg.delete().catch(e=>error('Unable to delete message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
 
     // If user doesn't have required perms, or no arguments supplied, set the default arguments
-    if (msg.channel.type === 'text' && msg.channel.memberPermissions(msg.member).missing(['MANAGE_CHANNELS', 'MANAGE_MESSAGES']).length || !args.length)
+    if (msg.channel.type === 'text' && msg.channel.memberPermissions(msg.member).missing(['MANAGE_MESSAGES']).length || !args.length)
       args = ['warning', 'danger'];
 
     const filterSymbols = args.filter(status=>status in statusSymbols).map(status=>statusSymbols[status]);
