@@ -14,14 +14,14 @@ async function setupDB(){
 
 async function getPoints(user, table){
   const db = await getDB();
-  const results = await db.get(`SELECT * FROM ${table} WHERE user=?`, user) || { user, points: 0 };
+  const results = await db.get(`SELECT points FROM ${table} WHERE user=?`, user) || { points: 0 };
   db.close();
-  return results;
+  return results.points;
 }
 
 async function addPoints(user, table){
   const db = await getDB();
-  let { points } = await getPoints(user, table);
+  let points = await getPoints(user, table);
 
   user = {
     $user:user,
