@@ -17,7 +17,6 @@ module.exports = {
       args = ['warning', 'danger'];
 
     const filterSymbols = args.filter(status=>status in statusSymbols).map(status=>statusSymbols[status]);
-    const filters = new RegExp(filterSymbols.join('|'), 'gi');
 
     if (filterSymbols.length)
       msg.channel.send(`Fetching Pokémon with ${filterSymbols.join(' ')} status...`);
@@ -27,8 +26,10 @@ module.exports = {
     // Gather information of pokemon statuses
     const pokemonList = await getShinyStatusList(msg.guild);
     const output = [];
-    Object.keys(pokemonList).sort().filter(pokemon=>filters.test(pokemonList[pokemon].channelName)).forEach(pokemon => {
-      output.push(`${pokemonList[pokemon].symbol} ${pokemonList[pokemon].dateStr} - ${pokemonList[pokemon].channel}`);
+    Object.keys(pokemonList).sort().forEach(pokemon => {
+      const hasMatch = filterSymbols.some(symbol => pokemonList[pokemon].channelName.includes(symbol));
+      if (hasMatch)
+        output.push(`${pokemonList[pokemon].symbol} ${pokemonList[pokemon].dateStr} - ${pokemonList[pokemon].channel}`);
     });
 
     // Check if the list is empty
