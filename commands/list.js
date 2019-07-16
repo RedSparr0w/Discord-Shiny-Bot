@@ -28,7 +28,7 @@ module.exports = {
     const pokemonList = await getShinyStatusList(msg.guild);
     const output = [];
     Object.keys(pokemonList).sort().filter(pokemon=>filters.test(pokemonList[pokemon].channelName)).forEach(pokemon => {
-      output.push(`${pokemonList[pokemon].symbol} ${  pokemonList[pokemon].dateStr} - ${  pokemonList[pokemon].channel}`);
+      output.push(`${pokemonList[pokemon].symbol} ${pokemonList[pokemon].dateStr} - ${pokemonList[pokemon].channel}`);
     });
 
     // Check if the list is empty
