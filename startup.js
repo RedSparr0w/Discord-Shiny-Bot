@@ -23,7 +23,7 @@ async function updateRules(bot){
         "fields": [
           {
             "name": "__***RULES:***__",
-            "value": ":small_blue_diamond: All screenshots or videos MUST include the date caught and some portion of the Pokémon must be visible to confirm it is shiny.\n:small_blue_diamond: DO NOT report any hatched Pokémon unless they have an `🥚` beside their name.\n        _This is due to the fact we cannot verify them by the hatch date since an old egg can be hatched and it will have today's date on it._\n:small_blue_diamond: DO NOT report any stacked research Pokémon as this can result in bad reports since the date is determined when you catch it, not when you stacked the encounter.\n",
+            "value": ":small_blue_diamond: All screenshots or videos MUST include the date caught and some portion of the Pokémon must be visible to confirm it is shiny.\n:small_blue_diamond: DO NOT report any stacked research Pokémon as this can result in bad reports since the date is determined when you catch it, not when you stacked the encounter.\n:small_blue_diamond: DO NOT report any hatched Pokémon unless they have an `🥚` beside their name.\n_(This is due to the fact we cannot verify them by the hatch date since an old egg can be hatched and it will have today's date on it)_\n",
             "inline": false
           },
           {
