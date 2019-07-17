@@ -8,6 +8,7 @@ const {
   updateChannelNames,
 } = require('./helpers.js');
 const { setupDB } = require('./database.js');
+const startup = require('./startup.js');
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -24,7 +25,7 @@ const cooldowns = new Discord.Collection();
 client.once('ready', async() => {
   info(`Logged in as ${client.user.tag}!`);
   await setupDB();
-
+  await startup(client);
 
   // Start our functions that run on the hour, when the timer next reaches the closest hour
   setTimeout(()=>{
