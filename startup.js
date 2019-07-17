@@ -13,7 +13,10 @@ async function updateRules(bot){
   const channel = guild.channels.find(c => c.id === channel_ID && c.type === 'text');
   if (!channel) return warn('updateRules():', '\n\tUnable to find channel.');
 
-  const message = await channel.fetchMessage(message_ID);
+  let message = false;
+  try {
+    message = await channel.fetchMessage(message_ID);
+  } catch(e){}
 
   const data = {
       "embed": {
