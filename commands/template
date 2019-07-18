@@ -3,11 +3,11 @@ module.exports = {
   aliases     : [],
   description : 'Short description',
   args        : [],
-  guildOnly   : false,
+  guildOnly   : true,
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES'],
   userperms   : ['MANAGE_MESSAGES'],
   execute     : async (msg, args) => {
-    return
+    return;
   }
 }

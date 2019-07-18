@@ -5,7 +5,7 @@ module.exports = {
   aliases     : ['message'],
   description : 'Make or edit a post as the bot',
   args        : ['channel', 'message ID?'],
-  guildOnly   : false,
+  guildOnly   : true,
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES'],
   userperms   : ['MANAGE_GUILD'],
