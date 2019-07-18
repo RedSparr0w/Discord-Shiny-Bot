@@ -17,6 +17,10 @@ module.exports = {
     };
     const [ amount = 10, type = 'reports' ] = args;
 
+    if (isNaN(amount)){
+      return msg.channel.send('Invalid amount specified, Must be between 1 and 40...');
+    }
+
     if (!Object.keys(types).includes(type)){
       return msg.channel.send('Invalid leaderboard type...');
     }
@@ -24,6 +28,8 @@ module.exports = {
     const results = await getTop(amount, type);
 
     const output = results.map((res, place) => `**#${place + 1}** _\`(${res.points} ${type})\`_ ${msg.guild.members.get(res.user) || 'Inactive Member'}`);
+    if (output.join('\n').length >= 2048)
+      return msg.reply(`Sorry this list too large for discord, try a smaller amount`);
 
     const embed = new Discord.RichEmbed()
       .setTitle(`__**Top ${results.length} ${types[type]}:**__`)
