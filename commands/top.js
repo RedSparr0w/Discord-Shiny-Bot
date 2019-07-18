@@ -1,4 +1,3 @@
-const Discord = require('discord.js');
 const { getTop } = require('../database.js');
 
 module.exports = {
@@ -30,7 +29,8 @@ module.exports = {
     const output = [`__***Top ${results.length} ${types[type]}:***__`, ...results.map((res, place) => `**#${place + 1}** _\`(${res.points} ${type})\`_ ${msg.guild.members.get(res.user) || 'Inactive Member'}`)];
     if (output.join('\n').length >= 2000)
       return msg.reply(`Sorry this list is too large for discord, try a smaller amount`);
+    console.log(output.join('\n'));
 
-    msg.channel.send('Gathering Data...').then(m=>m.edit(output));
+    msg.channel.send('Gathering Data...').then(m=>m.edit(output.join('\n')));
   }
 };
