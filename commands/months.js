@@ -1,4 +1,4 @@
-const { error, updateChannelNames } = require('../helpers.js');
+const { error, warn, updateChannelNames } = require('../helpers.js');
 const { addUserReport, addUserVerification } = require('../database.js');
 
 module.exports = {
@@ -47,6 +47,6 @@ module.exports = {
     // errors: ['time'] treats ending because of the time limit as an error
     msg.channel.awaitMessages(filter, { max: 1, time: 120000, errors: ['time'] })
       .then(collected => addUserReport(collected.first().mentions.users.first().id))
-      .catch(collected => error('No thanks given after 2 minutes'));
+      .catch(collected => warn('No thanks given after 2 minutes'));
   }
 };
