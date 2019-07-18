@@ -34,7 +34,7 @@ module.exports = {
     const embed = new Discord.RichEmbed()
       .setTitle(`__**Top ${results.length} ${types[type]}:**__`)
       .setDescription(output)
-      .setColor(0x00AE86);
+      .setColor('#3498db');
 
     msg.channel.send('Gathering Data...').then(m=>m.edit({embed}));
   }
