@@ -24,7 +24,7 @@ async function addPoints(user, table){
   let points = await getPoints(user, table);
 
   user = {
-    $user:user,
+    $user: user,
     $points: ++points,
   };
   await db.run(`INSERT OR REPLACE INTO ${table} (user, points) VALUES ($user, $points)`, user);
