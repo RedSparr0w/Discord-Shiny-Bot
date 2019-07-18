@@ -1,6 +1,22 @@
 const { error, warn, updateChannelNames } = require('../helpers.js');
 const { addUserReport, addUserVerification } = require('../database.js');
 
+function applyReporterRole(member, points = 0){
+  const roles = {
+      5: '601229631407783967', // Shiny Reporter
+      20: '601230476094603275', // Shiny Hunter
+      50: '601230543950184468', // Shiny Master
+      100: '601230605027377152', // Shiny Legend
+    };
+
+  if (roles[points]){
+    member.addRole(roles[points], `Reached ${points} reports`).catch(e=>error('Unable to assign role:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
+    const role_to_remove = Object.keys(roles).filter(level=>(+points) > (+level)).pop();
+    if (role_to_remove)
+      member.removeRole(roles[role_to_remove], `Reached ${points} reports (old role)`).catch(e=>error('Unable to remove role:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
+  }
+}
+
 module.exports = {
   name        : 'jan',
   aliases     : [
@@ -43,10 +59,14 @@ module.exports = {
     // Add 1 point to the verifier
     addUserVerification(msg.author.id);
     // Await "Thank You" message, then add 1 point to the reporter
-    const filter = m => m.author.id === msg.author.id && m.mentions.users.size;
+    const filter = m => m.author.id === msg.author.id && m.mentions.members.size;
     // errors: ['time'] treats ending because of the time limit as an error
     msg.channel.awaitMessages(filter, { max: 1, time: 120000, errors: ['time'] })
-      .then(collected => addUserReport(collected.first().mentions.users.first().id))
+      .then(collected => {
+        const member = collected.first().mentions.members.first();
+        const points = addUserReport(member.id);
+        applyReporterRole(member, points);
+      })
       .catch(collected => warn('No thanks given after 2 minutes'));
   }
 };

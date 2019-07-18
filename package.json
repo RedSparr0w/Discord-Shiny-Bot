@@ -1,6 +1,6 @@
 {
   "name": "shiny-squad-discord-bot",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "",
   "scripts": {
     "start": "node index.js",
