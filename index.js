@@ -6,6 +6,7 @@ const {
   warn,
   error,
   updateChannelNames,
+  RunOnInterval,
 } = require('./helpers.js');
 const { setupDB } = require('./database.js');
 
@@ -26,17 +27,11 @@ client.once('ready', async() => {
   await setupDB();
 
   // Start our functions that run on the hour, when the timer next reaches the closest hour
-  setTimeout(()=>{
+  new RunOnInterval(60 * 6e4 /* 1 Hour */, ()=>{
     client.guilds.forEach(guild=>{
       updateChannelNames(guild);
     });
-    // Then continue to run every hour (on the hour)
-    setInterval(() => {
-      client.guilds.forEach(guild=>{
-        updateChannelNames(guild);
-      });
-    }, 60 * 60 * 1000 /* 1 Hour */);
-  }, new Date().setMinutes(60, 0, 0) - Date.now());
+  });
 });
 
 client.on('error', (e) => error('Error Thrown:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`))
