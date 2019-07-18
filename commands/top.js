@@ -27,15 +27,10 @@ module.exports = {
 
     const results = await getTop(amount, type);
 
-    const output = results.map((res, place) => `**#${place + 1}** _\`(${res.points} ${type})\`_ ${msg.guild.members.get(res.user) || 'Inactive Member'}`);
-    if (output.join('\n').length >= 2048)
-      return msg.reply(`Sorry this list too large for discord, try a smaller amount`);
+    const output = [`__***Top ${results.length} ${types[type]}:***__`, ...results.map((res, place) => `**#${place + 1}** _\`(${res.points} ${type})\`_ ${msg.guild.members.get(res.user) || 'Inactive Member'}`)];
+    if (output.join('\n').length >= 2000)
+      return msg.reply(`Sorry this list is too large for discord, try a smaller amount`);
 
-    const embed = new Discord.RichEmbed()
-      .setTitle(`__**Top ${results.length} ${types[type]}:**__`)
-      .setDescription(output)
-      .setColor('#3498db');
-
-    msg.channel.send('Gathering Data...').then(m=>m.edit({embed}));
+    msg.channel.send('Gathering Data...').then(m=>m.edit(output));
   }
 };
