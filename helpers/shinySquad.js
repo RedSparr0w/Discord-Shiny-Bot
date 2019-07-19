@@ -1,4 +1,5 @@
 const { error, debug } = require('./logging.js');
+const { getTop } = require('../database.js');
 
 const statusSymbols = {
   confirmed: '✅',
@@ -91,9 +92,21 @@ function getShinyStatusList(guild){
   });
 }
 
+async function updateLeaderboard(guild){
+  const channel = guild.channels.get('601529257981902868');
+  if (!channel) return;
+  try {
+    const message = await channel.fetchMessage('601552004648796180');
+    const results = await getTop(25, 'reports');
+    const output = [`__***Top ${results.length} reporters:***__`, ...results.map((res, place) => `**#${place + 1}** _\`(${res.points} reports)\`_ ${guild.members.get(res.user) || 'Inactive Member'}`)];
+    return message.edit(output);
+  } catch(err) {}
+}
+
 module.exports = {
   statusSymbols,
   getSymbolFromDate,
   updateChannelNames,
   getShinyStatusList,
+  updateLeaderboard,
 };

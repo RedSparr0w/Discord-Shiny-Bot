@@ -6,6 +6,7 @@ const {
   warn,
   error,
   updateChannelNames,
+  updateLeaderboard,
   RunOnInterval,
 } = require('./helpers.js');
 const { setupDB } = require('./database.js');
@@ -30,6 +31,7 @@ client.once('ready', async() => {
   new RunOnInterval(60 * 6e4 /* 1 Hour */, ()=>{
     client.guilds.forEach(guild=>{
       updateChannelNames(guild);
+      updateLeaderboard(guild);
     });
   });
 });
