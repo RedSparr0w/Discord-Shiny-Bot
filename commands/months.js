@@ -1,4 +1,4 @@
-const { error, warn, updateChannelNames } = require('../helpers.js');
+const { error, warn, updateChannelNames, updateLeaderboard } = require('../helpers.js');
 const { addUserReport, addUserVerification } = require('../database.js');
 
 function applyReporterRole(member, points = 0){
@@ -65,6 +65,7 @@ module.exports = {
       .then(async collected => {
         const member = collected.first().mentions.members.first();
         const points = await addUserReport(member.id);
+        updateLeaderboard(msg.guild);
         applyReporterRole(member, points);
       })
       .catch(collected => warn('No thanks given after 2 minutes'));
