@@ -7,6 +7,7 @@ const {
   error,
   updateChannelNames,
   updateLeaderboard,
+  updateChampion,
   RunOnInterval,
 } = require('./helpers.js');
 const { setupDB } = require('./database.js');
@@ -32,6 +33,7 @@ client.once('ready', async() => {
     client.guilds.forEach(guild=>{
       updateChannelNames(guild);
       updateLeaderboard(guild);
+      updateChampion(guild);
     });
   });
 });

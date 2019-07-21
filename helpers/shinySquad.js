@@ -105,10 +105,20 @@ async function updateLeaderboard(guild){
   }
 }
 
+async function updateChampion(guild){
+  const champion_role_id = '602627929226346536';
+  const champion_role = guild.roles.get(champion_role_id);
+  const results = await getTop(1, 'reports');
+  const current_champion = results[0].user;
+  champion_role.members.filter(m => m.id != current_champion).forEach(m => m.removeRole(champion_role_id, `User is no longer the number 1 reporter!`));
+  guild.members.get(current_champion).addRole(champion_role_id, `User is the new number 1 reporter!`);
+}
+
 module.exports = {
   statusSymbols,
   getSymbolFromDate,
   updateChannelNames,
   getShinyStatusList,
   updateLeaderboard,
+  updateChampion,
 };
