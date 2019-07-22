@@ -3,7 +3,7 @@ const { getTop } = require('../database.js');
 module.exports = {
   name        : 'top',
   aliases     : ['leaderboard'],
-  description : 'Get a list of users with the most points,\nTypes: reports, verifications',
+  description : 'Get a list of users with the most points,\n\t[type]: reports, verifications',
   args        : ['amount(10)?', 'type(reports)?'],
   guildOnly   : true,
   cooldown    : 3,
