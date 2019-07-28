@@ -7,7 +7,7 @@ module.exports = {
   args        : ['amount(10)?', 'type(reports)?'],
   guildOnly   : true,
   cooldown    : 3,
-  botperms    : ['SEND_MESSAGES', 'EMBED_LINKS'],
+  botperms    : ['SEND_MESSAGES'],
   userperms   : ['MANAGE_MESSAGES'],
   execute     : async (msg, args) => {
     const types = {
