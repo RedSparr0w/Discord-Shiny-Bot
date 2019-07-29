@@ -23,6 +23,16 @@ function getSymbolFromDate(date){
     return statusSymbols.danger;
 }
 
+async function updateChannelName(channel, pokemonData){
+  pokemonData = pokemonData || await getShinyStatus(channel);
+  if (pokemonData && !channel.name.includes(pokemonData.symbol)){
+    // replace everything after the last dash with the new symbol (should only replace the old symbol)
+    const updatedChannelName = channel.name.replace(/[^-]+$/, `${pokemonData.symbol}`);
+    debug(`Updated channel status ${channel.name} → ${pokemonData.symbol}`);
+    channel.edit({ name: updatedChannelName });
+  }
+}
+
 async function updateChannelNames(guild, pokemonList){
   debug('Updating channel names...');
   pokemonList = pokemonList || await getShinyStatusList(guild);
@@ -30,66 +40,58 @@ async function updateChannelNames(guild, pokemonList){
   channels.forEach(channel => {
     const pokemonName = channel.name.replace(/\W+$/, '');
     if (pokemonName in pokemonList && !channel.name.includes(pokemonList[pokemonName].symbol)){
-      // replace everything after the last dash with the new symbol (should only replace the old symbol)
-      const updatedChannelName = channel.name.replace(/[^-]+$/, `${pokemonList[pokemonName].symbol}`);
-      debug(`Updated channel status ${channel.name}→${pokemonList[pokemonName].symbol}`);
-      channel.edit({ name: updatedChannelName });
+      updateChannelName(channel, pokemonList[pokemonName]);
     }
   });
   debug('Updated channel names');
 }
 
-function getShinyStatusList(guild){
-  debug('Fetching latest shiny list');
+async function getShinyStatus(channel){
   const isMatch = /^Most Recent (Sighting|Egg Hatch): (\w{3,9} \d{1,2}, \d{2,4})$/;
+  const messages = await channel.fetchMessages({ limit: 100 }).catch(O_o => {});
+
+  if (!messages) return;
+
+  const pokemonData = {
+    channel,
+    channelName: channel.name,
+    dateStr: '',
+    symbol: statusSymbols['unconfirmed'],
+  };
+
+  const dateData = await new Promise(function(resolve, reject) {
+    messages.forEach(msg => {
+      if (msg.pinned == true && isMatch.test(msg.content)){
+        const date = new Date(Date.parse(msg.content.match(isMatch)[2]));
+        resolve({
+          date,
+          dateStr: msg.content.match(isMatch)[2],
+          symbol: getSymbolFromDate(date),
+        });
+      }
+    });
+    resolve({});
+  });
+
+  return {
+    ...pokemonData,
+    ...dateData,
+  };
+
+}
+
+async function getShinyStatusList(guild){
+  debug('Fetching latest shiny list');
   const pokemonList = {};
   const channels = guild.channels.filter(channel => channel.type == 'text').filter(channel => channel.name != channel.name.replace(/\W+$/, ''));
-  let i = 0;
-  return new Promise(function(resolve, reject) {
-    channels.forEach(channel => {
-        channel.fetchMessages({
-          limit: 100, // Fetch last 100 messages.
-        }).then((messages) => {
-          const name = channel.name.replace(/\W+$/, '');
-          pokemonList[name] = {
-            channel: `${channel}`,
-            channelName: channel.name,
-            dateStr: '',
-            symbol: statusSymbols['unconfirmed'],
-          };
-          messages.forEach((msg) => {
-            if (msg.pinned == true && isMatch.test(msg.content)){
-              const date = new Date(Date.parse(msg.content.match(isMatch)[2]));
-              pokemonList[name] = {
-                ...pokemonList[name],
-                ...{
-                  date,
-                  dateStr: msg.content.match(isMatch)[2],
-                  symbol: getSymbolFromDate(date),
-                },
-              };
-              return;
-            }
-          });
 
-          if (++i >= channels.size){
-            resolve(pokemonList);
-            debug('Fetched latest shiny list');
-          }
-        }).catch(e => {
-          if (++i >= channels.size){
-            resolve(pokemonList);
-            debug('Fetched latest shiny list');
-          }
-          switch (e.message){
-            case 'Missing Access':
-              break;
-            default:
-              error(`Failed to fetch messages for this channel (${channel.name}):\n`, `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`);
-          }
-        });
-      });
-  });
+  await Promise.all(channels.map(async (channel) => {
+    const pokemonData = await getShinyStatus(channel);
+    if (pokemonData) pokemonList[channel.name.replace(/\W+$/, '')] = pokemonData;
+  }));
+
+  debug('Fetched shiny list');
+  return pokemonList;
 }
 
 async function updateLeaderboard(guild){
@@ -123,7 +125,9 @@ async function updateChampion(guild){
 module.exports = {
   statusSymbols,
   getSymbolFromDate,
+  updateChannelName,
   updateChannelNames,
+  getShinyStatus,
   getShinyStatusList,
   updateLeaderboard,
   updateChampion,

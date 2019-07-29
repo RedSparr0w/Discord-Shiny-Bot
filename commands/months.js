@@ -1,4 +1,4 @@
-const { error, warn, updateChannelNames, updateLeaderboard, updateChampion } = require('../helpers.js');
+const { error, warn, updateChannelName, updateLeaderboard, updateChampion } = require('../helpers.js');
 const { addUserReport, addUserVerification } = require('../database.js');
 
 function applyReporterRole(member, points = 0){
@@ -52,7 +52,7 @@ module.exports = {
     // Send message stating newest date, then Pin it
     msg.channel.send(`Most Recent Sighting: ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`).then(m=>{
       m.pin().then(m=>{
-        updateChannelNames(msg.guild);
+        updateChannelName(msg.channel);
       }).catch(e=>error('Unable to pin message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
     });
 
