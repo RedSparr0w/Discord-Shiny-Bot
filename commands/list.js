@@ -4,7 +4,7 @@ module.exports = {
   name        : 'list',
   aliases     : ['shinystatus'],
   description : 'List Pokemon with the specified current status',
-  args        : ['all, confirmed, ok, warning, danger, unconfirmed, new, research?', ],
+  args        : ['all, confirmed, ok, warning, danger, unconfirmed, new, research, hatch?', ],
   guildOnly   : true,
   cooldown    : 3,
   botperms    : ['MANAGE_MESSAGES', 'SEND_MESSAGES'],

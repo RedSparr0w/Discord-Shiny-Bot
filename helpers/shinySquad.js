@@ -14,6 +14,7 @@ const statusSymbols = {
   new: '🆕',
   unconfirmed: '🕒',
   research: '📦',
+  hatch: '🥚',
 };
 
 function getSymbolFromDate(date){

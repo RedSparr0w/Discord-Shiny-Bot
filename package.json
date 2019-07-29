@@ -1,6 +1,6 @@
 {
   "name": "shiny-squad-discord-bot",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "",
   "scripts": {
     "start": "node index.js",
@@ -10,7 +10,7 @@
   "author": "RedSparr0w",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^11.4.2",
+    "discord.js": "^11.5.1",
     "sqlite": "^3.0.3"
   },
   "devDependencies": {
