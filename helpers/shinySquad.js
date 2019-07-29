@@ -104,14 +104,15 @@ async function updateLeaderboard(guild){
     const results = await getTop(25, 'reports');
     const output = [`__***Top ${results.length} reporters:***__`, ...results.map((res, place) => `**#${place + 1}** _\`(${res.points} reports)\`_ ${guild.members.get(res.user) || 'Inactive Member'}`)];
     return leaderboard_message.edit(output);
-  } catch(err) {
-    return error('Leaderboard message to edit not found!\n', err);
+  } catch(e) {
+    return error('Leaderboard message to edit not found!\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`);
   }
 }
 
 async function updateChampion(guild){
   const champion_role_id = '602627929226346536';
   const champion_role = guild.roles.get(champion_role_id);
+  if (!champion_role) return error('Champion role not found');
   const results = await getTop(1, 'reports');
   const current_champion = results[0].user;
   champion_role.members.filter(m => m.id != current_champion).forEach(m => m.removeRole(champion_role_id, `User is no longer the number 1 reporter!`));
