@@ -99,14 +99,11 @@ async function updateLeaderboard(guild){
 
   const leaderboard_channel = guild.channels.get(leaderboard_channel_id);
   if (!leaderboard_channel) return error('Leaderboard channel not found!');
-  try {
-    const leaderboard_message = await leaderboard_channel.fetchMessage(leaderboard_message_id);
-    const results = await getTop(25, 'reports');
-    const output = [`__***Top ${results.length} reporters:***__`, ...results.map((res, place) => `**#${place + 1}** _\`(${res.points} reports)\`_ ${guild.members.get(res.user) || 'Inactive Member'}`)];
-    return leaderboard_message.edit(output);
-  } catch(e) {
-    return error('Leaderboard message to edit not found!\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`);
-  }
+  const leaderboard_message = await leaderboard_channel.fetchMessage(leaderboard_message_id).catch(O_o => {});
+  if (!leaderboard_message) return error('Leaderboard message to edit not found!');
+  const results = await getTop(25, 'reports');
+  const output = [`__***Top ${results.length} reporters:***__`, ...results.map((res, place) => `**#${place + 1}** _\`(${res.points} reports)\`_ ${guild.members.get(res.user) || 'Inactive Member'}`)];
+  return leaderboard_message.edit(output);
 }
 
 async function updateChampion(guild){
