@@ -1,5 +1,10 @@
 const { error, debug } = require('./logging.js');
 const { getTop } = require('../database.js');
+const {
+  leaderboard_channel_id,
+  leaderboard_message_id,
+  champion_role_id,
+} = require('../config.json');
 
 const statusSymbols = {
   confirmed: '✅',
@@ -95,10 +100,6 @@ async function getShinyStatusList(guild){
 }
 
 async function updateLeaderboard(guild){
-  // Set our channel and message to be updated
-  const leaderboard_channel_id = '601529257981902868';
-  const leaderboard_message_id = '601552004648796180';
-
   const leaderboard_channel = guild.channels.get(leaderboard_channel_id);
   if (!leaderboard_channel) return error('Leaderboard channel not found!');
 
@@ -111,8 +112,6 @@ async function updateLeaderboard(guild){
 }
 
 async function updateChampion(guild){
-  const champion_role_id = '602627929226346536';
-
   const champion_role = guild.roles.get(champion_role_id);
   if (!champion_role) return error('Champion role not found!');
 
