@@ -1,11 +1,11 @@
 const { error, warn, updateChannelName, updateLeaderboard, updateChampion } = require('../helpers.js');
-const { addUserReport, addUserVerification } = require('../database.js');
+const { addUserReport, addUserVerification, addEntriesPoint } = require('../database.js');
 
 function applyReporterRole(member, points = 0){
   const roles = {
-      5: '601229631407783967', // Shiny Reporter
-      20: '601230476094603275', // Shiny Hunter
-      50: '601230543950184468', // Shiny Master
+      5: '601229631407783967',   // Shiny Reporter
+      20: '601230476094603275',  // Shiny Hunter
+      50: '601230543950184468',  // Shiny Master
       100: '601230605027377152', // Shiny Legend
     };
 
@@ -69,6 +69,9 @@ module.exports = {
           updateLeaderboard(msg.guild);
           // Update our current champion
           updateChampion(msg.guild);
+          // Add 1 entry for the giveaway, if the current month is August
+          if (new Date().toJSON().startsWith('2019-08'))
+            addEntriesPoint(member.id);
         });
       })
       .catch(collected => warn(`No thanks given by ${msg.author.tag} after 2 minutes`));

@@ -8,6 +8,7 @@ async function setupDB(){
   const db = await getDB();
   await db.run(`CREATE TABLE IF NOT EXISTS reports(user TEXT(64) PRIMARY KEY UNIQUE NOT NULL, points BIGINT(12) NOT NULL default '0')`);
   await db.run(`CREATE TABLE IF NOT EXISTS verifications(user TEXT(64) PRIMARY KEY UNIQUE NOT NULL, points BIGINT(12) NOT NULL default '0')`);
+  await db.run(`CREATE TABLE IF NOT EXISTS entries(user TEXT(64) PRIMARY KEY UNIQUE NOT NULL, points BIGINT(12) NOT NULL default '0')`);
   db.close();
   return;
 }
@@ -53,6 +54,8 @@ const getUserReports = async (user) => await getPoints(user, 'reports');
 const addUserReport = async (user) => await addPoints(user, 'reports');
 const getUserVerifications = async (user) => await getPoints(user, 'verifications');
 const addUserVerification = async (user) => await addPoints(user, 'verifications');
+const getEntriesPoints = async (user) => await getPoints(user, 'entries');
+const addEntriesPoint = async (user) => await addPoints(user, 'entries');
 
 module.exports = {
   setupDB,
@@ -63,4 +66,6 @@ module.exports = {
   addUserReport,
   getUserVerifications,
   addUserVerification,
+  getEntriesPoints,
+  addEntriesPoint,
 };
