@@ -62,12 +62,13 @@ module.exports = {
     const filter = m => m.author.id === msg.author.id && m.mentions.members.size;
     // errors: ['time'] treats ending because of the time limit as an error
     msg.channel.awaitMessages(filter, { max: 1, time: 120000, errors: ['time'] })
-      .then(async collected => {
-        const member = collected.first().mentions.members.first();
-        const points = await addUserReport(member.id);
-        updateLeaderboard(msg.guild);
-        updateChampion(msg.guild);
-        applyReporterRole(member, points);
+      .then(collected => {
+        collected.first().mentions.members.forEach(async member=>{
+          const points = await addUserReport(member.id);
+          updateLeaderboard(msg.guild);
+          updateChampion(msg.guild);
+          applyReporterRole(member, points);
+        });
       })
       .catch(collected => warn('No thanks given after 2 minutes'));
   }
