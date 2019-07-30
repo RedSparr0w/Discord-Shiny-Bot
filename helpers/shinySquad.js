@@ -30,21 +30,30 @@ function getSymbolFromDate(date){
 }
 
 async function updateChannelName(channel, pokemonData){
+  // If we already supplied the data, use that, otherwise get the data
   pokemonData = pokemonData || await getShinyStatus(channel);
+
+  // If the channel name doesn't include the correct symbol, update it
   if (pokemonData && !channel.name.includes(pokemonData.symbol)){
-    // replace everything after the last dash with the new symbol (should only replace the old symbol)
+    // replace everything after the last dash with the new symbol (should only replace the last symbol)
     const updatedChannelName = channel.name.replace(/[^-]+$/, `${pokemonData.symbol}`);
-    debug(`Updated channel status ${channel.name} → ${pokemonData.symbol}`);
     channel.edit({ name: updatedChannelName });
+    debug(`Updated channel status ${channel.name} → ${pokemonData.symbol}`);
   }
 }
 
 async function updateChannelNames(guild, pokemonList){
   debug('Updating channel names...');
+  // If we already supplied the data, use that, otherwise get the data
   pokemonList = pokemonList || await getShinyStatusList(guild);
+
+  // Filter out any channels which do not meet our criteria
   const channels = guild.channels.filter(channel => channel.type == 'text').filter(channel => channel.name != channel.name.replace(/\W+$/, ''));
+
+  // Update each of the channels
   channels.forEach(channel => {
     const pokemonName = channel.name.replace(/\W+$/, '');
+    // If the channel name doesn't include the correct symbol, update it
     if (pokemonName in pokemonList && !channel.name.includes(pokemonList[pokemonName].symbol)){
       updateChannelName(channel, pokemonList[pokemonName]);
     }
@@ -53,11 +62,14 @@ async function updateChannelNames(guild, pokemonList){
 }
 
 async function getShinyStatus(channel){
+  // Regex to match the string our bot sends for dates
   const isMatch = /^Most Recent (Sighting|Egg Hatch): (\w{3,9} \d{1,2}, \d{2,4})$/;
-  const messages = await channel.fetchMessages({ limit: 100 }).catch(O_o => {});
 
+  // Try get the messages for this channel, if we can't then assume we don't have access
+  const messages = await channel.fetchMessages({ limit: 100 }).catch(O_o => {});
   if (!messages) return;
 
+  // Basic information
   const pokemonData = {
     channel,
     channelName: channel.name,
@@ -65,6 +77,7 @@ async function getShinyStatus(channel){
     symbol: statusSymbols['unconfirmed'],
   };
 
+  // Add our symbol and date data if possible
   const dateData = await new Promise(function(resolve, reject) {
     messages.forEach(msg => {
       if (msg.pinned == true && isMatch.test(msg.content)){
@@ -79,6 +92,7 @@ async function getShinyStatus(channel){
     resolve({});
   });
 
+  // Return the merged object
   return {
     ...pokemonData,
     ...dateData,
@@ -87,38 +101,50 @@ async function getShinyStatus(channel){
 }
 
 async function getShinyStatusList(guild){
-  debug('Fetching latest shiny list');
+  // Filter out any channels which do not meet our criteria
+  let channels = guild.channels.filter(channel => channel.type == 'text').filter(channel => channel.name != channel.name.replace(/\W+$/, ''));
+
+  // Get the status of each channel
+  channels = await Promise.all(channels.map(getShinyStatus));
+
+  // Add to our object
   const pokemonList = {};
-  const channels = guild.channels.filter(channel => channel.type == 'text').filter(channel => channel.name != channel.name.replace(/\W+$/, ''));
-
-  await Promise.all(channels.map(async (channel) => {
-    const pokemonData = await getShinyStatus(channel);
-    if (pokemonData) pokemonList[channel.name.replace(/\W+$/, '')] = pokemonData;
-  }));
-
-  debug('Fetched shiny list');
+  channels.forEach(pokemonData => {
+    if (pokemonData) pokemonList[pokemonData.channelName.replace(/\W+$/, '')] = pokemonData;
+  });
   return pokemonList;
 }
 
 async function updateLeaderboard(guild){
+  // Get the leaderboard channel
   const leaderboard_channel = guild.channels.get(leaderboard_channel_id);
   if (!leaderboard_channel) return error('Leaderboard channel not found!');
 
+  // Get the message to be edited (must already exist)
   const leaderboard_message = await leaderboard_channel.fetchMessage(leaderboard_message_id).catch(O_o => {});
   if (!leaderboard_message) return error('Leaderboard message to edit not found!');
 
+  // Get the results
   const results = await getTop(25, 'reports');
   const output = [`__***Top ${results.length} reporters:***__`, ...results.map((res, place) => `**#${place + 1}** _\`(${res.points} reports)\`_ ${guild.members.get(res.user) || 'Inactive Member'}`)];
+
+  // Update the message
   return leaderboard_message.edit(output);
 }
 
 async function updateChampion(guild){
+  // Get the champions role
   const champion_role = guild.roles.get(champion_role_id);
   if (!champion_role) return error('Champion role not found!');
 
+  // Get the user who is in first place
   const results = await getTop(1, 'reports');
   const current_champion = results[0].user;
+
+  // Remove the champion role from anyone who isn't the current champion
   champion_role.members.filter(m => m.id != current_champion).forEach(m => m.removeRole(champion_role_id, `User is no longer the number 1 reporter!`));
+
+  // Apply the chamion role
   guild.members.get(current_champion).addRole(champion_role_id, `User is the new number 1 reporter!`);
 }
 
