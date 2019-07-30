@@ -14,19 +14,26 @@ async function setupDB(){
 
 async function getPoints(user, table){
   const db = await getDB();
+
   const results = await db.get(`SELECT points FROM ${table} WHERE user=?`, user) || { points: 0 };
   db.close();
-  return results.points;
+
+  return +results.points;
 }
 
-async function addPoints(user, table){
+async function addPoints(user, table, points = 1){
+  // Check points is valid
+  points = +points;
+  if (isNaN(points)) return;
+
   const db = await getDB();
-  let points = await getPoints(user, table);
+  points += await getPoints(user, table);
 
   user = {
     $user: user,
-    $points: ++points,
+    $points: points,
   };
+
   await db.run(`INSERT OR REPLACE INTO ${table} (user, points) VALUES ($user, $points)`, user);
   db.close();
   return points;
@@ -51,9 +58,9 @@ module.exports = {
   setupDB,
   getPoints,
   addPoints,
+  getTop,
   getUserReports,
   addUserReport,
   getUserVerifications,
   addUserVerification,
-  getTop,
 };
