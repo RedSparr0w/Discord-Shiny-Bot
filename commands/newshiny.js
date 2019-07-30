@@ -11,12 +11,19 @@ module.exports = {
   userperms   : ['MANAGE_MESSAGES'],
   execute     : async (msg, args) => {
     const pokemon = args.shift().toLowerCase();
+
+    // Get the icons to be added to the pokemon
     const icons = ['new', ...args, 'unconfirmed'].filter(icon=>statusSymbols[icon]).map(icon=>statusSymbols[icon]);
     const new_channel_name = `${pokemon}-${icons.join('-')}`;
 
+    // Get the category
     const category_name = pokemon[0].toUpperCase();
     const category_channel = msg.guild.channels.find(channel => channel.type == 'category' && channel.name == category_name);
     if (!category_channel) return msg.reply(`Couldn't find category \`${category_name.toUpperCase()}\``);
+
+    // Check the channel doesn't already exist
+    const channel_exist = msg.guild.channels.find(channel => channel.name.startsWith(pokemon));
+    if (channel_exist) return msg.reply([`This channel already exist:`, channel_exist]);
 
     // Create the channel, move to the correct category, sync permissions
     const new_channel = await msg.guild.createChannel(new_channel_name, { type: 'text' });
