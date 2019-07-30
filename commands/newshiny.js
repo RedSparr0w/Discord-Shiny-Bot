@@ -3,7 +3,7 @@ const { statusSymbols } = require('../helpers.js');
 module.exports = {
   name        : 'newshiny',
   aliases     : ['newchannel'],
-  description : 'Create a new channel when a new shiny has been released, ',
+  description : 'Create a new channel when a new shiny has been released',
   args        : ['pokemon', 'hatch, research?'],
   guildOnly   : true,
   cooldown    : 3,
