@@ -38,38 +38,39 @@ module.exports = {
     // Calculate the date specified
     const date = new Date(Date.parse(`${month} ${args[0]}, ${args[1] || new Date().getFullYear()}`));
 
-    // Unpin the last latest sighting message (must be within the previous 100)
-    msg.channel.fetchMessages({
-        limit: 100 // Fetch last 100 messages. (maximum amount)
-      }).then((messages) => {
-        messages.forEach((m) => {
-          if (m.pinned){
-            m.unpin().catch(e=>error('Unable to unpin message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
-          }
-        });
-      });
+    // Fetch the 100 most recent messages
+    const current_messages = await msg.channel.fetchMessages({ limit: 100 });
+    // Unpin the latest sighting messages (must be within the 100 most recent messages)
+    current_messages.filter(m=>m.pinned).forEach(m=>{
+      m.unpin().catch(e=>error('Unable to unpin message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
+    });
 
     // Send message stating newest date, then Pin it
     msg.channel.send(`Most Recent Sighting: ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`).then(m=>{
       m.pin().then(m=>{
+        // Update the name once we have pinned the latest sighting
         updateChannelName(msg.channel);
       }).catch(e=>error('Unable to pin message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
     });
 
     // Add 1 point to the verifier
     addUserVerification(msg.author.id);
-    // Await "Thank You" message, then add 1 point to the reporter
+    // Await "Thank You" message, then add 1 point to the reporter(s)
     const filter = m => m.author.id === msg.author.id && m.mentions.members.size;
     // errors: ['time'] treats ending because of the time limit as an error
     msg.channel.awaitMessages(filter, { max: 1, time: 120000, errors: ['time'] })
       .then(collected => {
         collected.first().mentions.members.forEach(async member=>{
+          // Add a point, get current points
           const points = await addUserReport(member.id);
-          updateLeaderboard(msg.guild);
-          updateChampion(msg.guild);
+          // Check/update the users role
           applyReporterRole(member, points);
+          // Update the leaderboard
+          updateLeaderboard(msg.guild);
+          // Update our current champion
+          updateChampion(msg.guild);
         });
       })
-      .catch(collected => warn('No thanks given after 2 minutes'));
+      .catch(collected => warn(`No thanks given by ${msg.author.tag} after 2 minutes`));
   }
 };
