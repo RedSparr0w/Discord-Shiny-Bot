@@ -9,10 +9,15 @@ module.exports = {
   guildOnly   : false,
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES', 'EMBED_LINKS'],
-  userperms   : ['MANAGE_MESSAGES'],
+  userperms   : ['SEND_MESSAGES'],
   execute     : async (msg, args) => {
     const data = [];
-    const commands = msg.client.commands.filter(command => msg.channel.type === 'dm' ? !command.guildOnly : true);
+    let commands = msg.client.commands;
+    if (msg.channel.type === 'dm'){
+      commands = commands.filter(command => !command.guildOnly);
+    } else if (msg.channel.type === 'text'){
+      commands = commands.filter(command => !msg.channel.memberPermissions(msg.member).missing(command.userperms).length);
+    }
 
     if (!args.length) {
       commands.forEach(command => data.push(`${prefix}${command.name}${command.args.map(arg=>` [${arg}]`).join('')}: ${command.description}`));
