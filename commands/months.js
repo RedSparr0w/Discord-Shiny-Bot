@@ -70,7 +70,7 @@ module.exports = {
           // Update our current champion
           updateChampion(msg.guild);
           // Add 1 entry for the giveaway, if the current month is August
-          if (new Date().toJSON().startsWith('2019-0'))
+          if (new Date().toJSON().startsWith('2019-08'))
             addEntriesPoint(member.id);
         });
       })
