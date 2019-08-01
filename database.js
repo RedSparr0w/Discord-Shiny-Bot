@@ -1,4 +1,6 @@
 const sqlite = require('sqlite');
+const { error } = require('./helpers.js');
+const { backup_channel_id } = require('./config.json');
 
 async function getDB(){
   return await sqlite.open('./database.sqlite');
@@ -13,6 +15,18 @@ async function setupDB(){
   ]);
   db.close();
   return;
+}
+
+function backupDB(guild){
+  const backup_channel = guild.channels.get(backup_channel_id);
+  if (!backup_channel) return error('Backup channel not found!');
+
+  backup_channel.send(`__***Backup ${new Date().toJSON().replace(/T/g,' ').replace(/\.\w+$/,'')}***__`, {
+    file: {
+      attachment: './database.sqlite',
+      name: `database.backup.sqlite`,
+    }
+  });
 }
 
 async function getPoints(user, table){
@@ -61,6 +75,7 @@ const addEntriesPoint = async (user) => await addPoints(user, 'entries');
 
 module.exports = {
   setupDB,
+  backupDB,
   getPoints,
   addPoints,
   getTop,

@@ -10,7 +10,7 @@ const {
   updateChampion,
   RunOnInterval,
 } = require('./helpers.js');
-const { setupDB } = require('./database.js');
+const { setupDB, backupDB } = require('./database.js');
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -31,6 +31,7 @@ client.once('ready', async() => {
   // Start our functions that run on the hour, when the timer next reaches the closest hour
   new RunOnInterval(60 * 6e4 /* 1 Hour */, ()=>{
     client.guilds.forEach(guild=>{
+      backupDB(guild);
       updateChannelNames(guild);
       updateLeaderboard(guild);
       updateChampion(guild);
