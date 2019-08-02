@@ -2,6 +2,12 @@ const sqlite = require('sqlite');
 const { error } = require('./helpers.js');
 const { backup_channel_id } = require('./config.json');
 
+const tables = {
+  'reports': 'reporters',
+  'verifications': 'verifiers',
+  'entries': 'entries',
+};
+
 async function getDB(){
   return await sqlite.open('./database.sqlite');
 }
@@ -74,6 +80,7 @@ const getEntriesPoints = async (user) => await getPoints(user, 'entries');
 const addEntriesPoint = async (user) => await addPoints(user, 'entries');
 
 module.exports = {
+  tables,
   setupDB,
   backupDB,
   getPoints,
