@@ -15,7 +15,7 @@ module.exports = {
     const notify = JSON.parse(args.find(arg=>/^(true|false)$/.test(arg)) || 'true');
 
     // Check user has entered a valid amount
-    if (isNaN(amount) || amount > 20 || amount < 1) return msg.reply('Invalid amount, must be 1-20');
+    if (isNaN(amount) || amount < 1 || amount > 20) return msg.reply('Invalid amount specified, Must be between 1 and 40...');
 
     // Check user has entered a valid table
     if (!Object.keys(tables).includes(table)) return msg.channel.send('Invalid table...');
