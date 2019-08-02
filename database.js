@@ -71,6 +71,13 @@ async function getTop(amount = 10, table = 'reports'){
   return results;
 }
 
+async function getAll(table = 'reports'){
+  const db = await getDB();
+  const results = await db.all(`SELECT * FROM ${table} ORDER BY points DESC`);
+  db.close();
+  return results;
+}
+
 // ALIASES
 const getUserReports = async (user) => await getPoints(user, 'reports');
 const addUserReport = async (user) => await addPoints(user, 'reports');
@@ -86,6 +93,7 @@ module.exports = {
   getPoints,
   addPoints,
   getTop,
+  getAll,
   getUserReports,
   addUserReport,
   getUserVerifications,
