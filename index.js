@@ -29,12 +29,14 @@ client.once('ready', async() => {
   await setupDB();
 
   // Start our functions that run on the hour, when the timer next reaches the closest hour
-  new RunOnInterval(60 * 6e4 /* 1 Hour */, ()=>{
-    client.guilds.forEach(guild=>{
-      backupDB(guild);
+  client.guilds.forEach(guild=>{
+    new RunOnInterval(60 * 6e4 /* 1 Hour */, ()=>{
       updateChannelNames(guild);
       updateLeaderboard(guild);
       updateChampion(guild);
+    });
+    new RunOnInterval(6 * 60 * 6e4 /* 6 Hours */, ()=>{
+      backupDB(guild);
     });
   });
 });
