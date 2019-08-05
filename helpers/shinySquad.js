@@ -15,7 +15,13 @@ const statusSymbols = {
   unconfirmed: '🕒',
   research: '📦',
   hatch: '🥚',
+  outofrotation: '🔒',
 };
+
+function isActiveChannel(channel){
+  if (channel.parent) return channel.parent.name != 'OUT OF ROTATION';
+  return true;
+}
 
 function getSymbolFromDate(date){
   const today = new Date();
@@ -33,6 +39,9 @@ async function updateChannelName(channel, pokemonData){
   // If we already supplied the data, use that, otherwise get the data
   pokemonData = pokemonData || await getShinyStatus(channel);
 
+  // If channel is out of rotation then DO NOT update the name
+  if (!isActiveChannel(channel)) return;
+
   // If the channel name doesn't include the correct symbol, update it
   if (pokemonData && !channel.name.includes(pokemonData.symbol)){
     // replace everything after the last dash with the new symbol (should only replace the last symbol)
@@ -48,7 +57,7 @@ async function updateChannelNames(guild, pokemonList){
   pokemonList = pokemonList || await getShinyStatusList(guild);
 
   // Filter out any channels which do not meet our criteria
-  const channels = guild.channels.filter(channel => channel.type == 'text').filter(channel => channel.name != channel.name.replace(/\W+$/, ''));
+  const channels = guild.channels.filter(channel => channel.type == 'text').filter(isActiveChannel).filter(channel => channel.name != channel.name.replace(/\W+$/, ''));
 
   // Update each of the channels
   channels.forEach(channel => {
@@ -159,6 +168,7 @@ async function updateChampion(guild){
 
 module.exports = {
   statusSymbols,
+  isActiveChannel,
   getSymbolFromDate,
   updateChannelName,
   updateChannelNames,

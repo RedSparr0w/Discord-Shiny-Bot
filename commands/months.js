@@ -1,5 +1,16 @@
-const { error, warn, updateChannelName, updateLeaderboard, updateChampion } = require('../helpers.js');
-const { addUserReport, addUserVerification, addEntriesPoint } = require('../database.js');
+const {
+  error,
+  warn,
+  isActiveChannel,
+  updateChannelName,
+  updateLeaderboard,
+  updateChampion,
+} = require('../helpers.js');
+const {
+  addUserReport,
+  addUserVerification,
+  addEntriesPoint,
+} = require('../database.js');
 
 function applyReporterRole(member, points = 0){
   const roles = {
@@ -34,6 +45,8 @@ module.exports = {
   execute     : async (msg, args, month) => {
     // Delete the users message with the command
     msg.delete().catch(e=>error('Unable to delete message:', e));
+
+    if (!isActiveChannel(msg.channel)) return;
 
     // Calculate the date specified
     const date = new Date(Date.parse(`${month} ${args[0]}, ${args[1] || new Date().getFullYear()}`));
