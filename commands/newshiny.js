@@ -30,7 +30,11 @@ module.exports = {
     await new_channel.setParent(category_channel.id);
     await new_channel.lockPermissions();
 
+    // Get all channels in the category, and sort alphabetically
     const channels = msg.guild.channels.filter(channel => channel.parent && channel.parent.id == category_channel.id).array().sort((a,b)=>a.name.localeCompare(b.name));
+
+    // If this is the only channel in the category, we are done
+    if (channels.length <= 1) return;
 
     // Order the channel alphabetically
     const index = channels.findIndex(channel => channel.id == new_channel.id);
