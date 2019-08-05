@@ -10,7 +10,7 @@ module.exports = {
   botperms    : ['MANAGE_MESSAGES', 'SEND_MESSAGES'],
   userperms   : [],
   execute     : async (msg, args) => {
-    msg.delete().catch(e=>error('Unable to delete message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
+    msg.delete().catch(e=>error('Unable to delete message:', e));
 
     // If user doesn't have required perms, or no arguments supplied, set the default arguments
     if (msg.channel.type === 'text' && msg.channel.memberPermissions(msg.member).missing(['MANAGE_MESSAGES']).length || !args.length)

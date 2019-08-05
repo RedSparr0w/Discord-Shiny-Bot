@@ -10,7 +10,7 @@ module.exports = {
   botperms    : ['MANAGE_CHANNELS', 'MANAGE_MESSAGES', 'SEND_MESSAGES'],
   userperms   : ['MANAGE_MESSAGES'],
   execute     : async (msg, args) => {
-    msg.delete().catch(e=>error('Unable to delete message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
+    msg.delete().catch(e=>error('Unable to delete message:', e));
 
     msg.channel.send(`Updating channel names with current shiny status...`);
     updateChannelNames(msg.guild);

@@ -10,7 +10,7 @@ module.exports = {
   botperms    : ['SEND_MESSAGES'],
   userperms   : ['MANAGE_GUILD'],
   execute     : async (msg, args) => {
-    msg.delete().catch(e=>error('Unable to delete message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
+    msg.delete().catch(e=>error('Unable to delete message:', e));
     const [, message_id] = args;
 
     if (!msg.mentions.channels.size){
@@ -29,7 +29,7 @@ module.exports = {
         return msg.reply('Specified message id not found..')
           .then(m => {
             setTimeout(()=>{
-              m.delete().catch(e=>error('Unable to delete message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
+              m.delete().catch(e=>error('Unable to delete message:', e));
             }, 8000);
           });
       }
@@ -47,8 +47,8 @@ module.exports = {
         } else {
           channel.send(m.content);
         }
-        bot_reply.delete().catch(e=>error('Unable to delete message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
-        m.delete().catch(e=>error('Unable to delete message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
+        bot_reply.delete().catch(e=>error('Unable to delete message:', e));
+        m.delete().catch(e=>error('Unable to delete message:', e));
       })
       .catch(collected => {
         bot_reply.edit('Timed out..');

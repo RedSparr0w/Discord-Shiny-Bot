@@ -11,11 +11,11 @@ module.exports = {
   botperms    : ['SEND_MESSAGES'],
   userperms   : ['SEND_MESSAGES'],
   execute     : async (msg, args) => {
-    if (msg.channel.type !== 'dm') msg.delete().catch(e=>error('Unable to delete message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
+    if (msg.channel.type !== 'dm') msg.delete().catch(e=>error('Unable to delete message:', e));
     const reports = await getUserReports(msg.author.id);
     return msg.reply(`You have made ${reports} reports!`).then(m=>{
       setTimeout(()=>{
-        if (msg.channel.type !== 'dm') m.delete().catch(e=>error('Unable to delete message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
+        if (msg.channel.type !== 'dm') m.delete().catch(e=>error('Unable to delete message:', e));
       }, 10000);
     });
   }

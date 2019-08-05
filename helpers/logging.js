@@ -1,7 +1,4 @@
-
-function padNumber(num, len = 2, padding = '0'){
-  return num.toString().padStart(len, padding);
-}
+const { padNumber } = require('./functions.js');
 
 function dateTime(date = new Date()){
   return `${date.getFullYear()}-${padNumber(date.getMonth() + 1)}-${padNumber(date.getDate())} ${padNumber(date.getHours())}:${padNumber(date.getMinutes())}:${padNumber(date.getSeconds())}`;
@@ -24,11 +21,19 @@ function warn(...args){
 }
 
 function error(...args){
+  if (typeof args[args.length - 1] == 'object') args = [...args, ...error_object(args.pop())];
   console.error(`\x1b[1m\x1b[31m[error][${dateTime()}]\x1b[0m`, ...args);
 }
 
+function error_object(error){
+  const err_obj = [];
+  if (error.message) err_obj.push(`\n\tMessage: ${error.message}`);
+  if (error.errno) err_obj.push(`\n\tError No: ${error.errno}`);
+  if (error.code) err_obj.push(`\n\tCode: ${error.code}`);
+  return err_obj;
+}
+
 module.exports = {
-  padNumber,
   dateTime,
   log,
   info,

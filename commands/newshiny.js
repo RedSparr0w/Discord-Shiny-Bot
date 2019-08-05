@@ -19,7 +19,7 @@ module.exports = {
     // Get the category
     const category_name = pokemon[0].toUpperCase();
     const category_channel = msg.guild.channels.find(channel => channel.type == 'category' && channel.name == category_name);
-    if (!category_channel) return msg.reply(`Couldn't find category \`${category_name.toUpperCase()}\``);
+    if (!category_channel) return msg.reply(`Couldn't find category \`${category_name}\``);
 
     // Check the channel doesn't already exist
     const channel_exist = msg.guild.channels.find(channel => channel.name.startsWith(pokemon));

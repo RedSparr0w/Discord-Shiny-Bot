@@ -10,10 +10,10 @@ function applyReporterRole(member, points = 0){
     };
 
   if (roles[points]){
-    member.addRole(roles[points], `Reached ${points} reports`).catch(e=>error('Unable to assign role:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
+    member.addRole(roles[points], `Reached ${points} reports`).catch(e=>error('Unable to assign role:', e));
     const role_to_remove = Object.keys(roles).filter(level=>(+points) > (+level)).pop();
     if (role_to_remove)
-      member.removeRole(roles[role_to_remove], `Reached ${points} reports (old role)`).catch(e=>error('Unable to remove role:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
+      member.removeRole(roles[role_to_remove], `Reached ${points} reports (old role)`).catch(e=>error('Unable to remove role:', e));
   }
 }
 
@@ -33,7 +33,7 @@ module.exports = {
   userperms   : ['MANAGE_MESSAGES'],
   execute     : async (msg, args, month) => {
     // Delete the users message with the command
-    msg.delete().catch(e=>error('Unable to delete message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
+    msg.delete().catch(e=>error('Unable to delete message:', e));
 
     // Calculate the date specified
     const date = new Date(Date.parse(`${month} ${args[0]}, ${args[1] || new Date().getFullYear()}`));
@@ -42,7 +42,7 @@ module.exports = {
     const current_messages = await msg.channel.fetchMessages({ limit: 100 });
     // Unpin the latest sighting messages (must be within the 100 most recent messages)
     current_messages.filter(m=>m.pinned).forEach(m=>{
-      m.unpin().catch(e=>error('Unable to unpin message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
+      m.unpin().catch(e=>error('Unable to unpin message:', e));
     });
 
     // Send message stating newest date, then Pin it
@@ -50,7 +50,7 @@ module.exports = {
       m.pin().then(m=>{
         // Update the name once we have pinned the latest sighting
         updateChannelName(msg.channel);
-      }).catch(e=>error('Unable to pin message:\n', `\tMessage: ${e.message}\n`, `\tError No: ${e.errno}\n`, `\tCode: ${e.code}\n`));
+      }).catch(e=>error('Unable to pin message:', e));
     });
 
     // Add 1 point to the verifier
