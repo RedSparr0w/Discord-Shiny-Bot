@@ -137,15 +137,24 @@ async function updateChampion(guild){
   const champion_role = guild.roles.get(champion_role_id);
   if (!champion_role) return error('Champion role not found!');
 
-  // Get the user who is in first place
-  const results = await getTop(1, 'reports');
-  const current_champion = results[0].user;
+  // Get the top users
+  const results = await getTop(10, 'reports');
+  // Loop through until we find one that is still a member of the server
+  results.some(result=>{
+    // Get user from users id
+    const current_champion_id = result.user;
+    const current_champion = guild.members.get(current_champion_id);
 
-  // Remove the champion role from anyone who isn't the current champion
-  champion_role.members.filter(m => m.id != current_champion).forEach(m => m.removeRole(champion_role_id, `User is no longer the number 1 reporter!`));
+    // Check user is still a member
+    if (!current_champion) return;
+    current_champion.addRole(champion_role_id, `User is the new number 1 reporter!`);
 
-  // Apply the chamion role
-  guild.members.get(current_champion).addRole(champion_role_id, `User is the new number 1 reporter!`);
+    // Remove the champion role from anyone who isn't the current champion
+    const previous_champion = champion_role.members.filter(m => m.id != current_champion_id);
+    previous_champion.forEach(m => m.removeRole(champion_role_id, `User is no longer the number 1 reporter!`));
+
+    return true;
+  });
 }
 
 module.exports = {
