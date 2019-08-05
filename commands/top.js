@@ -22,7 +22,7 @@ module.exports = {
 
     const results = await getTop(amount, table);
 
-    const output = [`__***Top ${results.length} ${tables[table]}:***__`, ...results.map((res, place) => `**#${place + 1}** _\`(${res.points} ${table})\`_ ${msg.guild.members.get(res.user) || 'Inactive Member'}`)];
+    const output = [`__***Top ${results.length} ${tables[table]}:***__`, ...results.map((res, place) => `**#${place + 1}** _\`(${res.points.toLocaleString('en-NZ')} ${table})\`_ ${msg.guild.members.get(res.user) || 'Inactive Member'}`)];
     if (output.join('\n').length >= 2000)
       return msg.reply(`Sorry this list is too large for discord, try a smaller amount`);
 

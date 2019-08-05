@@ -13,7 +13,7 @@ module.exports = {
   execute     : async (msg, args) => {
     if (msg.channel.type !== 'dm') msg.delete().catch(e=>error('Unable to delete message:', e));
     const reports = await getUserReports(msg.author.id);
-    return msg.reply(`You have made ${reports} reports!`).then(m=>{
+    return msg.reply(`You have made ${reports.toLocaleString('en-NZ')} reports!`).then(m=>{
       setTimeout(()=>{
         if (msg.channel.type !== 'dm') m.delete().catch(e=>error('Unable to delete message:', e));
       }, 10000);
