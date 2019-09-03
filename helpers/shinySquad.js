@@ -4,6 +4,7 @@ const {
   leaderboard_channel_id,
   leaderboard_message_id,
   champion_role_id,
+  shiny_squad_role_id,
 } = require('../config.json');
 
 const statusSymbols = {
@@ -166,6 +167,15 @@ async function updateChampion(guild){
   });
 }
 
+function applyShinySquadRole(guild){
+  const membersWithNoRole = guild.members.filter(m=>m.roles.size == 1);
+  membersWithNoRole.forEach((m)=>{
+    setTimeout(()=>{
+      m.addRole(shiny_squad_role_id, `User had no roles applied`);
+    }, 6e4 /* 1 minute */);
+  });
+}
+
 module.exports = {
   statusSymbols,
   isActiveChannel,
@@ -176,4 +186,5 @@ module.exports = {
   getShinyStatusList,
   updateLeaderboard,
   updateChampion,
+  applyShinySquadRole,
 };

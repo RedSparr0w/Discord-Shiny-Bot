@@ -8,6 +8,7 @@ const {
   updateChannelNames,
   updateLeaderboard,
   updateChampion,
+  applyShinySquadRole,
   RunOnInterval,
 } = require('./helpers.js');
 const { setupDB, backupDB } = require('./database.js');
@@ -37,6 +38,7 @@ client.once('ready', async() => {
     });
     new RunOnInterval(6 * 60 * 6e4 /* 6 Hours */, ()=>{
       backupDB(guild);
+      applyShinySquadRole(guild);
     });
   });
 });
