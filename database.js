@@ -9,7 +9,7 @@ const tables = {
 };
 
 async function getDB(){
-  return await sqlite.open('./database.sqlite');
+  return await sqlite.open('./db/database.sqlite');
 }
 
 async function setupDB(){
@@ -29,7 +29,7 @@ function backupDB(guild){
 
   backup_channel.send(`__***Backup ${new Date().toJSON().replace(/T/g,' ').replace(/\.\w+$/,'')}***__`, {
     file: {
-      attachment: './database.sqlite',
+      attachment: './db/database.sqlite',
       name: `database.backup.sqlite`,
     }
   });
