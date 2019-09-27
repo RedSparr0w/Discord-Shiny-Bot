@@ -1,5 +1,6 @@
 const {
   error,
+  obtainMethodSymbols,
   statusSymbols,
   isActiveChannel,
 } = require('../helpers.js');
@@ -8,7 +9,7 @@ module.exports = {
   name        : 'unlock',
   aliases     : [],
   description : 'Move channel back to correct category',
-  args        : ['hatch, research?'],
+  args        : [`${Object.keys(obtainMethodSymbols).join(', ')}?`],
   guildOnly   : true,
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES', 'MANAGE_CHANNELS'],
@@ -25,8 +26,10 @@ module.exports = {
       m.unpin().catch(e=>error('Unable to unpin message:', e));
     });
 
+    // Filter out bad icon names
+    args = args.filter(icon=>obtainMethodSymbols[icon]);
     // Get the icons to be added to the pokemon
-    const icons = ['new', ...args, 'unconfirmed'].filter(icon=>statusSymbols[icon]).map(icon=>statusSymbols[icon]);
+    const icons = ['new', ...args, 'unconfirmed'].map(icon=>statusSymbols[icon]);
     const new_channel_name = `${msg.channel.name.replace(/\W+/,'')}-${icons.join('-')}`;
 
     // Get the category

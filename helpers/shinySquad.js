@@ -7,16 +7,28 @@ const {
   shiny_squad_role_id,
 } = require('../config.json');
 
-const statusSymbols = {
+const sightingSymbols = {
+  unconfirmed: '🕒',
   confirmed: '✅',
   ok: '☑',
   warning: '⚠',
   danger: '🚫',
-  new: '🆕',
-  unconfirmed: '🕒',
+};
+
+const obtainMethodSymbols = {
   research: '📦',
   hatch: '🥚',
+};
+
+const otherSymbols = {
+  new: '🆕',
   outofrotation: '🔒',
+};
+
+const statusSymbols = {
+  ...sightingSymbols,
+  ...obtainMethodSymbols,
+  ...otherSymbols,
 };
 
 function isActiveChannel(channel){
@@ -177,6 +189,9 @@ function applyShinySquadRole(guild){
 }
 
 module.exports = {
+  sightingSymbols,
+  obtainMethodSymbols,
+  otherSymbols,
   statusSymbols,
   isActiveChannel,
   getSymbolFromDate,
