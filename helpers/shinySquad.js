@@ -18,6 +18,8 @@ const sightingSymbols = {
 const obtainMethodSymbols = {
   research: '📦',
   hatch: '🥚',
+  regional: '🗺️',
+  raid: '🎫',
 };
 
 const otherSymbols = {
