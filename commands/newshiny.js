@@ -4,7 +4,7 @@ module.exports = {
   name        : 'newshiny',
   aliases     : ['newchannel'],
   description : 'Create a new channel when a new shiny has been released',
-  args        : ['pokemon', `${Object.keys(obtainMethodSymbols).join(', ')}?`],
+  args        : ['pokemon-name', `${Object.keys(obtainMethodSymbols).join(', ')}?`],
   guildOnly   : true,
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES', 'MANAGE_CHANNELS'],
