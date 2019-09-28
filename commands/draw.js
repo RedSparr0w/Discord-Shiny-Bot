@@ -4,14 +4,14 @@ module.exports = {
   name        : 'draw',
   aliases     : [],
   description : 'Draw a random user from a table',
-  args        : ['amount(1), table(entries), notify(true)?'],
+  args        : ['amount(1), table(reports), notify(true)?'],
   guildOnly   : true,
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES'],
   userperms   : ['MANAGE_GUILD'],
   execute     : async (msg, args) => {
     let amount = +(args.find(arg=>/^\d+$/.test(arg)) || 1);
-    const table = args.find(arg=>new RegExp(`^(${Object.keys(tables).join('|')})$`).test(arg)) || 'entries';
+    const table = args.find(arg=>new RegExp(`^(${Object.keys(tables).join('|')})$`).test(arg)) || 'reports';
     const notify = JSON.parse(args.find(arg=>/^(true|false)$/.test(arg)) || 'true');
 
     // Check user has entered a valid amount

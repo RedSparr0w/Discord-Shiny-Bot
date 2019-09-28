@@ -3,7 +3,7 @@ const { tables, getTop } = require('../database.js');
 module.exports = {
   name        : 'top',
   aliases     : ['leaderboard'],
-  description : 'Get a list of users ordered by most points in a particular table\n\ttable: reports, verifications, entries',
+  description : 'Get a list of users ordered by most points in a particular table\n\ttable: reports, verifications',
   args        : ['amount(10), table(reports), notify(false)?'],
   guildOnly   : true,
   cooldown    : 3,

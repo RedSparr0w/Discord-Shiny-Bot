@@ -9,7 +9,6 @@ const {
 const {
   addUserReport,
   addUserVerification,
-  addEntriesPoint,
 } = require('../database.js');
 
 function applyReporterRole(member, points = 0){
