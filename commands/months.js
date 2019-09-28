@@ -82,9 +82,6 @@ module.exports = {
           updateLeaderboard(msg.guild);
           // Update our current champion
           updateChampion(msg.guild);
-          // Add 1 entry for the giveaway, if the current month is August
-          if (new Date().toJSON().startsWith('2019-08'))
-            addEntriesPoint(member.id);
         });
       })
       .catch(collected => warn(`No thanks given by ${msg.author.tag} after 2 minutes`));
