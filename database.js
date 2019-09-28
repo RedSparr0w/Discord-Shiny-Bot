@@ -10,7 +10,7 @@ const database_fullpath = database_dir + database_filename;
 const tables = {
   'reports': 'reporters',
   'verifications': 'verifiers',
-  'entries': 'entries',
+  //'entries': 'entries',
 };
 
 async function getDB(){
@@ -40,7 +40,8 @@ async function setupDB(){
   await Promise.all([
     db.run(`CREATE TABLE IF NOT EXISTS reports(user TEXT(64) PRIMARY KEY UNIQUE NOT NULL, points BIGINT(12) NOT NULL default '0')`),
     db.run(`CREATE TABLE IF NOT EXISTS verifications(user TEXT(64) PRIMARY KEY UNIQUE NOT NULL, points BIGINT(12) NOT NULL default '0')`),
-    db.run(`CREATE TABLE IF NOT EXISTS entries(user TEXT(64) PRIMARY KEY UNIQUE NOT NULL, points BIGINT(12) NOT NULL default '0')`),
+    // Entries for any competitions we have, create/delete table
+    db.run(tables.entries ? `CREATE TABLE IF NOT EXISTS entries(user TEXT(64) PRIMARY KEY UNIQUE NOT NULL, points BIGINT(12) NOT NULL default '0')` : `DROP TABLE IF EXISTS entries`),
   ]);
   db.close();
   return;
