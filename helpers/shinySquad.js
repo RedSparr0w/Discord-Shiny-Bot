@@ -41,13 +41,13 @@ function isActiveChannel(channel){
 function getSymbolFromDate(date){
   const today = new Date();
   if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 5))
-    return statusSymbols.confirmed;
+    return sightingSymbols.confirmed;
   else if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 10))
-    return statusSymbols.ok;
+    return sightingSymbols.ok;
   else if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 15))
-    return statusSymbols.warning;
+    return sightingSymbols.warning;
   else
-    return statusSymbols.danger;
+    return sightingSymbols.danger;
 }
 
 async function updateChannelName(channel, pokemonData){
@@ -98,7 +98,7 @@ async function getShinyStatus(channel){
     channel,
     channelName: channel.name,
     dateStr: '',
-    symbol: statusSymbols['unconfirmed'],
+    symbol: sightingSymbols.unconfirmed,
   };
 
   // Add our symbol and date data if possible

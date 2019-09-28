@@ -30,7 +30,7 @@ module.exports = {
     args = args.filter(icon=>obtainMethodSymbols[icon]);
     // Get the icons to be added to the pokemon
     const icons = ['new', ...args, 'unconfirmed'].map(icon=>statusSymbols[icon]);
-    const new_channel_name = `${msg.channel.name.replace(/\W+/,'')}-${icons.join('-')}`;
+    const new_channel_name = `${msg.channel.name.replace(/\W+$/,'')}-${icons.join('-')}`;
 
     // Get the category
     const category_name = new_channel_name[0].toUpperCase();

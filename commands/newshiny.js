@@ -1,4 +1,7 @@
-const { obtainMethodSymbols, statusSymbols } = require('../helpers.js');
+const {
+  obtainMethodSymbols,
+  statusSymbols,
+} = require('../helpers.js');
 
 module.exports = {
   name        : 'newshiny',

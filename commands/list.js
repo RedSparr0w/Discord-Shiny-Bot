@@ -1,4 +1,8 @@
-const { error, statusSymbols, getShinyStatusList } = require('../helpers.js');
+const {
+  error,
+  statusSymbols,
+  getShinyStatusList,
+} = require('../helpers.js');
 
 module.exports = {
   name        : 'list',
