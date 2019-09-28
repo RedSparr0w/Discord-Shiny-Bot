@@ -1,10 +1,13 @@
-const { statusSymbols } = require('../helpers.js');
+const {
+  obtainMethodSymbols,
+  statusSymbols,
+} = require('../helpers.js');
 
 module.exports = {
   name        : 'newshiny',
   aliases     : ['newchannel'],
   description : 'Create a new channel when a new shiny has been released',
-  args        : ['pokemon', 'hatch, research?'],
+  args        : ['pokemon-name', `${Object.keys(obtainMethodSymbols).join(', ')}?`],
   guildOnly   : true,
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES', 'MANAGE_CHANNELS'],
@@ -12,8 +15,10 @@ module.exports = {
   execute     : async (msg, args) => {
     const pokemon = args.shift().toLowerCase();
 
+    // Filter out bad icon names
+    args = args.filter(icon=>obtainMethodSymbols[icon]);
     // Get the icons to be added to the pokemon
-    const icons = ['new', ...args, 'unconfirmed'].filter(icon=>statusSymbols[icon]).map(icon=>statusSymbols[icon]);
+    const icons = ['new', ...args, 'unconfirmed'].map(icon=>statusSymbols[icon]);
     const new_channel_name = `${pokemon}-${icons.join('-')}`;
 
     // Get the category

@@ -1,6 +1,6 @@
 const {
   error,
-  statusSymbols,
+  otherSymbols,
   isActiveChannel,
 } = require('../helpers.js');
 
@@ -26,7 +26,7 @@ module.exports = {
     });
 
     // Replace all icons with the lock icon
-    const new_channel_name = `${msg.channel.name.replace(/\W+/,'')}-${statusSymbols['outofrotation']}`;
+    const new_channel_name = `${msg.channel.name.replace(/\W+$/, '')}-${otherSymbols.outofrotation}`;
 
     // Get the category
     const category_name = 'OUT OF ROTATION';
