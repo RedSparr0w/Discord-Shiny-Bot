@@ -1,6 +1,9 @@
 const fs = require('fs');
 const Discord = require('discord.js');
-const { prefix, token } = require('./config.json');
+const {
+  prefix,
+  token,
+} = require('./config.json');
 const {
   info,
   warn,
@@ -11,25 +14,31 @@ const {
   applyShinySquadRole,
   RunOnInterval,
 } = require('./helpers.js');
-const { setupDB, backupDB } = require('./database.js');
+const {
+  setupDB,
+  backupDB,
+} = require('./database.js');
+
+// Setup the database before we do anything else
+(async()=>await setupDB())();
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
 
+// Load commands
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.name, command);
 }
 
+// For keeping track of cooldown timers
 const cooldowns = new Discord.Collection();
 
 client.once('ready', async() => {
   info(`Logged in as ${client.user.tag}!`);
-  await setupDB();
 
-  // Start our functions that run on the hour, when the timer next reaches the closest hour
+  // Start our functions that run on specific intervals
   client.guilds.forEach(guild=>{
     new RunOnInterval(60 * 6e4 /* 1 Hour */, ()=>{
       updateChannelNames(guild);

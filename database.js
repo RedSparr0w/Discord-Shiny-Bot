@@ -1,6 +1,11 @@
 const sqlite = require('sqlite');
-const { error } = require('./helpers.js');
+const fs = require('fs');
+const { error } = require('./helpers/logging.js');
 const { backup_channel_id } = require('./config.json');
+
+const database_dir = './db/';
+const database_filename = 'database.sqlite';
+const database_fullpath = database_dir + database_filename;
 
 const tables = {
   'reports': 'reporters',
@@ -9,11 +14,29 @@ const tables = {
 };
 
 async function getDB(){
-  return await sqlite.open('./db/database.sqlite');
+  try {
+    return await sqlite.open(database_fullpath);
+  } catch(O_o){
+    // We couldn't access the database
+    return undefined;
+  }
 }
 
 async function setupDB(){
+  // If the database directory doesn't exist, create it.
+  if (!fs.existsSync(database_dir)){
+    fs.mkdirSync(database_dir);
+  }
+
   const db = await getDB();
+
+  // If we couldn't create/access the database, quit the program.
+  if (!db){
+    error('Could not connect to database! Please ensure the "db" directory exist.');
+    process.exit(1);
+  }
+
+  // Create our tables
   await Promise.all([
     db.run(`CREATE TABLE IF NOT EXISTS reports(user TEXT(64) PRIMARY KEY UNIQUE NOT NULL, points BIGINT(12) NOT NULL default '0')`),
     db.run(`CREATE TABLE IF NOT EXISTS verifications(user TEXT(64) PRIMARY KEY UNIQUE NOT NULL, points BIGINT(12) NOT NULL default '0')`),
@@ -29,7 +52,7 @@ function backupDB(guild){
 
   backup_channel.send(`__***Backup ${new Date().toJSON().replace(/T/g,' ').replace(/\.\w+$/,'')}***__`, {
     file: {
-      attachment: './db/database.sqlite',
+      attachment: database_fullpath,
       name: `database.backup.sqlite`,
     }
   });
