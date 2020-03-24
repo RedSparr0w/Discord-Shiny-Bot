@@ -20,7 +20,7 @@ module.exports = {
     if (isActiveChannel(msg.channel)) return msg.reply(`This channel is already unlocked.`);
 
     // Fetch the 100 most recent messages
-    const current_messages = await msg.channel.fetchMessages({ limit: 100 });
+    const current_messages = await msg.channel.messages.fetch({ limit: 100 });
     // Unpin the latest sighting messages (must be within the 100 most recent messages)
     current_messages.filter(m=>m.pinned).forEach(m=>{
       m.unpin().catch(e=>error('Unable to unpin message:', e));
@@ -34,7 +34,7 @@ module.exports = {
 
     // Get the category
     const category_name = new_channel_name[0].toUpperCase();
-    const category_channel = msg.guild.channels.find(channel => channel.type == 'category' && channel.name == category_name);
+    const category_channel = msg.guild.channels.cache.find(channel => channel.type == 'category' && channel.name == category_name);
     if (!category_channel) return msg.reply(`Couldn't find category \`${category_name}\``);
 
     // Create the channel, move to the correct category, sync permissions
@@ -44,7 +44,7 @@ module.exports = {
     await channel_to_unlock.lockPermissions();
 
     // Get all channels in the category, and sort alphabetically
-    const channels = msg.guild.channels.filter(channel => channel.parent && channel.parent.id == category_channel.id).array().sort((a,b)=>a.name.localeCompare(b.name));
+    const channels = msg.guild.channels.cache.filter(channel => channel.parent && channel.parent.id == category_channel.id).array().sort((a,b)=>a.name.localeCompare(b.name));
 
     // If this is the only channel in the category, we are done
     if (channels.length <= 1) return;

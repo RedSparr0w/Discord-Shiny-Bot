@@ -1,4 +1,5 @@
 const { tables, getAll } = require('../database.js');
+const { warn } = require('../helpers.js');
 
 module.exports = {
   name        : 'draw',
@@ -41,10 +42,10 @@ module.exports = {
       // Remove the user from the list so they don't win twice
       items = items.filter(i=>i!=winner);
     }
-    const output = winners.map((user, place)=>`**#${place + 1}** ${msg.guild.members.get(user) || 'Inactive Member'}`);
+    const output = winners.map((user, place)=>`**#${place + 1}** ${msg.guild.members.cache.get(user) || 'Inactive Member'}`);
 
     return notify ?
-      msg.channel.send(output) :
-      msg.channel.send('Gathering Data...').then(m=>m.edit(output));
+      msg.channel.send(output).catch(warn) :
+      msg.channel.send('Gathering Data...').then(m=>m.edit(output)).catch(warn);
   }
 };

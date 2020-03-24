@@ -39,7 +39,7 @@ client.once('ready', async() => {
   info(`Logged in as ${client.user.tag}!`);
 
   // Start our functions that run on specific intervals
-  client.guilds.forEach(guild=>{
+  client.guilds.cache.forEach(guild=>{
     new RunOnInterval(60 * 6e4 /* 1 Hour */, ()=>{
       updateChannelNames(guild);
       updateLeaderboard(guild);

@@ -10,7 +10,7 @@ module.exports = {
   botperms    : ['MANAGE_ROLES'],
   userperms   : ['MANAGE_ROLES'],
   execute     : async (msg, args) => {
-    msg.reply(`Applying Shiny Squad role to **${msg.guild.members.filter(m=>m.roles.size == 1).size}** new members in 1 minute`);
+    msg.reply(`Applying Shiny Squad role to **${msg.guild.members.cache.filter(m=>m.roles.size == 1).size}** new members in 1 minute`);
     applyShinySquadRole(msg.guild);
     return;
   }

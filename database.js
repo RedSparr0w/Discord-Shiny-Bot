@@ -47,7 +47,7 @@ async function setupDB(){
 }
 
 function backupDB(guild){
-  const backup_channel = guild.channels.get(backup_channel_id);
+  const backup_channel = guild.channels.cache.get(backup_channel_id);
   if (!backup_channel) return error('Backup channel not found!');
 
   backup_channel.send(`__***Backup ${new Date().toJSON().replace(/T/g,' ').replace(/\.\w+$/,'')}***__`, {

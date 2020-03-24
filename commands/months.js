@@ -52,7 +52,7 @@ module.exports = {
     const date = new Date(Date.parse(`${month} ${args[0]}, ${args[1] || new Date().getFullYear()}`));
 
     // Fetch the 100 most recent messages
-    const current_messages = await msg.channel.fetchMessages({ limit: 100 });
+    const current_messages = await msg.channel.messages.fetch({ limit: 100 });
     // Unpin the latest sighting messages (must be within the 100 most recent messages)
     current_messages.filter(m=>m.pinned).forEach(m=>{
       m.unpin().catch(e=>error('Unable to unpin message:', e));
