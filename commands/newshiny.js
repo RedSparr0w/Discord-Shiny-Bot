@@ -1,3 +1,4 @@
+const { newPokemon } = require('../database.js');
 const {
   obtainMethodSymbols,
   statusSymbols,
@@ -46,6 +47,8 @@ module.exports = {
     // Create the channel, move to the correct category, sync permissions
     const new_channel = await msg.guild.channels.create(new_channel_name, { type: 'text', parent: category_channel.id, position, reason: 'New Shiny' }).catch(error);
 
+    // Add the Pokemon to our database
+    newPokemon(pokemon, icon_names);
 
     return msg.channel.send(['New channel created successfully!', new_channel]);
   }

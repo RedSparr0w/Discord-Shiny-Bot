@@ -41,6 +41,7 @@ async function setupDB(){
     db.run(`CREATE TABLE IF NOT EXISTS reports(user TEXT(64) PRIMARY KEY UNIQUE NOT NULL, points BIGINT(12) NOT NULL default '0')`),
     db.run(`CREATE TABLE IF NOT EXISTS verifications(user TEXT(64) PRIMARY KEY UNIQUE NOT NULL, points BIGINT(12) NOT NULL default '0')`),
     db.run(`CREATE TABLE IF NOT EXISTS entries(user TEXT(64) PRIMARY KEY UNIQUE NOT NULL, points BIGINT(12) NOT NULL default '0')`),
+    db.run(`CREATE TABLE IF NOT EXISTS pokemon(name TEXT(64) PRIMARY KEY UNIQUE NOT NULL, created_date DATE, last_verification DATE, locked TINYINT(1) NOT NULL DEFAULT '0', icons TEXT(256));`),
   ]);
   db.close();
   return;
@@ -56,6 +57,39 @@ function backupDB(guild){
       name: `database.backup.sqlite`,
     }
   });
+}
+
+async function newPokemon(pokemon_name, icons = []){
+  const db = await getDB();
+
+  const pokemon = {
+    $name: pokemon_name,
+    $created_date: new Date().toJSON().replace(/T.+/,''),
+    $icons: icons.join(','),
+  };
+
+  await db.run(`INSERT OR REPLACE INTO pokemon (name, created_date, icons) VALUES ($name, $created_date, $icons)`, pokemon).catch(error);
+}
+
+async function lockPokemon(pokemon_name){
+  const db = await getDB();
+
+  const pokemon = {
+    $name: pokemon_name,
+  };
+
+  await db.run(`INSERT OR REPLACE INTO pokemon (name, locked, icons) VALUES ($name, '1', NULL)`, pokemon).catch(error);
+}
+
+async function unlockPokemon(pokemon_name, icons = []){
+  const db = await getDB();
+
+  const pokemon = {
+    $name: pokemon_name,
+    $icons: icons.join(','),
+  };
+
+  await db.run(`INSERT OR REPLACE INTO pokemon (name, locked, icons) VALUES ($name, '0', $icons)`, pokemon).catch(error);
 }
 
 async function getPoints(user, table){
@@ -113,6 +147,11 @@ module.exports = {
   tables,
   setupDB,
   backupDB,
+  // shiny tracking
+  newPokemon,
+  lockPokemon,
+  unlockPokemon,
+  // point tracking
   getPoints,
   addPoints,
   getTop,
