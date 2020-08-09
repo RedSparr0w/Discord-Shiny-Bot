@@ -21,10 +21,10 @@ function applyReporterRole(member, points = 0){
     };
 
   if (roles[points]){
-    member.addRole(roles[points], `Reached ${points} reports`).catch(e=>error('Unable to assign role:', e));
+    member.roles.add(roles[points], `Reached ${points} reports`).catch(e=>error('Unable to assign role:', e));
     const role_to_remove = Object.keys(roles).filter(level=>(+points) > (+level)).pop();
     if (role_to_remove)
-      member.removeRole(roles[role_to_remove], `Reached ${points} reports (old role)`).catch(e=>error('Unable to remove role:', e));
+      member.roles.remove(roles[role_to_remove], `Reached ${points} reports (old role)`).catch(e=>error('Unable to remove role:', e));
   }
 }
 

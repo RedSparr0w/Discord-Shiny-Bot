@@ -24,7 +24,7 @@ module.exports = {
     let message = false;
     if (message_id && message_id.length >= 8) {
       try {
-        message = await channel.fetchMessage(message_id);
+        message = await channel.messages.fetch(message_id);
       } catch(err) {
         return msg.reply('Specified message id not found..')
           .then(m => {
