@@ -145,7 +145,7 @@ async function updateLeaderboard(guild){
   if (!leaderboard_channel) return error('Leaderboard channel not found!');
 
   // Get the message to be edited (must already exist)
-  const leaderboard_message = await leaderboard_channel.fetchMessage(leaderboard_message_id).catch(O_o => {});
+  const leaderboard_message = await leaderboard_channel.messages.fetch(leaderboard_message_id).catch(O_o => {});
   if (!leaderboard_message) return error('Leaderboard message to edit not found!');
 
   // Get the results
@@ -158,7 +158,7 @@ async function updateLeaderboard(guild){
 
 async function updateChampion(guild){
   // Get the champions role
-  const champion_role = guild.roles.get(champion_role_id);
+  const champion_role = guild.roles.cache.get(champion_role_id);
   if (!champion_role) return error('Champion role not found!');
 
   // Get the top users
@@ -171,11 +171,11 @@ async function updateChampion(guild){
 
     // Check user is still a member
     if (!current_champion) return;
-    current_champion.addRole(champion_role_id, `User is the new number 1 reporter!`);
+    current_champion.roles.add(champion_role_id, `User is the new number 1 reporter!`);
 
     // Remove the champion role from anyone who isn't the current champion
-    const previous_champion = champion_role.members.cache.filter(m => m.id != current_champion_id);
-    previous_champion.forEach(m => m.removeRole(champion_role_id, `User is no longer the number 1 reporter!`));
+    const previous_champion = champion_role.members.filter(m => m.id != current_champion_id);
+    previous_champion.forEach(m => m.roles.remove(champion_role_id, `User is no longer the number 1 reporter!`));
 
     return true;
   });
@@ -185,7 +185,7 @@ function applyShinySquadRole(guild){
   const membersWithNoRole = guild.members.cache.filter(m=>m.roles.size == 1);
   membersWithNoRole.forEach((m)=>{
     setTimeout(()=>{
-      m.addRole(shiny_squad_role_id, `User had no roles applied`);
+      m.roles.add(shiny_squad_role_id, `User had no roles applied`);
     }, 6e4 /* 1 minute */);
   });
 }
