@@ -3,6 +3,7 @@ const Discord = require('discord.js');
 const {
   prefix,
   token,
+  shiny_squad_role_id,
 } = require('./config.json');
 const {
   info,
@@ -54,6 +55,11 @@ client.once('ready', async() => {
 
 client.on('error', (e) => error('Error Thrown:', e))
   .on('warn', (warning) => warn(warning))
+  .on('guildMemberAdd', async member => {
+    setTimeout(()=>{
+      member.roles.add(shiny_squad_role_id, `User joined server 1 minute ago`);
+    }, 6e4 /* 1 minute */);
+  })
   .on('message', message => {
     // Either not a command or a bot, ignore
     if (!message.content.startsWith(prefix) || message.author.bot) return;
