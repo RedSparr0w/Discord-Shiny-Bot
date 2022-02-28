@@ -1,19 +1,21 @@
 {
-  "name": "shiny-squad-discord-bot",
-  "version": "2.5.5",
+  "name": "discord-bot-shiny-squad",
+  "version": "3.0.0",
   "description": "",
-  "scripts": {
-    "start": "node index.js",
-    "eslint": "eslint ./",
-    "test": "eslint ./"
+  "engines": {
+    "node": ">=14.0.0"
   },
-  "author": "RedSparr0w",
+  "scripts": {
+    "start": "node index",
+    "test": "eslint ./",
+    "build": "node updateData"
+  },
+  "author": "",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^12.0.2",
-    "sqlite": "^3.0.3"
-  },
-  "devDependencies": {
-    "eslint": "^5.16.0"
+    "discord.js": "^13.6.0",
+    "eslint": "^7.32.0",
+    "sqlite": "^4.0.23",
+    "sqlite3": "^5.0.2"
   }
 }

@@ -1,7 +1,8 @@
-const { padNumber } = require('./functions.js');
-
 function dateTime(date = new Date()){
-  return `${date.getFullYear()}-${padNumber(date.getMonth() + 1)}-${padNumber(date.getDate())} ${padNumber(date.getHours())}:${padNumber(date.getMinutes())}:${padNumber(date.getSeconds())}`;
+  const padNum = num => num.toString().padStart(2, 0);
+  const dateStr = [date.getFullYear(), date.getMonth() + 1, date.getDate()].map(padNum).join('-');
+  const timeStr = [date.getHours(), date.getMinutes(), date.getSeconds()].map(padNum).join(':');
+  return `${dateStr} ${timeStr}`;
 }
 
 function log(...args){

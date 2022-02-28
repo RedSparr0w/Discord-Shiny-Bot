@@ -1,0 +1,12 @@
+language: node_js
+node_js:
+  - "16"
+cache:
+  directories:
+    - node_modules
+install:
+# Use clean install to ensure we're getting identical versions to package-lock.json
+- npm ci
+script:
+# Run our tests
+- npm test
