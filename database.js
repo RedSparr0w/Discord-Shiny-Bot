@@ -28,9 +28,11 @@ async function setupDB(){
     db.run('CREATE TABLE IF NOT EXISTS application(name TEXT(1024) UNIQUE ON CONFLICT IGNORE NOT NULL, value TEXT(1024) NOT NULL, PRIMARY KEY (name))'),
     // User data
     db.run('CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT, user TEXT(32) UNIQUE ON CONFLICT IGNORE NOT NULL, tag TEXT(64) NOT NULL)'),
-    // Tables
+    // User tables
     db.run('CREATE TABLE IF NOT EXISTS reports(user INTEGER NOT NULL, amount BIGINT(12) NOT NULL default \'0\', PRIMARY KEY (user), FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE, UNIQUE(user) ON CONFLICT REPLACE)'),
     db.run('CREATE TABLE IF NOT EXISTS verifications(user INTEGER NOT NULL, amount BIGINT(12) NOT NULL default \'0\', PRIMARY KEY (user), FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE, UNIQUE(user) ON CONFLICT REPLACE)'),
+    // Pokemon shiny reports
+    db.run('CREATE TABLE IF NOT EXISTS shiny_reports(pokemon TEXT(1024) UNIQUE ON CONFLICT IGNORE NOT NULL, thread TEXT(32) NOT NULL, unlocked INT(1) NOT NULL default \'1\', symbols TEXT(32) NOT NULL default \'\', date TEXT(32), PRIMARY KEY (pokemon))'),
     // User Statistics
     db.run('CREATE TABLE IF NOT EXISTS statistic_types(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT(32) UNIQUE ON CONFLICT IGNORE NOT NULL)'),
     db.run('CREATE TABLE IF NOT EXISTS statistics(user INTEGER NOT NULL, type TEXT(1024) NOT NULL, value BIGINT(12) NOT NULL default \'0\', PRIMARY KEY (user, type), FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE, FOREIGN KEY (type) REFERENCES statistic_types (id) ON DELETE CASCADE, UNIQUE(user, type) ON CONFLICT REPLACE)'),
@@ -380,6 +382,12 @@ async function clearScheduleItems(ids = []){
   return results;
 }
 
+async function newShinyReportThread(pokemon, thread, symbols){
+  const db = await getDB();
+  await db.run('INSERT OR REPLACE INTO shiny_reports (pokemon, thread, symbols) VALUES (?, ?, ?)', pokemon, thread, symbols);
+  db.close();
+}
+
 module.exports = {
   getDB,
   setupDB,
@@ -400,4 +408,5 @@ module.exports = {
   getScheduleItems,
   addScheduleItem,
   clearScheduleItems,
+  newShinyReportThread,
 };
