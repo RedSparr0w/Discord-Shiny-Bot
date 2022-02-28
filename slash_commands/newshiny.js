@@ -8,7 +8,7 @@ const { newShinyReportThread } = require('../database.js');
 const { shinyVerifierRoleID } = require('../config.js');
 
 module.exports = {
-  name        : 'newshiny',
+  name        : 'new-shiny',
   description : 'Create a new channel when a new shiny has been released',
   args        : [
     {
