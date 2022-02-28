@@ -9,6 +9,8 @@ module.exports = {
   // Channel where the backup database should be sent
   backupChannelID: 'DISCORD_BACKUP_CHANNEL_ID (optional)',
   modLogChannelID: 'DISCORD_MOD_LOG_CHANNEL_ID (optional)',
+  // Our roles
+  shinyVerifierRoleID: 'DISCORD_SHINY_VERIFIER_ROLE_ID (optional)',
   reporterRoles: [
     { id: '947703619879309355', name: 'Shiny Squad', amount: 0 },
     { id: '947703619879309357', name: 'Shiny Reporter', amount: 5 },
@@ -17,6 +19,7 @@ module.exports = {
     { id: '947703619879309360', name: 'Shiny Legend', amount: 100 },
     { id: '947703619879309361', name: 'Shiny Champion', amount: Infinity },
   ],
+  // Spam detection settings
   spamDetection: {
     ignoreChannels: ['channel-name'], // channel names or IDs
     spam: {

@@ -5,6 +5,7 @@ const {
   error,
 } = require('../helpers.js');
 const { newShinyReportThread } = require('../database.js');
+const { shinyVerifierRoleID } = require('../config.js');
 
 module.exports = {
   name        : 'newshiny',
@@ -81,12 +82,16 @@ module.exports = {
     // Create the thread
     const thread = await channel.threads.create({
       name: new_thread_name,
-      autoArchiveDuration: 60,
+      autoArchiveDuration: 'MAX',
       reason: `${pokemon} shiny reports!`,
     }).catch(error);
 
     // Add to the database
     newShinyReportThread(pokemon, thread.id, [symbol, symbol2, symbol3].join(''));
+
+    // Ping all shiny verifiers (this will auto join them to the thread)
+    const botMsg = await thread.send(`${pokemon} - ready for reports\n<@&${shinyVerifierRoleID}>`);
+    botMsg.delete().catch(error);
 
     // Add to mod log
     modLog(interaction.guild,
