@@ -9,6 +9,7 @@ const {
   error,
   RunOnInterval,
   formatChannelList,
+  keepThreadsActive,
   MINUTE,
   HOUR,
 } = require('./helpers.js');
@@ -102,7 +103,12 @@ client.once('ready', async() => {
 
   // Backup the database every 6 hours
   new RunOnInterval(6 * HOUR, () => {
-    if (+backupChannelID) client.guilds.cache.forEach(guild => backupDB(guild));
+    client.guilds.cache.forEach(guild => {
+      // Backup the database file
+      if (+backupChannelID) backupDB(guild);
+      // Keep threads active
+      keepThreadsActive(guild);
+    });
   }, { timezone_offset: 0 });
 });
 

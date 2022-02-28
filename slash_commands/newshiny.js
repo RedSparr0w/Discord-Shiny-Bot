@@ -38,7 +38,7 @@ module.exports = {
       required: false,
       choices: Object.entries(obtainMethodSymbols).map(([key, symbol]) => ({ name: key, value: symbol })),
     },
-    // TODO: is there a channel type?
+    // TODO: if we use CHANNEL type, it is required, should we use this?
     {
       name: 'channel',
       type: 'STRING',
