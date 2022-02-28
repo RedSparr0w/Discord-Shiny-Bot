@@ -9,6 +9,14 @@ module.exports = {
   // Channel where the backup database should be sent
   backupChannelID: 'DISCORD_BACKUP_CHANNEL_ID (optional)',
   modLogChannelID: 'DISCORD_MOD_LOG_CHANNEL_ID (optional)',
+  reporterRoles: [
+    { id: '947703619879309355', name: 'Shiny Squad', amount: 0 },
+    { id: '947703619879309357', name: 'Shiny Reporter', amount: 5 },
+    { id: '947703619879309358', name: 'Shiny Hunter', amount: 20 },
+    { id: '947703619879309359', name: 'Shiny Master', amount: 50 },
+    { id: '947703619879309360', name: 'Shiny Legend', amount: 100 },
+    { id: '947703619879309361', name: 'Shiny Champion', amount: Infinity },
+  ],
   spamDetection: {
     ignoreChannels: ['channel-name'], // channel names or IDs
     spam: {

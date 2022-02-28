@@ -1,7 +1,7 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 const SpamDetection = require('./other/mod/spamdetection.js');
-const { prefix, token, backupChannelID, mutedRoleID } = require('./config.js');
+const { prefix, token, backupChannelID, reporterRoles } = require('./config.js');
 const {
   log,
   info,
@@ -90,6 +90,14 @@ client.once('ready', async() => {
   new RunOnInterval(HOUR, () => {
     // Set our status
     client.user.setActivity('Shiny hunting');
+    // Update guild stuff
+    client.guilds.cache.forEach(guild => {
+      // TODO: sort these out
+      // updateChannelNames(guild);
+      // updateLeaderboard(guild);
+      // updateChampion(guild);
+      // applyShinySquadRole(guild);
+    });
   }, { run_now: true });
 
   // Backup the database every 6 hours
@@ -100,6 +108,11 @@ client.once('ready', async() => {
 
 client.on('error', e => error('Client error thrown:', e))
   .on('warn', warning => warn(warning))
+  .on('guildMemberAdd', async member => {
+    setTimeout(()=>{
+      member.roles.add(reporterRoles[0].id, 'User joined server 1 minute ago');
+    }, 6e4 /* 1 minute */);
+  })
   .on('messageCreate', async message => {
     // Either not a command or a bot, ignore
     if (message.author.bot) return;
@@ -108,7 +121,8 @@ client.on('error', e => error('Client error thrown:', e))
     if (message.mentions.users.size >= 4) {
       try {
         message.delete().catch(e=>{});
-        message.member.roles.add(mutedRoleID, `User muted for mass ping (${message.mentions.users.size} users)`);
+        // TODO: timeout user
+        message.member.roles.add('123', `User muted for mass ping (${message.mentions.users.size} users)`);
         return message.reply('You have been muted, Do not mass ping!');
       } catch (e) {
         error('Unable to mute user for mass ping:\n', e);
@@ -121,7 +135,7 @@ client.on('error', e => error('Client error thrown:', e))
       try {
         console.log('Deploying new commands!');
         // Add our slash commands
-        const data = client.slashCommands.map(c => ({
+        const data = client.slashCommands.filter(c => c.type != 'MESSAGE').map(c => ({
           name: c.name,
           description: c.description,
           options: c.args,
