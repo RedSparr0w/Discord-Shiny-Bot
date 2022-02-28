@@ -10,7 +10,7 @@ module.exports = {
   backupChannelID: 'DISCORD_BACKUP_CHANNEL_ID (optional)',
   modLogChannelID: 'DISCORD_MOD_LOG_CHANNEL_ID (optional)',
   spamDetection: {
-    ignoreChannels: ['bot-coins'], // channel names or IDs
+    ignoreChannels: ['channel-name'], // channel names or IDs
     spam: {
       amount: 4, // how many messages within timeframe count as spam (0 to disable)
       time: 3 * SECOND, // message count within x ms

@@ -1,7 +1,4 @@
-const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
-const request = require('request');
-const { error } = require('./logging');
-const { formatSecondsFullLetters } = require('./conversion');
+const { MessageActionRow, MessageButton } = require('discord.js');
 
 const postPages = async (interaction, pages, page = 1, msgEdit = false) => {
   const updateButtons = async (i, editPost = true) => {
@@ -104,10 +101,21 @@ const randomString = (length = 6) => {
   return str.substring(0, length);
 };
 
+const consoleProgress = (msg, progress, total = 100) => {
+  process.stdout.clearLine(1);
+  process.stdout.cursorTo(0);
+  const progressPercent = progress / total * 100;
+  process.stdout.write(`${msg} [${'#'.repeat(Math.floor(progressPercent / 2))}${'-'.repeat(50 - Math.ceil(progressPercent / 2))}] ${progressPercent.toFixed(1)}%`);
+  if (progress >= total) {
+    console.log();
+  }
+};
+
 module.exports = {
   postPages,
   upperCaseFirstLetter,
   randomFromArray,
   addOrderedReactions,
   randomString,
+  consoleProgress,
 };

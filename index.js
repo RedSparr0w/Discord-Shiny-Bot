@@ -1,7 +1,7 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 const SpamDetection = require('./other/mod/spamdetection.js');
-const { development, prefix, token, backupChannelID } = require('./config.js');
+const { prefix, token, backupChannelID, mutedRoleID } = require('./config.js');
 const {
   log,
   info,
@@ -83,15 +83,13 @@ client.once('ready', async() => {
 
   // Check for and send any reminders every minute
   new RunOnInterval(MINUTE, () => {
-    // only run if we aren't running on a dev enviroment
-    if (!development) sendReminders(client);
     checkScheduledItems(client);
   }, { timezone_offset: 0, run_now: true });
 
   // Update our status every hour
   new RunOnInterval(HOUR, () => {
     // Set our status
-    client.user.setActivity(`Shiny hunting`);
+    client.user.setActivity('Shiny hunting');
   }, { run_now: true });
 
   // Backup the database every 6 hours
@@ -172,15 +170,7 @@ client.on('error', e => error('Client error thrown:', e))
       // Add points for each message sent (every 30 seconds)
       const timeLeft = cooldownTimeLeft('messages', 30, message.author.id);
       if (!timeLeft) {
-        const messagesSent = await addStatistic(message.author, 'messages');
-        if (messagesSent == 2500) {
-          const congratsEmbed = new Discord.MessageEmbed().setTitle('Congratulations!').setColor('RANDOM').setDescription([
-            message.author.toString(),
-            `You just earned the ${trainerCardBadges[trainerCardBadgeTypes.Thunder].icon} Thunder badge for sending ${messagesSent.toLocaleString('en-US')} messages on the server!`,
-          ].join('\n'));
-          message.channel.send({ embeds: [congratsEmbed] });
-          await addPurchased(message.author, 'badge', trainerCardBadgeTypes.Thunder);
-        }
+        addStatistic(message.author, 'messages');
       }
 
       // Auto replies etc
@@ -252,10 +242,7 @@ client.on('error', e => error('Client error thrown:', e))
       // Send the message object, along with the arguments
       await command.execute(message, args);
       addStatistic(message.author, `!${command.name}`);
-      const commandsSent = await addStatistic(message.author, 'commands');
-      if (commandsSent >= 1000) {
-        await addPurchased(message.author, 'badge', trainerCardBadgeTypes.Cascade);
-      }
+      addStatistic(message.author, 'commands');
     } catch (err) {
       error(`Error executing command "${command.name}":\n`, err);
       message.reply({ content: 'There was an error trying to execute that command!'});
@@ -309,10 +296,7 @@ client.on('error', e => error('Client error thrown:', e))
           throw(e);
         });
         addStatistic(interaction.user, `!${command.name}`);
-        const commandsSent = await addStatistic(interaction.user, 'commands');
-        if (commandsSent >= 1000) {
-          await addPurchased(interaction.user, 'badge', trainerCardBadgeTypes.Cascade);
-        }
+        addStatistic(interaction.user, 'commands');
       } catch (err) {
         error(`Error executing command "${command.name}":\n`, err);
         interaction.replied ? interaction.followUp({ content: 'There was an error trying to execute that command!', ephemeral: true }) : interaction.reply({ content: 'There was an error trying to execute that command!', ephemeral: true });

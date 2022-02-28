@@ -2,10 +2,12 @@ const sqlite = require('sqlite');
 const sqlite3 = require('sqlite3');
 const { backupChannelID } = require('./config.js');
 const { MessageAttachment } = require('discord.js');
-const { warn } = require('./helpers/logging.js');
+const { warn, info } = require('./helpers/logging.js');
 const { version: botVersion } = require('./package.json');
+const { consoleProgress } = require('./helpers/functions.js');
 
 // current version, possibly older version
+// eslint-disable-next-line no-unused-vars
 const isOlderVersion = (version, compareVersion) => compareVersion.localeCompare(version, undefined, { numeric: true }) === 1;
 
 const database_dir = './db/';
@@ -27,8 +29,8 @@ async function setupDB(){
     // User data
     db.run('CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT, user TEXT(32) UNIQUE ON CONFLICT IGNORE NOT NULL, tag TEXT(64) NOT NULL)'),
     // Tables
-    db.run('CREATE TABLE IF NOT EXISTS reports(user INTEGER NOT NULL, points BIGINT(12) NOT NULL default \'0\', PRIMARY KEY (user), FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE, UNIQUE(user) ON CONFLICT REPLACE)'),
-    db.run('CREATE TABLE IF NOT EXISTS verifications(user INTEGER NOT NULL, points BIGINT(12) NOT NULL default \'0\', PRIMARY KEY (user), FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE, UNIQUE(user) ON CONFLICT REPLACE)'),
+    db.run('CREATE TABLE IF NOT EXISTS reports(user INTEGER NOT NULL, amount BIGINT(12) NOT NULL default \'0\', PRIMARY KEY (user), FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE, UNIQUE(user) ON CONFLICT REPLACE)'),
+    db.run('CREATE TABLE IF NOT EXISTS verifications(user INTEGER NOT NULL, amount BIGINT(12) NOT NULL default \'0\', PRIMARY KEY (user), FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE, UNIQUE(user) ON CONFLICT REPLACE)'),
     // User Statistics
     db.run('CREATE TABLE IF NOT EXISTS statistic_types(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT(32) UNIQUE ON CONFLICT IGNORE NOT NULL)'),
     db.run('CREATE TABLE IF NOT EXISTS statistics(user INTEGER NOT NULL, type TEXT(1024) NOT NULL, value BIGINT(12) NOT NULL default \'0\', PRIMARY KEY (user, type), FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE, FOREIGN KEY (type) REFERENCES statistic_types (id) ON DELETE CASCADE, UNIQUE(user, type) ON CONFLICT REPLACE)'),
@@ -48,17 +50,52 @@ async function updateDB(){
 
   // Will only update the version if it doesn't already exist
   if (!version || !version.value) {
+    info('Updating database... this might take awhile...');
+    // Get our user data
+    const reports = await db.all('SELECT * FROM reports');
+    const verifications = await db.all('SELECT * FROM verifications');
+    // Delete our old tables
+    await db.run('DROP TABLE reports');
+    await db.run('DROP TABLE verifications');
+    await db.run('DROP TABLE entries');
+    // Create the new table structure
+    await db.run('CREATE TABLE IF NOT EXISTS reports(user INTEGER NOT NULL, amount BIGINT(12) NOT NULL default \'0\', PRIMARY KEY (user), FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE, UNIQUE(user) ON CONFLICT REPLACE)');
+    await db.run('CREATE TABLE IF NOT EXISTS verifications(user INTEGER NOT NULL, amount BIGINT(12) NOT NULL default \'0\', PRIMARY KEY (user), FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE, UNIQUE(user) ON CONFLICT REPLACE)');
+    // Populate the data
+    info('Processing reports:');
+    let i = 0;
+    for (const res of reports) {
+      await addAmount({
+        id: res.user,
+        tag: 'unknown#1234',
+      }, res.points, 'reports');
+      consoleProgress(`${++i}/${reports.length}`, i, reports.length);
+    }
+
+    info('Processing verifications:');
+    i = 0;
+    for (const res of verifications) {
+      await addAmount({
+        id: res.user,
+        tag: 'unknown#1234',
+      }, res.points, 'verifications');
+      consoleProgress(`${++i}/${verifications.length}`, i, verifications.length);
+    }
+    info('Database updated!');
+
+    // Add a version for our tables
     await db.run('INSERT INTO application (name, value) values (?, ?)', 'version', botVersion);
     version = botVersion;
   } else {
     version = version.value;
   }
 
-  if (isOlderVersion(version, '1.1.0')) {
-    version = '1.1.0';
-    await db.run('ALTER TABLE purchased ADD badge TEXT(1024) NOT NULL default \'\'');
-    await db.run('INSERT OR REPLACE INTO application (name, value) values (?, ?)', 'version', version);
-  }
+  // Example changing tables etc
+  // if (isOlderVersion(version, '3.0.1')) {
+  //   version = '3.0.1';
+  //   await db.run('ALTER TABLE x ADD x ...');
+  //   await db.run('INSERT OR REPLACE INTO application (name, value) values (?, ?)', 'version', version);
+  // }
   
   await db.run('INSERT OR REPLACE INTO application (name, value) values (?, ?)', 'version', botVersion);
 
@@ -178,8 +215,11 @@ async function getTop(amount = 10, table = 'reports'){
   const db = await getDB();
   switch (table) {
     case 'reports':
-      results = await db.all(`SELECT users.user, amount, RANK () OVER ( ORDER BY amount DESC ) rank FROM reports INNER JOIN users ON users.id = reports.user ORDER BY amount DESC LIMIT ${amount}`);
+    case 'verifications':
+      results = await db.all(`SELECT users.user, amount, RANK () OVER ( ORDER BY amount DESC ) rank FROM ${table} INNER JOIN users ON users.id = ${table}.user ORDER BY amount DESC LIMIT ${amount}`);
       break;
+    default:
+      results = await db.all(`SELECT users.user, value AS amount, RANK () OVER ( ORDER BY value DESC ) rank FROM statistics INNER JOIN statistic_types ON statistics.type = statistic_types.id INNER JOIN users ON users.id = statistics.user WHERE statistic_types.name='${table}' ORDER BY amount DESC LIMIT ${amount}`);
   }
   db.close();
 
