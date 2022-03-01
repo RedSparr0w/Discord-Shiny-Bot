@@ -3,8 +3,6 @@ const { getTop, getShinyReport, getShinyReports } = require('../database.js');
 const {
   leaderboard_channel_id,
   leaderboard_message_id,
-  champion_role_id,
-  shiny_squad_role_id,
   reporterRoles,
 } = require('../config.js');
 
@@ -13,6 +11,7 @@ const sightingSymbols = {
   confirmed: '🟢',
   ok: '🔵',
   warning: '🟡',
+  imminent: '🟠',
   danger: '🔴',
 };
 
@@ -36,12 +35,19 @@ const statusSymbols = {
 
 function getSymbolFromDate(date = new Date()){
   const today = new Date();
+  // If newer than 5 days
   if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 5))
     return sightingSymbols.confirmed;
+  // If newer than 10 days
   else if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 10))
     return sightingSymbols.ok;
+  // If newer than 15 days
   else if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 15))
     return sightingSymbols.warning;
+  // If newer than 21 days
+  else if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 21))
+    return sightingSymbols.imminent;
+  // If older than 21 days
   else
     return sightingSymbols.danger;
 }
@@ -66,6 +72,8 @@ async function updateThreadName(pokemon, thread){
   // replace everything after the last | with the new symbol (should only replace the last symbol)
   const updatedChannelName = thread.name.replace(/[^|]+$/, ` ${symbol}`);
   debug(`Updated channel status ${thread.name} → ${symbol}`);
+
+  // Check if thread was archived beforehand, re-archive if it was
   const archived = thread.archived;
   if (archived) await thread.setArchived(false);
   await thread.edit({ name: updatedChannelName }).catch(error);
@@ -80,16 +88,22 @@ async function updateThreadNames(guild){
   // Update each of the channels
   for (const result of results) {
     const thread = await guild.channels.fetch(result.thread).catch(O_o=>{});
+
+    // If thread doesn't exist, we will just ignore it
     if (!thread) continue;
+
+    // Update the thread name
     await updateThreadName(result.pokemon, thread);
   }
   debug('Updated thread names');
 }
 
 async function applyShinySquadRole(guild){
+  // Find any members that only have the @everyone role
   const membersWithNoRole = guild.members.cache.filter(m => m.roles.cache.size == 1);
   debug(`Applying shiny squad role to ${membersWithNoRole.size} members`);
   for (const [, member] of membersWithNoRole) {
+    // Apply the shiny squad role
     await member.roles.add(reporterRoles[0].id, 'User had no roles applied');
   }
 }
@@ -105,6 +119,31 @@ async function keepThreadsActive(guild){
   });
 }
 
+async function updateChampion(guild) {
+  const championRoleID = reporterRoles[reporterRoles.length - 1].id;
+  // Get the top x results (incase top member has left the server)
+  const results = await getTop(50, 'reports');
+  // TODO: get current champion
+  const currentChampion = guild.members.cache.find(m => m.roles.cache.has(championRoleID));
+
+  for (const result of results){
+    const member = await guild.members.fetch(result.user).catch(e => {});
+
+    // If member not in server, go to the next one
+    if (!member) continue;
+
+    // Champion already has their role, we're done here
+    if (currentChampion?.id == member?.id) break;
+
+    // Remove previous champions role, add to new champion
+    currentChampion?.roles?.remove(championRoleID, 'No longer the champion');
+    await member.roles.add(championRoleID, 'User is the new champion');
+
+    // No need to process more members
+    break;
+  }
+}
+
 module.exports = {
   sightingSymbols,
   obtainMethodSymbols,
@@ -115,4 +154,5 @@ module.exports = {
   updateThreadNames,
   applyShinySquadRole,
   keepThreadsActive,
+  updateChampion,
 };
