@@ -1,7 +1,7 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 const SpamDetection = require('./other/mod/spamdetection.js');
-const { prefix, token, backupChannelID, reporterRoles } = require('./config.js');
+const { prefix, token, backupChannelID, reporterRoles, shinyVerifierRoleID } = require('./config.js');
 const {
   log,
   info,
@@ -17,6 +17,8 @@ const {
   setupDB,
   backupDB,
   addStatistic,
+  setShinyReportDate,
+  addAmount,
 } = require('./database.js');
 const regexMatches = require('./regexMatches.js');
 const { checkScheduledItems } = require('./other/scheduled/scheduled.js');
@@ -269,6 +271,66 @@ client.on('error', e => error('Client error thrown:', e))
     }
   })
   .on('interactionCreate', async interaction => {
+    // Buttons
+    if (interaction.isButton()) {
+      // Check if button tied to a report
+      if (interaction.customId.startsWith('report')) {
+        // Check if user is a verifier
+        if (interaction.member.roles.cache.has(shinyVerifierRoleID)) {
+          try {
+            // Get the data from the embed
+            const embed = interaction.message.embeds[0];
+
+            if (interaction.customId == 'report-accept') {
+              const reporter_id = embed.description.match(/<@!?(\d+)>/)[1];
+              const date_str = embed.description.match(/(\d{4}-\d{2}-\d{2})/)?.[1];
+              // Check if date supplied or get one from verifier
+              if (!date_str) {
+                // TODO: get a date from the verifier
+                return interaction.reply({ content: 'Report has no date, please supply a date (YYYY-MM-DD or MM-DD):', ephemeral: true });
+              }
+  
+              const date = new Date(date_str);
+
+              // Update the date we last reported
+              setShinyReportDate(interaction.channel.name.substring(0, interaction.channel.name.indexOf('|') - 1), date);
+
+              // Add points to reporter & verifier
+              const reporter = await interaction.guild.members.fetch(reporter_id);
+              if (reporter?.user) addAmount(reporter.user, 1, 'reports');
+              addAmount(interaction.user, 1, 'verifications');
+
+              embed.setColor('#2ecc71')
+                .setFooter({ text: '✨ report accepted!' });
+
+              const latest_embed = new Discord.MessageEmbed()
+                .setColor('#3498db')
+                .setDescription(`**Date:** ${date_str}\n**Reported by:** ${reporter?.user}\n**Verified by:** ${interaction.user.toString()}`);
+
+              await interaction.reply({ content: '***__Latest report:__***', embeds: [latest_embed] });
+
+              // TODO: update the thread title (make sure to await)
+            } else {
+              embed.setColor('#e74c3c')
+                .setFooter({ text: '🚫 report denied..' });
+            }
+
+            // Edit the embed, then archive the thread, no new reports at the moment
+            await interaction.message.edit({ embeds: [embed], components: [] });
+            return interaction.channel.setArchived(true);
+            
+          } catch (e) {
+            error(e);
+            return interaction.reply({ content: 'Something went wrong, please try again soon..', ephemeral: true });
+          }
+        } else {
+          // User not a shiny verifier
+          return interaction.reply({ content: `You need to have the <@&${shinyVerifierRoleID}> role to do this`, ephemeral: true });
+        }
+      }
+    }
+
+    // Commands
     if (interaction.isCommand() || interaction.isContextMenu()) {
 
       const command = client.slashCommands.find(cmd => cmd.name === interaction.commandName);
