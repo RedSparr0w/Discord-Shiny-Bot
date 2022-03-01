@@ -6,11 +6,10 @@ const {
 } = require('../config.js');
 
 const sightingSymbols = {
-  unconfirmed: '🕒',
-  confirmed: '🟢',
-  ok: '🔵',
-  warning: '🟡',
-  imminent: '🟠',
+  verified: '🟢',
+  recent: '🔵',
+  ok: '🟡',
+  warning: '🟠',
   danger: '🔴',
 };
 
@@ -23,7 +22,7 @@ const obtainMethodSymbols = {
 
 const otherSymbols = {
   new: '🆕',
-  outofrotation: '🔒',
+  locked: '🔒',
 };
 
 const statusSymbols = {
@@ -36,16 +35,16 @@ function getSymbolFromDate(date = new Date()){
   const today = new Date();
   // If newer than 5 days
   if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 5))
-    return sightingSymbols.confirmed;
+    return sightingSymbols.verified;
   // If newer than 10 days
   else if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 10))
-    return sightingSymbols.ok;
+    return sightingSymbols.recent;
   // If newer than 15 days
   else if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 15))
-    return sightingSymbols.warning;
+    return sightingSymbols.ok;
   // If newer than 21 days
   else if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 21))
-    return sightingSymbols.imminent;
+    return sightingSymbols.warning;
   // If older than 21 days
   else
     return sightingSymbols.danger;
