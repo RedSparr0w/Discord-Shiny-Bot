@@ -22,6 +22,8 @@ const {
 } = require('./database.js');
 const regexMatches = require('./regexMatches.js');
 const { checkScheduledItems } = require('./other/scheduled/scheduled.js');
+const { updateThreadName, updateThreadNames } = require('./helpers/shinySquad.js');
+const { SECOND } = require('./helpers/constants.js');
 
 const client = new Discord.Client({
   intents: [
@@ -96,7 +98,7 @@ client.once('ready', async() => {
     // Update guild stuff
     client.guilds.cache.forEach(guild => {
       // TODO: sort these out
-      // updateChannelNames(guild);
+      updateThreadNames(guild);
       // updateLeaderboard(guild);
       // updateChampion(guild);
       // applyShinySquadRole(guild);
@@ -293,11 +295,12 @@ client.on('error', e => error('Client error thrown:', e))
               const date = new Date(date_str);
 
               // Update the date we last reported
-              setShinyReportDate(interaction.channel.name.substring(0, interaction.channel.name.indexOf('|') - 1), date);
+              const pokemon = interaction.channel.name.substring(0, interaction.channel.name.indexOf('|') - 1);
+              await setShinyReportDate(pokemon, date);
 
               // Add points to reporter & verifier
               // TODO: apply reporter roles
-              const reporter = await interaction.guild.members.fetch(reporter_id);
+              const reporter = await interaction.guild.members.fetch(reporter_id).catch(error);
               if (reporter?.user) addAmount(reporter.user, 1, 'reports');
               addAmount(interaction.user, 1, 'verifications');
 
@@ -311,6 +314,7 @@ client.on('error', e => error('Client error thrown:', e))
               await interaction.reply({ content: '***__Latest report:__***', embeds: [latest_embed] });
 
               // TODO: update the thread title (make sure to await as will be archived)
+              await updateThreadName(pokemon, interaction.channel);
             } else {
               embed.setColor('#e74c3c')
                 .setFooter({ text: '🚫 report denied..' });
@@ -318,7 +322,7 @@ client.on('error', e => error('Client error thrown:', e))
 
             // Edit the embed, then archive the thread, no new reports at the moment
             await interaction.message.edit({ embeds: [embed], components: [] });
-            return interaction.channel.setArchived(true);
+            return setTimeout(() => interaction.channel.setArchived(true), 30 * SECOND);
             
           } catch (e) {
             error(e);

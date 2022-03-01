@@ -1,18 +1,19 @@
 const { error, debug } = require('./logging.js');
-const { getTop } = require('../database.js');
+const { getTop, getShinyReport, getShinyReports } = require('../database.js');
 const {
   leaderboard_channel_id,
   leaderboard_message_id,
   champion_role_id,
   shiny_squad_role_id,
+  reporterRoles,
 } = require('../config.js');
 
 const sightingSymbols = {
   unconfirmed: '🕒',
-  confirmed: '✅',
-  ok: '☑',
-  warning: '⚠',
-  danger: '🚫',
+  confirmed: '🟢',
+  ok: '🔵',
+  warning: '🟡',
+  danger: '🔴',
 };
 
 const obtainMethodSymbols = {
@@ -33,12 +34,7 @@ const statusSymbols = {
   ...otherSymbols,
 };
 
-function isActiveChannel(channel){
-  if (channel.parent) return channel.parent.name != 'OUT OF ROTATION';
-  return true;
-}
-
-function getSymbolFromDate(date){
+function getSymbolFromDate(date = new Date()){
   const today = new Date();
   if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 5))
     return sightingSymbols.confirmed;
@@ -50,142 +46,51 @@ function getSymbolFromDate(date){
     return sightingSymbols.danger;
 }
 
-async function updateChannelName(channel, pokemonData){
-  // If we already supplied the data, use that, otherwise get the data
-  pokemonData = pokemonData || await getShinyStatus(channel);
+async function updateThreadName(pokemon, thread){
+  // Get report data
+  const report = await getShinyReport(pokemon);
+  if (!report) return;
+
+  // If no reports ever
+  if (!+report.date) return;
 
   // If channel is out of rotation then DO NOT update the name
-  if (!isActiveChannel(channel)) return;
+  if (thread.locked) return;
+
+  const date = new Date(+report.date);
+  const symbol = getSymbolFromDate(date);
 
   // If the channel name doesn't include the correct symbol, update it
-  if (pokemonData && !channel.name.includes(pokemonData.symbol)){
-    // replace everything after the last dash with the new symbol (should only replace the last symbol)
-    const updatedChannelName = channel.name.replace(/[^-]+$/, `${pokemonData.symbol}`);
-    channel.edit({ name: updatedChannelName });
-    debug(`Updated channel status ${channel.name} → ${pokemonData.symbol}`);
-  }
+  if (thread.name.includes(symbol)) return debug('name already up to date');
+
+  // replace everything after the last | with the new symbol (should only replace the last symbol)
+  const updatedChannelName = thread.name.replace(/[^|]+$/, ` ${symbol}`);
+  debug(`Updated channel status ${thread.name} → ${symbol}`);
+  const archived = thread.archived;
+  if (archived) await thread.setArchived(false);
+  await thread.edit({ name: updatedChannelName }).catch(error);
+  if (archived) await thread.setArchived(true);
 }
 
-async function updateChannelNames(guild, pokemonList){
-  debug('Updating channel names...');
+async function updateThreadNames(guild){
+  debug('Updating thread names...');
   // If we already supplied the data, use that, otherwise get the data
-  pokemonList = pokemonList || await getShinyStatusList(guild);
-
-  // Filter out any channels which do not meet our criteria
-  const channels = guild.channels.cache.filter(channel => channel.type == 'text').filter(isActiveChannel).filter(channel => channel.name != channel.name.replace(/\W+$/, ''));
-
+  const results = await getShinyReports();
+  console.log(results);
   // Update each of the channels
-  channels.forEach(channel => {
-    const pokemonName = channel.name.replace(/\W+$/, '');
-    // If the channel name doesn't include the correct symbol, update it
-    if (pokemonName in pokemonList && !channel.name.includes(pokemonList[pokemonName].symbol)){
-      updateChannelName(channel, pokemonList[pokemonName]);
-    }
-  });
-  debug('Updated channel names');
-}
-
-async function getShinyStatus(channel){
-  // Regex to match the string our bot sends for dates
-  const isMatch = /^Most Recent (Sighting|Egg Hatch): (\w{3,9} \d{1,2}, \d{2,4})$/;
-
-  // Try get the messages for this channel, if we can't then assume we don't have access
-  const messages = await channel.messages.fetch({ limit: 100 }).catch(O_o => {});
-  if (!messages) return;
-
-  // Basic information
-  const pokemonData = {
-    channel,
-    channelName: channel.name,
-    dateStr: '',
-    symbol: sightingSymbols.unconfirmed,
-  };
-
-  // Add our symbol and date data if possible
-  const dateData = await new Promise(function(resolve, reject) {
-    messages.forEach(msg => {
-      if (msg.pinned == true && isMatch.test(msg.content)){
-        const date = new Date(Date.parse(msg.content.match(isMatch)[2]));
-        resolve({
-          date,
-          dateStr: msg.content.match(isMatch)[2],
-          symbol: getSymbolFromDate(date),
-        });
-      }
-    });
-    resolve({});
-  });
-
-  // Return the merged object
-  return {
-    ...pokemonData,
-    ...dateData,
-  };
-
-}
-
-async function getShinyStatusList(guild){
-  // Filter out any channels which do not meet our criteria
-  let channels = guild.channels.cache.filter(channel => channel.type == 'text').filter(channel => channel.name != channel.name.replace(/\W+$/, ''));
-
-  // Get the status of each channel
-  channels = await Promise.all(channels.map(getShinyStatus));
-
-  // Add to our object
-  const pokemonList = {};
-  channels.forEach(pokemonData => {
-    if (pokemonData) pokemonList[pokemonData.channelName.replace(/\W+$/, '')] = pokemonData;
-  });
-  return pokemonList;
-}
-
-async function updateLeaderboard(guild){
-  // Get the leaderboard channel
-  const leaderboard_channel = guild.channels.cache.get(leaderboard_channel_id);
-  if (!leaderboard_channel) return error('Leaderboard channel not found!');
-
-  // Get the message to be edited (must already exist)
-  const leaderboard_message = await leaderboard_channel.messages.fetch(leaderboard_message_id).catch(O_o => {});
-  if (!leaderboard_message) return error('Leaderboard message to edit not found!');
-
-  // Get the results
-  const results = await getTop(25, 'reports');
-  const output = [`__***Top ${results.length} reporters:***__`, ...results.map((res, place) => `**#${place + 1}** _\`(${res.points} reports)\`_ ${guild.members.cache.get(res.user) || 'Inactive Member'}`)];
-
-  // Update the message
-  return leaderboard_message.edit(output);
-}
-
-async function updateChampion(guild){
-  // Get the champions role
-  const champion_role = guild.roles.cache.get(champion_role_id);
-  if (!champion_role) return error('Champion role not found!');
-
-  // Get the top users
-  const results = await getTop(10, 'reports');
-  // Loop through until we find one that is still a member of the server
-  results.some(result=>{
-    // Get user from users id
-    const current_champion_id = result.user;
-    const current_champion = guild.members.cache.get(current_champion_id);
-
-    // Check user is still a member
-    if (!current_champion) return;
-    current_champion.roles.add(champion_role_id, 'User is the new number 1 reporter!');
-
-    // Remove the champion role from anyone who isn't the current champion
-    const previous_champion = champion_role.members.filter(m => m.id != current_champion_id);
-    previous_champion.forEach(m => m.roles.remove(champion_role_id, 'User is no longer the number 1 reporter!'));
-
-    return true;
-  });
+  for (const result of results) {
+    const thread = await guild.channels.fetch(result.thread).catch(O_o=>{});
+    if (!thread) continue;
+    await updateThreadName(result.pokemon, thread);
+  }
+  debug('Updated thread names');
 }
 
 function applyShinySquadRole(guild){
-  const membersWithNoRole = guild.members.cache.filter(m=>m.roles.size == 1);
+  const membersWithNoRole = guild.members.cache.filter(m => m.roles.size == 1);
   membersWithNoRole.forEach((m)=>{
     setTimeout(()=>{
-      m.roles.add(shiny_squad_role_id, 'User had no roles applied');
+      m.roles.add(reporterRoles[0].id, 'User had no roles applied');
     }, 6e4 /* 1 minute */);
   });
 }
@@ -206,14 +111,9 @@ module.exports = {
   obtainMethodSymbols,
   otherSymbols,
   statusSymbols,
-  isActiveChannel,
   getSymbolFromDate,
-  updateChannelName,
-  updateChannelNames,
-  getShinyStatus,
-  getShinyStatusList,
-  updateLeaderboard,
-  updateChampion,
+  updateThreadName,
+  updateThreadNames,
   applyShinySquadRole,
   keepThreadsActive,
 };
