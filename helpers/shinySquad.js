@@ -1,12 +1,9 @@
 const { error, debug } = require('./logging.js');
 const { getTop, getShinyReport, getShinyReports } = require('../database.js');
 const {
-  leaderboard_channel_id,
-  leaderboard_message_id,
   reporterRoles,
   leaderboard,
 } = require('../config.js');
-const { MessageEmbed } = require('discord.js');
 
 const sightingSymbols = {
   unconfirmed: '🕒',
