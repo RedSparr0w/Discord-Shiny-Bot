@@ -103,7 +103,7 @@ module.exports = {
         const embed_report = new MessageEmbed()
           .setColor('#3498db')
           .setImage(m.attachments.first().url)
-          .setDescription(`Reporter: ${m.author.toString()}${date ? `\nDate: ${date_string}` : ''}${m.content ? `\n\n${m.content}` : ''}`);
+          .setDescription(`**Reporter:** ${m.author.toString()}${date ? `\n**Date:** ${date_string}` : ''}${m.content ? `\n\n${m.content}` : ''}`);
 
           
         const row = new MessageActionRow()
