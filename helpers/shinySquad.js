@@ -4,7 +4,9 @@ const {
   leaderboard_channel_id,
   leaderboard_message_id,
   reporterRoles,
+  leaderboard,
 } = require('../config.js');
+const { MessageEmbed } = require('discord.js');
 
 const sightingSymbols = {
   unconfirmed: '🕒',
@@ -144,6 +146,32 @@ async function updateChampion(guild) {
   }
 }
 
+async function updateLeaderboard(guild) {
+  // Find leaderboard channel
+  const leaderboardChannel = await guild.channels.fetch(leaderboard?.channelID).catch(e => {});
+  if (!leaderboardChannel) return;
+
+  // Find leaderboard message
+  const leaderboardMessage = await leaderboardChannel.messages.fetch(leaderboard?.messageID).catch(e => {});
+  if (!leaderboardMessage) return;
+
+  // Get top 500
+  let results = await getTop(500, 'reports');
+  // Only include current members
+  results = results.filter(res => guild.members.cache.find(m => m.id == res.user));
+  const resultsText = results.map((res, place) => `**#${place + 1}** \`${res.amount ? res.amount.toLocaleString('en-NZ') : 0} reports\` <@!${res.user}>`);
+  
+  // Shrink until we can fit them all in 1 message, max length is 2k, but better to leave some allowance
+  let output = ['__***Top Shiny Reporters:***__', ...resultsText].join('\n');
+  while (output.length >= 1900) {
+    resultsText.pop();
+    output = ['__***Top Shiny Reporters:***__', ...resultsText].join('\n');
+  }
+
+  // Update the message
+  await leaderboardMessage.edit({ content: output });
+}
+
 module.exports = {
   sightingSymbols,
   obtainMethodSymbols,
@@ -155,4 +183,5 @@ module.exports = {
   applyShinySquadRole,
   keepThreadsActive,
   updateChampion,
+  updateLeaderboard,
 };

@@ -6,9 +6,13 @@ module.exports = {
   token: 'YOUR_BOTS_TOKEN_HERE',
   // Bot owner ID, used for eval and other commands
   ownerID: 'YOUR_DISCORD_USER_ID (optional)',
-  // Channel where the backup database should be sent
+  // Channels
   backupChannelID: 'DISCORD_BACKUP_CHANNEL_ID (optional)',
   modLogChannelID: 'DISCORD_MOD_LOG_CHANNEL_ID (optional)',
+  leaderboard: {
+    channelID: 'DISCORD_LEADERBOARD_CHANNEL_ID (optional)',
+    messageID: 'DISCORD_LEADERBOARD_MESSAGE_ID (optional)',
+  },
   // Our roles
   shinyVerifierRoleID: 'DISCORD_SHINY_VERIFIER_ROLE_ID (optional)',
   reporterRoles: [

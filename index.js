@@ -22,7 +22,7 @@ const {
 } = require('./database.js');
 const regexMatches = require('./regexMatches.js');
 const { checkScheduledItems } = require('./other/scheduled/scheduled.js');
-const { updateThreadName, updateThreadNames, applyShinySquadRole, updateChampion } = require('./helpers/shinySquad.js');
+const { updateThreadName, updateThreadNames, applyShinySquadRole, updateChampion, updateLeaderboard } = require('./helpers/shinySquad.js');
 const { SECOND } = require('./helpers/constants.js');
 
 const client = new Discord.Client({
@@ -100,8 +100,7 @@ client.once('ready', async() => {
       updateThreadNames(guild);
       applyShinySquadRole(guild);
       updateChampion(guild);
-      // TODO: sort these out
-      // updateLeaderboard(guild);
+      updateLeaderboard(guild);
     });
   }, { run_now: true });
 
