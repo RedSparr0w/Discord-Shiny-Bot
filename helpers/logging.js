@@ -24,7 +24,10 @@ function warn(...args){
 }
 
 function error(...args){
-  if (typeof args[args.length - 1] == 'object') args = [...args, ...error_object(args.pop())];
+  if (typeof args[args.length - 1] == 'object') {
+    const err_obj = error_object(args.pop());
+    args = [...args, ...err_obj];
+  }
   console.error(`\x1b[1m\x1b[31m[error][${dateTime()}]\x1b[0m`, ...args);
 }
 
@@ -33,6 +36,7 @@ function error_object(error){
   if (error.message) err_obj.push(`\n\tMessage: ${error.message}`);
   if (error.errno) err_obj.push(`\n\tError No: ${error.errno}`);
   if (error.code) err_obj.push(`\n\tCode: ${error.code}`);
+  if (!err_obj.length) err_obj.push(`\n\tError: ${error}`);
   return err_obj;
 }
 
