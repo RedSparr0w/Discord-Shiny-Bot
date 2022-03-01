@@ -1,3 +1,5 @@
+const { development } = require('../config');
+
 function dateTime(date = new Date()){
   const padNum = num => num.toString().padStart(2, 0);
   const dateStr = [date.getFullYear(), date.getMonth() + 1, date.getDate()].map(padNum).join('-');
@@ -14,7 +16,7 @@ function info(...args){
 }
 
 function debug(...args){
-  console.debug(`\x1b[1m\x1b[34m[debug][${dateTime()}]\x1b[0m`, ...args);
+  if (development) console.debug(`\x1b[1m\x1b[34m[debug][${dateTime()}]\x1b[0m`, ...args);
 }
 
 function warn(...args){
