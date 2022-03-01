@@ -71,7 +71,7 @@ module.exports = {
     }
 
     // Find the thread
-    const thread = await interaction.guild.channels.fetch(report.thread);
+    const thread = await interaction.guild.channels.fetch(report.thread).catch(error);
     if (!thread) {
       const embed = new MessageEmbed()
         .setColor('#e74c3c')
