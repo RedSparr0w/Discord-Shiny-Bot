@@ -59,7 +59,7 @@ module.exports = {
     const joinServer = new Date(member.joinedTimestamp);
     const embed = new MessageEmbed()
       .setTitle('USER BANNED')
-      .setAuthor(user.tag, user.displayAvatarURL())
+      .setAuthor({ name: user.tag, iconURL: user.displayAvatarURL() })
       .setDescription(user.toString())
       .setColor('RANDOM')
       .setThumbnail(user.displayAvatarURL())

@@ -17,7 +17,7 @@ module.exports = {
     const joinDiscord = new Date(user.createdTimestamp);
     const joinServer = new Date(member.joinedTimestamp);
     const embed = new MessageEmbed()
-      .setAuthor(user.tag, user.displayAvatarURL())
+      .setAuthor({ name: user.tag, iconURL: user.displayAvatarURL() })
       .setDescription(user.toString())
       .setColor('RANDOM')
       .setThumbnail(user.displayAvatarURL())
