@@ -9,16 +9,9 @@ const {
   error,
   RunOnInterval,
   formatChannelList,
-  keepThreadsActive,
   SECOND,
   MINUTE,
   HOUR,
-  updateThreadName,
-  updateThreadNames,
-  applyShinySquadRole,
-  updateChampion,
-  updateLeaderboard,
-  addReport,
 } = require('./helpers.js');
 const {
   setupDB,
@@ -29,6 +22,15 @@ const {
 } = require('./database.js');
 const regexMatches = require('./regexMatches.js');
 const { checkScheduledItems } = require('./other/scheduled/scheduled.js');
+const {
+  updateThreadName,
+  updateThreadNames,
+  updateChampion,
+  updateLeaderboard,
+  applyShinySquadRole,
+  addReport,
+  keepThreadsActive,
+} = require('./other/shinySquad.js');
 
 const client = new Discord.Client({
   intents: [

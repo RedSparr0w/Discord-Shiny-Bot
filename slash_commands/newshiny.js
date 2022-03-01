@@ -1,11 +1,11 @@
 const { MessageEmbed } = require('discord.js');
 const { modLog } = require('../other/mod/functions.js');
 const {
-  obtainMethodSymbols,
   error,
 } = require('../helpers.js');
 const { newShinyReportThread } = require('../database.js');
 const { shinyVerifierRoleID } = require('../config.js');
+const { obtainMethodSymbols } = require('../other/shinySquad.js');
 
 module.exports = {
   name        : 'new-shiny',

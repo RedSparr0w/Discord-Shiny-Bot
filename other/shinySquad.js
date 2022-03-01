@@ -1,10 +1,15 @@
-const { error, debug } = require('./logging.js');
-const { getTop, getShinyReport, getShinyReports, addAmount } = require('../database.js');
+const { error, debug } = require('../helpers.js');
+const {
+  getTop,
+  getShinyReport,
+  getShinyReports,
+  addAmount,
+} = require('../database.js');
 const {
   reporterRoles,
   leaderboard,
 } = require('../config.js');
-const { modLog } = require('../other/mod/functions.js');
+const { modLog } = require('./mod/functions.js');
 
 const sightingSymbols = {
   verified: '🟢',
