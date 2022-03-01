@@ -24,7 +24,7 @@ module.exports = {
   ],
   guildOnly   : true,
   cooldown    : 3,
-  botperms    : ['SEND_MESSAGES', 'MANAGE_CHANNELS'],
+  botperms    : ['SEND_MESSAGES', 'MANAGE_CHANNELS', 'MANAGE_THREADS'],
   userperms   : ['SEND_MESSAGES'],
   // TODO: lock to certain channels
   execute     : async (interaction, args) => {

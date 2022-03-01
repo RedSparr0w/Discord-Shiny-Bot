@@ -48,8 +48,8 @@ module.exports = {
   ],
   guildOnly   : true,
   cooldown    : 3,
-  botperms    : ['SEND_MESSAGES', 'MANAGE_CHANNELS'],
-  userperms   : ['MANAGE_MESSAGES'],
+  botperms    : ['SEND_MESSAGES', 'MANAGE_CHANNELS', 'MANAGE_THREADS'],
+  userperms   : ['MANAGE_THREADS'],
   execute     : async (interaction, args) => {
     const pokemon = interaction.options.get('pokemon').value;
     const symbol = interaction.options.get('symbol')?.value;
