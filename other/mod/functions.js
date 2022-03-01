@@ -12,7 +12,8 @@ const modLog = (guild, logMessage) => {
 
 const mute = (member, time = 0) => {
   try {
-    member.roles.add(mutedRoleID, `User muted by ${member.guild.me.displayName}-${member.guild.me.id}`);
+    // TODO: apply timeout
+    member.roles.add(mutedRoleID, `User muted by ${member.guild.me.displayName}-${member.guild.me.id}`).catch(e => error('Unable to assign role:', e));
     if (time) {
       unmute(member, time);
     }

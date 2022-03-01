@@ -61,7 +61,8 @@ module.exports = {
 
     const output = [interaction.user, '', 'Muted the following user:'];
 
-    await member.roles.add(mutedRoleID, `User muted by ${interaction.member.displayName}-${interaction.user.id}`);
+    // TODO: apply timeout
+    await member.roles.add(mutedRoleID, `User muted by ${interaction.member.displayName}-${interaction.user.id}`).catch(e => error('Unable to assign role:', e));
     output.push(member);
 
     const embed = new MessageEmbed().setColor('#3498db').setDescription(output.join('\n'));

@@ -30,6 +30,7 @@ module.exports = {
         const embed = new MessageEmbed().setColor('#e74c3c').setDescription('You cannot mute me trainer!');
         return msg.reply({ embeds: [embed] });
       }
+      // TODO: apply timeout
       await m.roles.add(mutedRoleID, `User muted by ${msg.member.displayName}-${msg.author.id}`);
       output.push(m);
     }

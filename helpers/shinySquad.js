@@ -104,7 +104,7 @@ async function applyShinySquadRole(guild){
   debug(`Applying shiny squad role to ${membersWithNoRole.size} members`);
   for (const [, member] of membersWithNoRole) {
     // Apply the shiny squad role
-    await member.roles.add(reporterRoles[0].id, 'User had no roles applied');
+    await member.roles.add(reporterRoles[0].id, 'User had no roles applied').catch(e => error('Unable to assign role:', e));
   }
 }
 
@@ -143,8 +143,8 @@ async function updateChampion(guild) {
     if (currentChampion?.id == member?.id) break;
 
     // Remove previous champions role, add to new champion
-    currentChampion?.roles?.remove(championRoleID, 'No longer the champion');
-    await member.roles.add(championRoleID, 'User is the new champion');
+    currentChampion?.roles?.remove(championRoleID, 'No longer the champion').catch(e => error('Unable to remove role:', e));
+    await member.roles.add(championRoleID, 'User is the new champion').catch(e => error('Unable to assign role:', e));
 
     // No need to process more members
     break;

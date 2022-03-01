@@ -119,7 +119,7 @@ client.on('error', e => error('Client error thrown:', e))
   .on('warn', warning => warn(warning))
   .on('guildMemberAdd', async member => {
     setTimeout(()=>{
-      member.roles.add(reporterRoles[0].id, 'User joined server 1 minute ago');
+      member.roles.add(reporterRoles[0].id, 'User joined server 1 minute ago').catch(e => error('Unable to assign role:', e));
     }, 6e4 /* 1 minute */);
   })
   .on('messageCreate', async message => {
