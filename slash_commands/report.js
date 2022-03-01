@@ -4,6 +4,7 @@
 // post the picture in the correct thread for the user
 // TODO: (with optional date) allow verifier to just click a tick/cross for auto verification?
 const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
+const { shinyVerifierRoleID } = require('../config.js');
 const { error } = require('../helpers.js');
 const { MINUTE } = require('../helpers/constants.js');
 
@@ -54,6 +55,14 @@ module.exports = {
       const embed = new MessageEmbed()
         .setColor('#e74c3c')
         .setDescription(`Couldn't find a thread for this pokemon \`${pokemon}\``);
+      return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
+
+    // TODO: find locked threads somehow
+    if (thread.locked) {
+      const embed = new MessageEmbed()
+        .setColor('#e74c3c')
+        .setDescription(`This Pokemon is currently locked for reports.\nIf you believe this is a mistake, please contact a <@&${shinyVerifierRoleID}> to get it unlocked.`);
       return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
