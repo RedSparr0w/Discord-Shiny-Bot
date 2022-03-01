@@ -57,7 +57,7 @@ module.exports = {
         if (date <= report_date) {
           const embed = new MessageEmbed()
             .setColor('#e74c3c')
-            .setDescription(`Thank you for your report,\nBut we already have a report for that date or newer!\nLatest report: ${report_date.getFullYear()}-${(report_date.getMonth() + 1).toString().padStart(2, 0)}-${report_date.getDay().toString().padStart(2, 0)}`);
+            .setDescription(`Thank you for your report,\nBut we already have a report for that date or newer!\nLatest report: ${report_date.getFullYear()}-${(report_date.getMonth() + 1).toString().padStart(2, 0)}-${report_date.getDate().toString().padStart(2, 0)}`);
           return interaction.reply({ embeds: [embed], ephemeral: true });
         }
       } else {
@@ -65,7 +65,7 @@ module.exports = {
         const temp_date = new Date();
         const embed = new MessageEmbed()
           .setColor('#e74c3c')
-          .setDescription(`Please try again with the date formatted as YYYY-MM-DD or MM-DD\nExample: ${temp_date.getFullYear()}-${(temp_date.getMonth() + 1).toString().padStart(2, 0)}-${temp_date.getDay().toString().padStart(2, 0)}`);
+          .setDescription(`Please try again with the date formatted as YYYY-MM-DD or MM-DD\nExample: ${temp_date.getFullYear()}-${(temp_date.getMonth() + 1).toString().padStart(2, 0)}-${temp_date.getDate().toString().padStart(2, 0)}`);
         return interaction.reply({ embeds: [embed], ephemeral: true });
       }
     }
