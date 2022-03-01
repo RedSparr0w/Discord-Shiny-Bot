@@ -1,10 +1,6 @@
-// TODO: Allow user to report pokemon from bot channel
-// usage: /report Pokemon: Abra Date: ?
-// ephimiral reply, waits for user to post picture
-// post the picture in the correct thread for the user
-// TODO: (with optional date) allow verifier to just click a tick/cross for auto verification?
 const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
 const { shinyVerifierRoleID } = require('../config.js');
+const { getShinyReport } = require('../database.js');
 const { error } = require('../helpers.js');
 const { MINUTE } = require('../helpers/constants.js');
 
@@ -21,7 +17,7 @@ module.exports = {
     {
       name: 'date',
       type: 'STRING',
-      description: 'Date you are reporting for (YYYY-MM-DD)',
+      description: 'Date you are reporting for (YYYY-MM-DD or MM-DD)',
       required: false,
     },
   ],
@@ -29,28 +25,46 @@ module.exports = {
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES', 'MANAGE_CHANNELS'],
   userperms   : ['SEND_MESSAGES'],
+  // TODO: lock to certain channels
   execute     : async (interaction, args) => {
     const pokemon = interaction.options.get('pokemon').value;
     let date_string = interaction.options.get('date')?.value;
     let date;
+
+    const report = await getShinyReport(pokemon);
+    const report_date = +report.date ? new Date(+report.date) : 0;
     
+    // Get our date object
     if (date_string) {
       if (/^(\d{4}-)?\d{2}-\d{2}$/.test(date_string)) {
+        // If year not included, add it ourselves (assume this year)
         if (/^\d{2}-\d{2}$/.test(date_string)) {
           date_string = `${new Date().getFullYear()}-${date_string}`;
         }
+
+        // convert to date object
         date = new Date(Date.parse(date_string));
+
+        // Check if report is newer than previous report
+        if (date <= report_date) {
+          const embed = new MessageEmbed()
+            .setColor('#e74c3c')
+            .setDescription(`Thank you for your report,\nBut we already have a report for that date or newer!\nLatest report: ${report_date.getFullYear()}-${(report_date.getMonth() + 1).toString().padStart(2, 0)}-${report_date.getDay().toString().padStart(2, 0)}`);
+          return interaction.reply({ embeds: [embed], ephemeral: true });
+        }
       } else {
+        // Date formatted incorrectly
         const temp_date = new Date();
         const embed = new MessageEmbed()
           .setColor('#e74c3c')
-          .setDescription(`Please try again with the date formatted as YYYY-MM-DD\nExample: ${temp_date.getFullYear()}-${(temp_date.getMonth() + 1).toString().padStart(2, 0)}-${temp_date.getDay().toString().padStart(2, 0)}`);
+          .setDescription(`Please try again with the date formatted as YYYY-MM-DD or MM-DD\nExample: ${temp_date.getFullYear()}-${(temp_date.getMonth() + 1).toString().padStart(2, 0)}-${temp_date.getDay().toString().padStart(2, 0)}`);
         return interaction.reply({ embeds: [embed], ephemeral: true });
       }
     }
 
+    // TODO: we need to be able to find archived threads
     // Find the thread
-    const thread = interaction.guild.channels.cache.find(channel => channel.type == 'GUILD_PUBLIC_THREAD' && channel.name.toLowerCase().startsWith(pokemon.toLowerCase()));
+    const thread = interaction.guild.channels.cache.find(channel => channel.id == report.thread || channel.type == 'GUILD_PUBLIC_THREAD' && channel.name.toLowerCase().startsWith(pokemon.toLowerCase()));
     if (!thread) {
       const embed = new MessageEmbed()
         .setColor('#e74c3c')
@@ -77,7 +91,7 @@ module.exports = {
     const filter = m => m.attachments.size && m.author.id === interaction.user.id;
     // errors: ['time'] treats ending because of the time limit as an error (5 minutes)
     interaction.channel.awaitMessages({filter, max: 1, time: 5 * MINUTE, errors: ['time'] })
-      .then(collected => {
+      .then(async collected => {
         const m = collected.first();
 
         // Send through the report
@@ -107,7 +121,7 @@ module.exports = {
         const embed_reply = new MessageEmbed()
           .setColor('#2ecc71')
           .setDescription(`Thank you ${m.author.toString()}!\nI have sent through your shiny report successfully:\n${thread}`);
-        m.reply({ embeds: [embed_reply], ephemeral: true });
+        await m.reply({ embeds: [embed_reply], ephemeral: true });
 
         // Delete the users message
         m.delete().catch(e=>error('Unable to delete message:', e));
