@@ -2,10 +2,11 @@ const { MessageEmbed } = require('discord.js');
 const { modLog } = require('../other/mod/functions.js');
 const { shinyVerifierRoleID } = require('../config.js');
 const { getShinyReports } = require('../database.js');
+const { error } = require('../helpers/logging.js');
 
 module.exports = {
   name        : 'new-verifier',
-  description : 'Add someone to the verifications squad',
+  description : 'Add someone to the shiny verifications squad',
   args        : [
     {
       name: 'user',
@@ -16,13 +17,18 @@ module.exports = {
   ],
   guildOnly   : true,
   cooldown    : 3,
-  botperms    : ['SEND_MESSAGES', 'MANAGE_CHANNELS'],
+  botperms    : ['SEND_MESSAGES', 'MANAGE_CHANNELS', 'MANAGE_THREADS', 'MANAGE_ROLES'],
   userperms   : ['MUTE_MEMBERS'],
   // TODO: Restrict to mod channels
   execute     : async (interaction, args) => {
-    const user = interaction.options.get('user').value;
+    const id = interaction.options.get('user').value;
 
-    // TODO: add the verifications role
+    const member = await interaction.guild.members.fetch(id).catch(e => {});
+    if (!member) {
+      const embed = new MessageEmbed().setColor('#e74c3c').setDescription('Invalid user ID specified.');
+      return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
+    const user = member.user;
 
     // Get our data
     const results = await getShinyReports();
@@ -30,7 +36,10 @@ module.exports = {
     const embed = new MessageEmbed()
       .setColor('RANDOM')
       .setDescription(`Adding ${user.toString()} as <@&${shinyVerifierRoleID}>`);
-    await interaction.reply({ embeds: [embed], ephemeral: true });
+    interaction.reply({ embeds: [embed], ephemeral: true });
+
+    // Add the shiny verifications role
+    member.roles.add(shinyVerifierRoleID).catch(e => error('Unable to assign role:', e));
 
     // Cheack each of the threads
     for (const result of results) {
@@ -38,6 +47,8 @@ module.exports = {
 
       // If thread doesn't exist or archived, we will just ignore it
       if (!thread || thread.locked) continue;
+
+      // TODO: check if user already joined this thread
 
       const archived = thread.archived;
 
@@ -50,7 +61,7 @@ module.exports = {
     // Add to mod log
     modLog(interaction.guild,
       `**Mod:** ${interaction.member.toString()}
-      **User:** ${user.id}
+      **User:** ${member.toString()}
       **Action:** Added as <@&${shinyVerifierRoleID}>`);
   },
 };
