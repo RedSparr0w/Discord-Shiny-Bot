@@ -33,6 +33,13 @@ module.exports = {
 
     const report = await getShinyReport(pokemon);
     const report_date = +report.date ? new Date(+report.date) : 0;
+
+    if (!report.thread) {
+      const embed = new MessageEmbed()
+        .setColor('#e74c3c')
+        .setDescription(`Couldn't find a thread for this pokemon \`${pokemon}\``);
+      return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
     
     // Get our date object
     if (date_string) {
@@ -62,9 +69,8 @@ module.exports = {
       }
     }
 
-    // TODO: we need to be able to find archived threads
     // Find the thread
-    const thread = interaction.guild.channels.cache.find(channel => channel.id == report.thread || channel.type == 'GUILD_PUBLIC_THREAD' && channel.name.toLowerCase().startsWith(pokemon.toLowerCase()));
+    const thread = await interaction.guild.channels.fetch(report.thread);
     if (!thread) {
       const embed = new MessageEmbed()
         .setColor('#e74c3c')
@@ -72,11 +78,11 @@ module.exports = {
       return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
-    // TODO: find locked threads somehow
+    // If thread locked, we aren't accepting reports currently
     if (thread.locked) {
       const embed = new MessageEmbed()
         .setColor('#e74c3c')
-        .setDescription(`This Pokemon is currently locked for reports.\nIf you believe this is a mistake, please contact a <@&${shinyVerifierRoleID}> to get it unlocked.`);
+        .setDescription(`${thread} is currently locked for reports.\nIf you believe this is a mistake, please contact someone from <@&${shinyVerifierRoleID}> to get it unlocked.`);
       return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
