@@ -18,8 +18,8 @@ module.exports = {
       name: 'date',
       type: 'STRING',
       description: 'Date you are reporting for (YYYY-MM-DD or MM-DD)',
-      // TODO: make this a requirement?, will make for much easier verifying
-      required: false,
+      // TODO: should this be a requirement, makes things easier for verifiers
+      required: true,
     },
   ],
   guildOnly   : true,
