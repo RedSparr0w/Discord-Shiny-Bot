@@ -10,8 +10,15 @@ const {
   RunOnInterval,
   formatChannelList,
   keepThreadsActive,
+  SECOND,
   MINUTE,
   HOUR,
+  updateThreadName,
+  updateThreadNames,
+  applyShinySquadRole,
+  updateChampion,
+  updateLeaderboard,
+  addReport,
 } = require('./helpers.js');
 const {
   setupDB,
@@ -22,8 +29,6 @@ const {
 } = require('./database.js');
 const regexMatches = require('./regexMatches.js');
 const { checkScheduledItems } = require('./other/scheduled/scheduled.js');
-const { updateThreadName, updateThreadNames, applyShinySquadRole, updateChampion, updateLeaderboard } = require('./helpers/shinySquad.js');
-const { SECOND } = require('./helpers/constants.js');
 
 const client = new Discord.Client({
   intents: [
@@ -300,7 +305,7 @@ client.on('error', e => error('Client error thrown:', e))
               // Add points to reporter & verifier
               // TODO: apply reporter roles
               const reporter = await interaction.guild.members.fetch(reporter_id).catch(error);
-              if (reporter?.user) addAmount(reporter.user, 1, 'reports');
+              if (reporter) addReport(reporter, 1);
               addAmount(interaction.user, 1, 'verifications');
 
               embed.setColor('#2ecc71')
@@ -308,7 +313,7 @@ client.on('error', e => error('Client error thrown:', e))
 
               const latest_embed = new Discord.MessageEmbed()
                 .setColor('#3498db')
-                .setDescription(`**Date:** ${date_str}\n**Reported by:** ${reporter?.user}\n**Verified by:** ${interaction.user.toString()}`);
+                .setDescription(`**Date:** ${date_str}\n**Reported by:** ${reporter}\n**Verified by:** ${interaction.member.toString()}`);
 
               await interaction.reply({ content: '***__Latest report:__***', embeds: [latest_embed] });
 

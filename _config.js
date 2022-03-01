@@ -1,4 +1,4 @@
-const { SECOND, HOUR } = require('./helpers/constants');
+const { SECOND, HOUR } = require('./helpers.js');
 
 module.exports = {
   development: true,

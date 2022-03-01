@@ -1,9 +1,10 @@
 const { error, debug } = require('./logging.js');
-const { getTop, getShinyReport, getShinyReports } = require('../database.js');
+const { getTop, getShinyReport, getShinyReports, addAmount } = require('../database.js');
 const {
   reporterRoles,
   leaderboard,
 } = require('../config.js');
+const { modLog } = require('../other/mod/functions.js');
 
 const sightingSymbols = {
   verified: '🟢',
@@ -177,6 +178,21 @@ async function updateLeaderboard(guild) {
   await leaderboardMessage.edit({ content: output });
 }
 
+async function addReport(member, amount = 1) {
+  if (!member?.user) return;
+  const reports = await addAmount(member.user, amount, 'reports');
+  reporterRoles.forEach(role => {
+    if (role.amount != reports) return;
+
+    member.roles.add(role.id, `User reached ${role.amount} reports`).catch(e => {
+      modLog(member.guild,
+        `**User:** ${member.toString()}
+        **Action:** Bot unable to assign <@&${role.id}> role`);
+      error('Unable to assign role:', e);
+    });
+  });
+}
+
 module.exports = {
   sightingSymbols,
   obtainMethodSymbols,
@@ -189,4 +205,5 @@ module.exports = {
   keepThreadsActive,
   updateChampion,
   updateLeaderboard,
+  addReport,
 };

@@ -2,9 +2,8 @@ const sqlite = require('sqlite');
 const sqlite3 = require('sqlite3');
 const { backupChannelID } = require('./config.js');
 const { MessageAttachment } = require('discord.js');
-const { warn, info } = require('./helpers/logging.js');
+const { warn, info, consoleProgress } = require('./helpers.js');
 const { version: botVersion } = require('./package.json');
-const { consoleProgress } = require('./helpers/functions.js');
 
 // current version, possibly older version
 // eslint-disable-next-line no-unused-vars

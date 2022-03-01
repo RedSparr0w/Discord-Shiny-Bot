@@ -1,10 +1,9 @@
 const { MessageEmbed } = require('discord.js');
 const { mutedRoleID } = require('../config.js');
 const { MessageActionRow, MessageSelectMenu } = require('discord.js');
-const { randomString, HOUR, WEEK, DAY, MINUTE, formatDateToString } = require('../helpers.js');
+const { randomString, HOUR, WEEK, DAY, MINUTE, formatDateToString, error } = require('../helpers.js');
 const { addScheduleItem } = require('../database.js');
 const { modLog } = require('../other/mod/functions.js');
-const { error } = require('../helpers/logging.js');
 
 module.exports = {
   type        : 'USER',

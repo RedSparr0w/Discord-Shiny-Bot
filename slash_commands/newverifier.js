@@ -2,7 +2,7 @@ const { MessageEmbed } = require('discord.js');
 const { modLog } = require('../other/mod/functions.js');
 const { shinyVerifierRoleID } = require('../config.js');
 const { getShinyReports } = require('../database.js');
-const { error } = require('../helpers/logging.js');
+const { error } = require('../helpers.js');
 
 module.exports = {
   name        : 'new-verifier',

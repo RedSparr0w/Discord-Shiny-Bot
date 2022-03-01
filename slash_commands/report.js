@@ -1,8 +1,7 @@
 const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
 const { shinyVerifierRoleID } = require('../config.js');
 const { getShinyReport } = require('../database.js');
-const { error } = require('../helpers.js');
-const { MINUTE } = require('../helpers/constants.js');
+const { error, MINUTE } = require('../helpers.js');
 
 module.exports = {
   name        : 'report',
