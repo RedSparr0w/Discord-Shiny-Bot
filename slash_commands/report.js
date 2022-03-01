@@ -18,6 +18,7 @@ module.exports = {
       name: 'date',
       type: 'STRING',
       description: 'Date you are reporting for (YYYY-MM-DD or MM-DD)',
+      // TODO: make this a requirement?, will make for much easier verifying
       required: false,
     },
   ],
@@ -86,8 +87,6 @@ module.exports = {
       return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
-    // TODO: post the latest report date
-    // TODO: if date supplied check that it's newer than the last report
     const embed = new MessageEmbed()
       .setColor('#3498db')
       .setDescription(`Please post an image of your report for ${thread} and i'll send it through!`);
