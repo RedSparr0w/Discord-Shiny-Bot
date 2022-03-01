@@ -36,7 +36,7 @@ module.exports = {
     const embed = new MessageEmbed()
       .setColor('RANDOM')
       .setDescription(`Adding ${user.toString()} as <@&${shinyVerifierRoleID}>`);
-    interaction.reply({ embeds: [embed], ephemeral: true });
+    interaction.reply({ embeds: [embed] });
 
     // Add the shiny verifications role
     member.roles.add(shinyVerifierRoleID).catch(e => error('Unable to assign role:', e));
