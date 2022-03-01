@@ -61,7 +61,7 @@ async function updateThreadName(pokemon, thread){
   const symbol = getSymbolFromDate(date);
 
   // If the channel name doesn't include the correct symbol, update it
-  if (thread.name.includes(symbol)) return debug('name already up to date');
+  if (thread.name.includes(symbol)) return;
 
   // replace everything after the last | with the new symbol (should only replace the last symbol)
   const updatedChannelName = thread.name.replace(/[^|]+$/, ` ${symbol}`);
@@ -74,9 +74,9 @@ async function updateThreadName(pokemon, thread){
 
 async function updateThreadNames(guild){
   debug('Updating thread names...');
-  // If we already supplied the data, use that, otherwise get the data
+  // Get our data
   const results = await getShinyReports();
-  console.log(results);
+
   // Update each of the channels
   for (const result of results) {
     const thread = await guild.channels.fetch(result.thread).catch(O_o=>{});
@@ -86,13 +86,12 @@ async function updateThreadNames(guild){
   debug('Updated thread names');
 }
 
-function applyShinySquadRole(guild){
-  const membersWithNoRole = guild.members.cache.filter(m => m.roles.size == 1);
-  membersWithNoRole.forEach((m)=>{
-    setTimeout(()=>{
-      m.roles.add(reporterRoles[0].id, 'User had no roles applied');
-    }, 6e4 /* 1 minute */);
-  });
+async function applyShinySquadRole(guild){
+  const membersWithNoRole = guild.members.cache.filter(m => m.roles.cache.size == 1);
+  debug(`Applying shiny squad role to ${membersWithNoRole.size} members`);
+  for (const [, member] of membersWithNoRole) {
+    await member.roles.add(reporterRoles[0].id, 'User had no roles applied');
+  }
 }
 
 async function keepThreadsActive(guild){
