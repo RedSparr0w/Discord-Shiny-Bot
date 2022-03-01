@@ -57,7 +57,7 @@ module.exports = {
     const symbol3 = interaction.options.get('symbol3')?.value;
     let channel_name = interaction.options.get('channel')?.value;
 
-    const new_thread_name = `${pokemon}${symbol ? `-${symbol}` : ''}${symbol2 ? `-${symbol2}` : ''}${symbol3 ? `-${symbol3}` : ''}-🆕`;
+    const new_thread_name = `${pokemon}${symbol ? ` | ${symbol}` : ''}${symbol2 ? ` | ${symbol2}` : ''}${symbol3 ? ` | ${symbol3}` : ''} | 🆕`;
 
     // Get the channel to create the thread in
     channel_name = channel_name || pokemon[0].toLowerCase();
