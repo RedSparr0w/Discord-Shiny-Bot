@@ -100,6 +100,8 @@ async function updateThreadNames(guild){
 async function applyShinySquadRole(guild){
   // Find any members that only have the @everyone role
   const membersWithNoRole = guild.members.cache.filter(m => m.roles.cache.size == 1);
+  if (!membersWithNoRole.size) return;
+
   debug(`Applying shiny squad role to ${membersWithNoRole.size} members`);
   for (const [, member] of membersWithNoRole) {
     // Apply the shiny squad role
@@ -108,14 +110,21 @@ async function applyShinySquadRole(guild){
 }
 
 async function keepThreadsActive(guild){
-  // TODO: only keep our report threads active
-  guild.channels.fetchActiveThreads().then(async fetched => {
-    for (const [, thread] of fetched.threads) {
-      // Toggle between 1 hour and max, so it doesn't auto archive (this counts as "activity")
-      await thread.setAutoArchiveDuration(60);
-      await thread.setAutoArchiveDuration('MAX');
-    }
-  });
+  // Get our data
+  const results = await getShinyReports();
+
+  // Cheack each of the threads
+  for (const result of results) {
+    const thread = await guild.channels.fetch(result.thread).catch(O_o=>{});
+
+    // If thread doesn't exist or archived, we will just ignore it
+    if (!thread || thread.archived || thread.locked) continue;
+
+    // Toggle thread archive time (this counts as activity to reset the timer)
+    await thread.setAutoArchiveDuration(60);
+    if (thread.archived) await thread.setArchived(false);
+    await thread.setAutoArchiveDuration('MAX');
+  }
 }
 
 async function updateChampion(guild) {
