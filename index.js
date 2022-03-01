@@ -296,6 +296,7 @@ client.on('error', e => error('Client error thrown:', e))
               setShinyReportDate(interaction.channel.name.substring(0, interaction.channel.name.indexOf('|') - 1), date);
 
               // Add points to reporter & verifier
+              // TODO: apply reporter roles
               const reporter = await interaction.guild.members.fetch(reporter_id);
               if (reporter?.user) addAmount(reporter.user, 1, 'reports');
               addAmount(interaction.user, 1, 'verifications');
@@ -309,7 +310,7 @@ client.on('error', e => error('Client error thrown:', e))
 
               await interaction.reply({ content: '***__Latest report:__***', embeds: [latest_embed] });
 
-              // TODO: update the thread title (make sure to await)
+              // TODO: update the thread title (make sure to await as will be archived)
             } else {
               embed.setColor('#e74c3c')
                 .setFooter({ text: '🚫 report denied..' });
