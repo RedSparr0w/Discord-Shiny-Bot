@@ -388,6 +388,30 @@ async function newShinyReportThread(pokemon, thread, symbols){
   db.close();
 }
 
+async function getShinyReport(pokemon){
+  const db = await getDB();
+  const result = await db.get('SELECT * FROM shiny_reports WHERE pokemon=? COLLATE NOCASE', pokemon);
+  db.close();
+
+  // If no result, return empty object
+  return result || {};
+}
+
+async function getShinyReports(){
+  const db = await getDB();
+  const results = await db.all('SELECT * FROM shiny_reports');
+  db.close();
+
+  // If no result, return empty object
+  return results || [];
+}
+
+async function setShinyReportDate(pokemon, date = new Date()){
+  const db = await getDB();
+  await db.run('UPDATE shiny_reports set date=? WHERE pokemon=?', date.getTime().toString(), pokemon);
+  db.close();
+}
+
 module.exports = {
   getDB,
   setupDB,
@@ -409,4 +433,7 @@ module.exports = {
   addScheduleItem,
   clearScheduleItems,
   newShinyReportThread,
+  getShinyReport,
+  getShinyReports,
+  setShinyReportDate,
 };
