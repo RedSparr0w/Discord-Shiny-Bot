@@ -1,6 +1,6 @@
 // TODO: this whole file
 const { MessageEmbed } = require('discord.js');
-const { addAmount, setShinyReportDate } = require('../database.js');
+const { addAmount, setShinyReportDate, getShinyReport } = require('../database.js');
 const {
   error,
   warn,
@@ -28,20 +28,29 @@ module.exports = {
     const member = msg.author;
     const pokemon = channel.name.substring(0, channel.name.indexOf('|') - 1);
 
-    // Delete the users message with the command
-    msg.delete().catch(e=>error('Unable to delete message:', e));
+    // Check if this channel is for shiny reports
+    const report = await getShinyReport(pokemon);
+    if (!report) {
+      const embed = new MessageEmbed()
+        .setColor('#e74c3c')
+        .setDescription('This doesn\'t seem to be a shiny report channel?\nTry again soon, or contact one of the moderators.');
+  
+      return msg.reply({ embeds: [embed], ephemeral: true });
+    }
 
     // Calculate the date specified
     const date = new Date(Date.parse(`${month} ${args[0]}, ${args[1] || new Date().getFullYear()}`));
 
     if (!date) {
-      // Send message stating newest date
       const embed = new MessageEmbed()
         .setColor('#e74c3c')
         .setDescription('Unable to parse date, please try again..');
   
       return msg.reply({ embeds: [embed], ephemeral: true });
     }
+
+    // Delete the users message with the command
+    await msg.delete().catch(e=>error('Unable to delete message:', e));
 
     // Send message stating newest date
     const latest_embed = new MessageEmbed()
