@@ -8,7 +8,7 @@ const {
 const {
   reporterRoles,
   leaderboard,
-  shinyStatus,
+  shinyStatusChannelID,
 } = require('../config.js');
 const { modLog } = require('./mod/functions.js');
 const { MessageEmbed } = require('discord.js');
@@ -195,7 +195,7 @@ async function updateLeaderboard(guild) {
 async function updateShinyStatuses(guild) {
   // TODO: exclude locked threads
   // Find leaderboard channel
-  const shinyStatusChannel = await guild.channels.fetch(shinyStatus?.channelID).catch(e => {});
+  const shinyStatusChannel = await guild.channels.fetch(shinyStatusChannelID).catch(e => {});
   if (!shinyStatusChannel) return;
 
   // Find leaderboard message
