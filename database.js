@@ -212,7 +212,7 @@ async function getTop(amount = 10, table = 'reports'){
 
   let results = [];
 
-  // TODO: tables
+  // TODO: statistics stuff?
   const db = await getDB();
   switch (table) {
     case 'reports':
