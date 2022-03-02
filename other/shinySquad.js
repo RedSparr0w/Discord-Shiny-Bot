@@ -29,6 +29,7 @@ const obtainMethodSymbols = {
 const otherSymbols = {
   new: '🆕',
   locked: '🔒',
+  unlocked: '🔓',
 };
 
 const statusSymbols = {
