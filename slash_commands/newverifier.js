@@ -53,10 +53,10 @@ module.exports = {
       const archived = thread.archived;
 
       // Toggle archived, reset if was previously archived
-      if (archived) await thread.setArchived(false);
+      if (archived) await thread.setArchived(false).catch(error);
       const m = await thread.send(`${user.toString()}`).catch(e=>{});
       await m.delete().catch(e=>{});
-      if (archived) await thread.setArchived(true);
+      if (archived) await thread.setArchived(true).catch(error);
     }
 
     // Add to mod log

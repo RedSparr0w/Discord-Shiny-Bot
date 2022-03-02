@@ -78,10 +78,10 @@ async function updateThreadName(pokemon, thread){
 
   // Check if thread was archived beforehand, re-archive if it was
   const archived = thread.archived;
-  if (archived) await thread.setArchived(false);
+  if (archived) await thread.setArchived(false).catch(error);
   debug(`Updating channel name ${thread.name} → ${symbol}`);
   await thread.edit({ name: updatedChannelName }).catch(e => error('Unable to update thread name:', e));
-  if (archived) await thread.setArchived(true);
+  if (archived) await thread.setArchived(true).catch(error);
 }
 
 async function updateThreadNames(guild){
@@ -127,7 +127,7 @@ async function keepThreadsActive(guild){
 
     // Toggle thread archive time (this counts as activity to reset the timer)
     await thread.setAutoArchiveDuration(60);
-    if (thread.archived) await thread.setArchived(false);
+    if (thread.archived) await thread.setArchived(false).catch(error);
     await thread.setAutoArchiveDuration('MAX');
   }
 }

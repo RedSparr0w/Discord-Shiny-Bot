@@ -283,7 +283,7 @@ client.on('error', e => error('Client error thrown:', e))
 
             // Edit the embed, then archive the thread, no new reports at the moment
             await interaction.message.edit({ embeds: [embed], components: [] });
-            return setTimeout(() => interaction.channel.setArchived(true), 30 * SECOND);
+            return setTimeout(() => interaction.channel.setArchived(true).catch(error), 30 * SECOND);
             
           } catch (e) {
             error(e);
