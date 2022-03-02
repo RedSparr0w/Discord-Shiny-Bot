@@ -68,6 +68,14 @@ module.exports = {
       return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
+    // If thread locked, we aren't accepting reports currently
+    if (thread.locked) {
+      const embed = new MessageEmbed()
+        .setColor('#e74c3c')
+        .setDescription(`${thread} is currently locked for reports.\nIf you believe this is a mistake, please contact someone from <@&${shinyVerifierRoleID}> to get it unlocked.`);
+      return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
+
     const report_date = +report.date ? new Date(+report.date) : 0;
     
     // Get our date object
@@ -96,14 +104,6 @@ module.exports = {
           .setDescription(`Please try again with the date formatted as YYYY-MM-DD or MM-DD\nExample: ${temp_date.getFullYear()}-${(temp_date.getMonth() + 1).toString().padStart(2, 0)}-${temp_date.getDate().toString().padStart(2, 0)}`);
         return interaction.reply({ embeds: [embed], ephemeral: true });
       }
-    }
-
-    // If thread locked, we aren't accepting reports currently
-    if (thread.locked) {
-      const embed = new MessageEmbed()
-        .setColor('#e74c3c')
-        .setDescription(`${thread} is currently locked for reports.\nIf you believe this is a mistake, please contact someone from <@&${shinyVerifierRoleID}> to get it unlocked.`);
-      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     const embed = new MessageEmbed()
