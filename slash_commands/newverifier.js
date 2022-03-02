@@ -54,7 +54,8 @@ module.exports = {
 
       // Toggle archived, reset if was previously archived
       if (archived) await thread.setArchived(false);
-      await thread.members.add(user);
+      const m = await thread.send(`${user.toString()}`).catch(e=>{});
+      await m.delete().catch(e=>{});
       if (archived) await thread.setArchived(true);
     }
 
