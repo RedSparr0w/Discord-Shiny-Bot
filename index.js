@@ -43,6 +43,7 @@ const client = new Discord.Client({
     Discord.Intents.FLAGS.DIRECT_MESSAGES,
     Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
   ],
+  rejectOnRateLimit: () => true,
 });
 
 // Gather our available commands
@@ -132,6 +133,9 @@ client.on('error', e => error('Client error thrown:', e))
   .on('messageCreate', async message => {
     // Either not a command or a bot, ignore
     if (message.author.bot) return;
+    
+    // Make sure the bot is up and running correctly
+    if (!client.application || !client.application.owner) await client.application.fetch();
 
     // Mute users who mass ping (4 or more users)
     if (message.mentions.users.size >= 4) {
@@ -143,55 +147,6 @@ client.on('error', e => error('Client error thrown:', e))
       } catch (e) {
         error('Unable to mute user for mass ping:\n', e);
       }
-    }
-    
-    if (!client.application || !client.application.owner) await client.application.fetch();
-
-    if (message.content.toLowerCase() === '!deploy' && message.author.id === client.application.owner.id) {
-      try {
-        console.log('Deploying new commands!');
-        // Add our slash commands
-        const data = client.slashCommands.filter(c => c.type != 'MESSAGE').map(c => ({
-          name: c.name,
-          description: c.description,
-          options: c.args,
-          defaultPermission: (!c.userperms || c.userperms?.length == 0),
-        }));
-        // Add any context menu commands
-        data.push(...client.slashCommands.filter(c => c.type).map(c => ({
-          name: c.name,
-          type: c.type,
-          defaultPermission: (!c.userperms || c.userperms?.length == 0),
-        })));
-        // Update the current list of commands for this guild
-        await message.guild.commands.set(data);
-
-        const restrictCmds = client.slashCommands.filter(c => c.userperms?.length > 0).map(c => {
-          const roleIDs = message.guild.roles.cache.filter(r => r.permissions.has(c.userperms)).map(r => r.id);
-          c.roleIDs = roleIDs;
-          return c;
-        });
-
-        const fullPermissions = message.guild.commands.cache.filter(c => restrictCmds.find(cmd => cmd.name === c.name)).map(c => {
-          const cmd = restrictCmds.find(cmd => cmd.name === c.name);
-          return {
-            id: c.id,
-            permissions: cmd.roleIDs.map(r => ({
-              id: r,
-              type: 'ROLE',
-              permission: true,
-            })),
-          };
-        });
-
-        // Update the permissions for these commands
-        await client.guilds.cache.get(message.guild.id.toString()).commands.permissions.set({ fullPermissions });
-        message.reply(`Updated guild commands!\n\`\`\`yaml\nCommands: ${data.length}\nRestricted: ${fullPermissions.length}\n\`\`\``);
-
-      } catch (e) {
-        error('Unable to deploy new commands:\n', e);
-      }
-      return;
     }
 
     // Non command messages
@@ -230,7 +185,7 @@ client.on('error', e => error('Client error thrown:', e))
 
 
     // Check if command needs to be executed inside a guild channel
-    if (message.channel.type !== 'GUILD_TEXT' && command.guildOnly) {
+    if (command.guildOnly && !['GUILD_PRIVATE_THREAD', 'GUILD_PUBLIC_THREAD', 'GUILD_TEXT'].includes(message.channel.type)) {
       return message.channel.send('This command can only be executed within guild channels!');
     }
 
@@ -270,7 +225,7 @@ client.on('error', e => error('Client error thrown:', e))
     // Run the command
     try {
       // Send the message object, along with the arguments
-      await command.execute(message, args);
+      await command.execute(message, args, commandName);
       addStatistic(message.author, `!${command.name}`);
       addStatistic(message.author, 'commands');
     } catch (err) {
