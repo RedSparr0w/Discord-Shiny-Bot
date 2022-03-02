@@ -42,6 +42,9 @@ const statusSymbols = {
 
 function getSymbolFromDate(date = new Date()){
   const today = new Date();
+  // If never verified
+  if (date <= 0)
+    return otherSymbols.new;
   // If newer than 5 days
   if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 5))
     return sightingSymbols.verified;
