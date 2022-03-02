@@ -25,7 +25,7 @@ const postPages = async (interaction, pages, page = 1, msgEdit = false) => {
   const customID = randomString(6);
 
   // Send the default page
-  await interaction.reply(msgEdit ? 'Loading...' : pages[page]);
+  await interaction.reply(msgEdit ? { content: 'Loading...' } : pages[page]);
   if (msgEdit) await interaction.editReply(pages[page]);
 
   // Don't add the reactions if only 1 page
