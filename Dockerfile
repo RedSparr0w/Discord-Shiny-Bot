@@ -5,21 +5,8 @@ COPY ./ecosystem.config.js .
 
 # Install app dependencies
 ENV NPM_CONFIG_LOGLEVEL warn
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="true"
-ENV CHROMIUM_PATH="/usr/bin/chromium-browser"
-ENV PUPPETEER_EXECUTABLE_PATH="${CHROMIUM_PATH}"
 RUN apk add --no-cache \
     git \
-    build-base \
-    g++ \
-    libpng \
-    libpng-dev \
-    jpeg-dev \
-    pango-dev \
-    cairo-dev \
-    giflib-dev \
-    python3 \
-    chromium \
     ;
 
 RUN npm i pm2 -g

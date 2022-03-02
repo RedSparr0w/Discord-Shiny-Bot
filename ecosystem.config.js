@@ -2,7 +2,7 @@
 module.exports = {
   apps : [
     {
-      name: 'Pokeclicker-bot',
+      name: 'Shiny-squad-bot',
       script: 'index.js',
       autorestart: true,
       watch: false,
