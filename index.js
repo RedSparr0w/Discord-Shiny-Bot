@@ -20,6 +20,7 @@ const {
   addStatistic,
   setShinyReportDate,
   addAmount,
+  getShinyReport,
 } = require('./database.js');
 const regexMatches = require('./regexMatches.js');
 const { checkScheduledItems } = require('./other/scheduled/scheduled.js');
@@ -170,6 +171,71 @@ client.on('error', e => error('Client error thrown:', e))
         });
       } catch (err) {
         error('Regex Match Error:\n', err);
+      }
+
+
+      // Check if it has attachments and is in a shiny thread
+      if (message.attachments.size) {
+        // If not a shiny thread, ignore this attachment
+        const report = await getShinyReport(message.channel.id);
+        if (!report || !report.pokemon) return;
+
+        let date_string = message.content.match(/(\d{4}-)?\d{2}-\d{2}/)?.[0];
+        const report_date = +report.date ? new Date(+report.date) : 0;
+        
+        // Get our date object
+        let date;
+        if (/^(\d{4}-)?\d{2}-\d{2}$/.test(date_string)) {
+          // If year not included, add it ourselves (assume this year)
+          if (/^\d{2}-\d{2}$/.test(date_string)) {
+            date_string = `${new Date().getFullYear()}-${date_string}`;
+          }
+
+          // convert to date object
+          date = new Date(Date.parse(date_string));
+
+          // Check if report is newer than previous report
+          if (date <= report_date) {
+            const embed = new Discord.MessageEmbed()
+              .setColor('#e74c3c')
+              .setDescription(`${message.author}, Thank you for your report!\nBut we already have a report for that date or newer!\nLatest report: ${report_date.getFullYear()}-${(report_date.getMonth() + 1).toString().padStart(2, 0)}-${report_date.getDate().toString().padStart(2, 0)}`);
+            const reply = await message.reply({ embeds: [embed], ephemeral: true });
+            setTimeout(() => reply.delete().catch(e=>error('Unable to delete message:', e)), 10 * SECOND);
+            return message.delete().catch(e => {});
+          }
+        }
+        // Send through the report
+        const embed_report = new Discord.MessageEmbed()
+          .setColor('#3498db')
+          .setImage(message.attachments.first().url)
+          .setDescription(`**Reporter:** ${message.author.toString()}${date ? `\n**Date:** ${date_string}` : ''}${message.content ? `\n\n${message.content.replace(/(\d{4}-)?\d{2}-\d{2}/, '')}` : ''}`);
+
+          
+        const row = new Discord.MessageActionRow()
+          .addComponents(
+            new Discord.MessageButton()
+              .setCustomId('report-accept')
+              .setLabel('accept')
+              .setStyle('SUCCESS')
+              .setEmoji('✨'),
+            new Discord.MessageButton()
+              .setCustomId('report-deny')
+              .setLabel('deny')
+              .setStyle('SECONDARY')
+              .setEmoji('🚫')
+          );
+
+        message.channel.send({ embeds: [embed_report], components: [row] });
+        
+        // Reply letting the user know it went through successfully
+        const embed_reply = new Discord.MessageEmbed()
+          .setColor('#2ecc71')
+          .setDescription(`Thank you ${message.author.toString()}!\nI have sent through your shiny report successfully!`);
+        const reply = await message.reply({ embeds: [embed_reply], ephemeral: true });
+        setTimeout(() => reply.delete().catch(e=>error('Unable to delete message:', e)), 10 * SECOND);
+
+        // Delete the users message
+        return message.delete().catch(e=>error('Unable to delete message:', e));
       }
 
       // We don't want to process anything else now
