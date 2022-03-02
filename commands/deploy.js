@@ -1,5 +1,5 @@
 const { MessageEmbed } = require('discord.js');
-const { error } = require('../helpers.js');
+const { error, info } = require('../helpers.js');
 
 // TODO: update alias list
 module.exports = {
@@ -20,7 +20,7 @@ module.exports = {
     if (msg.author.id !== client.application.owner.id) return;
 
     try {
-      console.log('Deploying new commands!');
+      info('Deploying commands to guild!');
 
       // Add our slash commands
       const data = client.slashCommands.filter(c => c.type != 'MESSAGE').map(c => ({
