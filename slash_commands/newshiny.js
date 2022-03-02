@@ -9,7 +9,7 @@ const { obtainMethodSymbols } = require('../other/shinySquad.js');
 
 module.exports = {
   name        : 'new-shiny',
-  description : 'Create a new channel when a new shiny has been released',
+  description : 'Create a new thread when a new shiny has been released',
   args        : [
     {
       name: 'pokemon',

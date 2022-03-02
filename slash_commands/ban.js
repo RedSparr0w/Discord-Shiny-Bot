@@ -16,7 +16,7 @@ module.exports = {
       name: 'reason',
       type: 'STRING',
       description: 'The reason this user is being banned',
-      required: false,
+      required: true,
     },
   ],
   guildOnly   : true,
