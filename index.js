@@ -7,6 +7,7 @@ const {
   info,
   warn,
   error,
+  debug,
   RunOnInterval,
   formatChannelList,
   SECOND,
@@ -248,11 +249,30 @@ client.on('error', e => error('Client error thrown:', e))
 
             if (interaction.customId == 'report-accept') {
               const reporter_id = embed.description.match(/<@!?(\d+)>/)[1];
-              const date_str = embed.description.match(/(\d{4}-\d{2}-\d{2})/)?.[1];
+              let date_str = embed.description.match(/(\d{4}-\d{2}-\d{2})/)?.[1];
               // Check if date supplied or get one from verifier
               if (!date_str) {
                 // TODO: get a date from the verifier
-                return interaction.reply({ content: 'Report has no date, please supply a date (YYYY-MM-DD or MM-DD):', ephemeral: true });
+                await interaction.reply({ content: 'Report has no date, please supply a date (YYYY-MM-DD or MM-DD):', ephemeral: true });
+                
+                const filter = m => m.author.id === interaction.member.id && /^(\d{4}-)?\d{2}-\d{2}$/.test(m.content);
+                // errors: ['time'] treats ending because of the time limit as an error
+                await interaction.channel.awaitMessages({filter, max: 1, time: 1 * MINUTE, errors: ['time'] })
+                  .then(async collected => {
+                    const m = collected.first();
+                    date_str = m.content;
+                    if (/^(\d{4}-)?\d{2}-\d{2}$/.test(date_str)) {
+                      // If year not included, add it ourselves (assume this year)
+                      if (/^\d{2}-\d{2}$/.test(date_str)) {
+                        date_str = `${new Date().getFullYear()}-${date_str}`;
+                      }
+                    }
+                    m.delete();
+                  })
+                  .catch(e=>{});
+                if (!date_str) {
+                  return debug('No date supplied');
+                }
               }
   
               const date = new Date(date_str);
@@ -273,7 +293,7 @@ client.on('error', e => error('Client error thrown:', e))
                 .setColor('#3498db')
                 .setDescription(`**Date:** ${date_str}\n**Reported by:** ${reporter}\n**Verified by:** ${interaction.member.toString()}`);
 
-              await interaction.reply({ content: '***__Latest report:__***', embeds: [latest_embed] });
+              await interaction.replied ? interaction.followUp({ content: '***__Latest report:__***', embeds: [latest_embed] }) : interaction.reply({ content: '***__Latest report:__***', embeds: [latest_embed] });
 
               await updateThreadName(interaction.channel);
             } else {
@@ -281,9 +301,9 @@ client.on('error', e => error('Client error thrown:', e))
                 .setFooter({ text: '🚫 report denied..' });
             }
 
-            // Edit the embed, then archive the thread, no new reports at the moment
+            // Edit the embed, then archive the thread after 10 seconds, no new reports at the moment
             await interaction.message.edit({ embeds: [embed], components: [] });
-            return setTimeout(() => interaction.channel.setArchived(true).catch(error), 30 * SECOND);
+            return setTimeout(() => interaction.channel.setArchived(true).catch(error), 10 * SECOND);
             
           } catch (e) {
             error(e);
