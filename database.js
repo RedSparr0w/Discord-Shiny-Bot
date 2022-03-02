@@ -236,10 +236,10 @@ async function getRank(user, table = 'reports'){
     getUserID(user),
   ]);
 
-  const result = await db.get('SELECT * FROM ( SELECT user, amount, RANK () OVER ( ORDER BY amount DESC ) rank FROM reports ) WHERE user=?', user_id);
+  const result = await db.get(`SELECT * FROM ( SELECT user, amount, RANK () OVER ( ORDER BY amount DESC ) rank FROM ${table} ) WHERE user=?`, user_id);
   db.close();
 
-  return result.rank || 0;
+  return result;
 }
 
 async function getStatisticTypeID(type){
