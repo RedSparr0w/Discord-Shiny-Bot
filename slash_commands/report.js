@@ -117,13 +117,24 @@ module.exports = {
     interaction.channel.awaitMessages({filter, max: 1, time: 5 * MINUTE, errors: ['time'] })
       .then(async collected => {
         const m = collected.first();
+        const attachments = [...m.attachments].map(a => a[1]);
 
         // Send through the report
-        const embed_report = new MessageEmbed()
-          .setColor('#3498db')
-          .setImage(m.attachments.first().url)
-          .setDescription(`**Reporter:** ${m.author.toString()}${date ? `\n**Date:** ${date_string}` : ''}${m.content ? `\n\n${m.content}` : ''}`);
+        const embeds = [
+          new MessageEmbed()
+            .setColor('#3498db')
+            .setImage(attachments.shift().url)
+            .setDescription(`**Reporter:** ${m.author.toString()}${date ? `\n**Date:** ${date_string}` : ''}${m.content ? `\n\n${m.content}` : ''}`),
+        ];
 
+        while (attachments.length) {
+          embeds.push(
+            new MessageEmbed()
+              .setColor('#3498db')
+              .setImage(attachments.shift().url)
+              .setDescription('\u200b')
+          );
+        }
           
         const row = new MessageActionRow()
           .addComponents(
@@ -139,7 +150,7 @@ module.exports = {
               .setEmoji('🚫')
           );
 
-        thread.send({ embeds: [embed_report], components: [row] });
+        thread.send({ embeds, components: [row] });
         
         // Reply letting the user know it went through successfully
         const embed_reply = new MessageEmbed()

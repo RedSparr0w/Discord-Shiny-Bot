@@ -33,6 +33,7 @@ const {
   addReport,
   keepThreadsActive,
   updateShinyStatuses,
+  otherSymbols,
 } = require('./other/shinySquad.js');
 
 const client = new Discord.Client({
@@ -204,12 +205,24 @@ client.on('error', e => error('Client error thrown:', e))
             return message.delete().catch(e => {});
           }
         }
-        // Send through the report
-        const embed_report = new Discord.MessageEmbed()
-          .setColor('#3498db')
-          .setImage(message.attachments.first().url)
-          .setDescription(`**Reporter:** ${message.author.toString()}${date ? `\n**Date:** ${date_string}` : ''}${message.content ? `\n\n${message.content.replace(/(\d{4}-)?\d{2}-\d{2}/, '')}` : ''}`);
 
+        const attachments = [...message.attachments].map(a => a[1]);
+        // Send through the report
+        const embeds = [
+          new Discord.MessageEmbed()
+            .setColor('#3498db')
+            .setImage(attachments.shift().url)
+            .setDescription(`**Reporter:** ${message.author.toString()}${date ? `\n**Date:** ${date_string}` : ''}${message.content ? `\n\n${message.content.replace(/(\d{4}-)?\d{2}-\d{2}/, '')}` : ''}`),
+        ];
+
+        while (attachments.length) {
+          embeds.push(
+            new Discord.MessageEmbed()
+              .setColor('#3498db')
+              .setImage(attachments.shift().url)
+              .setDescription('\u200b')
+          );
+        }
           
         const row = new Discord.MessageActionRow()
           .addComponents(
@@ -225,7 +238,7 @@ client.on('error', e => error('Client error thrown:', e))
               .setEmoji('🚫')
           );
 
-        message.channel.send({ embeds: [embed_report], components: [row] });
+        message.channel.send({ embeds, components: [row] });
         
         // Reply letting the user know it went through successfully
         const embed_reply = new Discord.MessageEmbed()
@@ -311,11 +324,24 @@ client.on('error', e => error('Client error thrown:', e))
         if (interaction.member.roles.cache.has(shinyVerifierRoleID)) {
           try {
             // Get the data from the embed
-            const embed = interaction.message.embeds[0];
+            const embeds = interaction.message.embeds;
+
+            if (interaction.customId == 'report-deny') {
+              embeds.forEach(e => e.setColor('#e74c3c'));
+              embeds[embeds.length - 1].setFooter({ text: '🚫 report denied..' });
+
+              // Edit the embed, then archive the thread after 10 seconds, no new reports at the moment
+              await interaction.message.edit({ embeds, components: [] });
+              // Only archive if channel not new
+              if (!interaction.channel.name.endsWith(otherSymbols.new)) {
+                setTimeout(() => interaction.channel.setArchived(true).catch(error), 10 * SECOND);
+              }
+              return;
+            }
 
             if (interaction.customId == 'report-accept') {
-              const reporter_id = embed.description.match(/<@!?(\d+)>/)[1];
-              let date_str = embed.description.match(/(\d{4}-\d{2}-\d{2})/)?.[1];
+              const reporter_id = embeds[0].description.match(/<@!?(\d+)>/)[1];
+              let date_str = embeds[0].description.match(/(\d{4}-\d{2}-\d{2})/)?.[1];
               // Check if date supplied or get one from verifier
               if (!date_str) {
                 // TODO: get a date from the verifier
@@ -352,8 +378,8 @@ client.on('error', e => error('Client error thrown:', e))
               if (reporter) addReport(reporter, 1);
               addAmount(interaction.user, 1, 'verifications');
 
-              embed.setColor('#2ecc71')
-                .setFooter({ text: '✨ report accepted!' });
+              embeds.forEach(e => e.setColor('#2ecc71'));
+              embeds[embeds.length - 1].setFooter({ text: '✨ report accepted!' });
 
               const latest_embed = new Discord.MessageEmbed()
                 .setColor('#3498db')
@@ -362,14 +388,11 @@ client.on('error', e => error('Client error thrown:', e))
               await interaction.replied ? interaction.followUp({ content: '***__Latest report:__***', embeds: [latest_embed] }) : interaction.reply({ content: '***__Latest report:__***', embeds: [latest_embed] });
 
               await updateThreadName(interaction.channel);
-            } else {
-              embed.setColor('#e74c3c')
-                .setFooter({ text: '🚫 report denied..' });
-            }
 
-            // Edit the embed, then archive the thread after 10 seconds, no new reports at the moment
-            await interaction.message.edit({ embeds: [embed], components: [] });
-            return setTimeout(() => interaction.channel.setArchived(true).catch(error), 10 * SECOND);
+              // Edit the embed, then archive the thread after 10 seconds, no new reports at the moment
+              await interaction.message.edit({ embeds, components: [] });
+              return setTimeout(() => interaction.channel.setArchived(true).catch(error), 10 * SECOND);
+            }
             
           } catch (e) {
             error(e);
