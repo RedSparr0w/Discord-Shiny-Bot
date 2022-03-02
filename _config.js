@@ -13,6 +13,10 @@ module.exports = {
     channelID: 'DISCORD_LEADERBOARD_CHANNEL_ID (optional)',
     messageID: 'DISCORD_LEADERBOARD_MESSAGE_ID (optional)',
   },
+  shinyStatus: {
+    channelID: 'DISCORD_SHINY_STATUS_CHANNEL_ID (optional)',
+    messageID: 'DISCORD_SHINY_STATUS_MESSAGE_ID (optional)',
+  },
   // Our roles
   shinyVerifierRoleID: 'DISCORD_SHINY_VERIFIER_ROLE_ID (optional)',
   reporterRoles: [

@@ -8,8 +8,10 @@ const {
 const {
   reporterRoles,
   leaderboard,
+  shinyStatus,
 } = require('../config.js');
 const { modLog } = require('./mod/functions.js');
+const { MessageEmbed } = require('discord.js');
 
 const sightingSymbols = {
   verified: '🟢',
@@ -184,6 +186,44 @@ async function updateLeaderboard(guild) {
   await leaderboardMessage.edit({ content: output });
 }
 
+async function updateShinyStatuses(guild) {
+  // Find leaderboard channel
+  const shinyStatusChannel = await guild.channels.fetch(shinyStatus?.channelID).catch(e => {});
+  if (!shinyStatusChannel) return;
+
+  // Find leaderboard message
+  const leaderboardMessages = [...await shinyStatusChannel.messages.fetch({ limit: 100 }).catch(e => {})];
+  if (!leaderboardMessages) return;
+
+  // Get our shiny reports
+  const results = await getShinyReports();
+  const resultsText = results
+    .sort((a,b) => a.pokemon.localeCompare(b.pokemon))
+    .map((res) => `<#${res.thread}>`);
+  const items_per_page = 50;
+
+  const pages = new Array(Math.ceil(resultsText.length / items_per_page)).fill('').map(page => {
+    const embed = new MessageEmbed().setColor('#3498db');
+    // Setup our embeds
+    embed.setDescription(resultsText.splice(0, items_per_page).join('\n'));
+    // Return our message object
+    return { embeds: [embed] };
+  });
+
+  let i = 0;
+  for(const page of pages) {
+    if (leaderboardMessages[i]) {
+      await leaderboardMessages[i][1].edit(page);
+    } else {
+      await shinyStatusChannel.send(page);
+    }
+    i++;
+  }
+
+  // Update the message
+  // await leaderboardMessage.edit({ content: output });
+}
+
 async function addReport(member, amount = 1) {
   if (!member?.user) return;
   const reports = await addAmount(member.user, amount, 'reports');
@@ -211,5 +251,6 @@ module.exports = {
   keepThreadsActive,
   updateChampion,
   updateLeaderboard,
+  updateShinyStatuses,
   addReport,
 };

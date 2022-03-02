@@ -30,6 +30,7 @@ const {
   applyShinySquadRole,
   addReport,
   keepThreadsActive,
+  updateShinyStatuses,
 } = require('./other/shinySquad.js');
 
 const client = new Discord.Client({
@@ -109,6 +110,7 @@ client.once('ready', async() => {
       applyShinySquadRole(guild);
       updateChampion(guild);
       updateLeaderboard(guild);
+      updateShinyStatuses(guild);
     });
   }, { run_now: true });
 
