@@ -2,8 +2,8 @@
 Command used to generate the list of aliases:
 !eval
 ```js
-const commands = msg.client.commands.map(c => [c.name, ...c.aliases]).flat();
-return `'${msg.client.slashCommands.map(c => [c.name, ...c.aliases]).flat().filter(c => !commands.includes(c)).join("','")}'`;
+const commands = msg.client.commands.map(c => [c.name, ...(c.aliases || [])]).flat();
+return `'${msg.client.slashCommands.map(c => [c.name, ...(c.aliases || [])]).flat().filter(c => !commands.includes(c)).join("','")}'`;
 ```
 */
 
@@ -13,7 +13,7 @@ const { prefix } = require('../config');
 // TODO: update alias list
 module.exports = {
   name        : 'slashcommandinfo',
-  aliases     : ['unknown'],
+  aliases     : ['donate','commands','new-shiny','new-verifier','report','top','leaderboard','lb'],
   description : 'Slash command info',
   args        : [],
   guildOnly   : true,
