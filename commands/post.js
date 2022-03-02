@@ -9,7 +9,10 @@ module.exports = {
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES'],
   userperms   : ['MANAGE_GUILD'],
-  channels    : [], // default restricted channels
+  channels    : [
+    'prof-willow-admins',
+    'prof-willow-mods',
+  ],
   execute     : async (msg, args) => {
     const [, message_id] = args;
 
