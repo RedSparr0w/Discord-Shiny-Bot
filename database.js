@@ -393,7 +393,7 @@ async function getShinyReport(pokemon){
   db.close();
 
   // If no result, return empty object
-  return result || {};
+  return result;
 }
 
 async function getShinyReports(){
