@@ -88,7 +88,7 @@ module.exports = {
 
     const embed = new MessageEmbed()
       .setColor('#3498db')
-      .setDescription(`Please post an image of your report for ${thread} and i'll send it through!`);
+      .setDescription(`Please upload an image of your report for ${thread} and i'll send it through!`);
     await interaction.reply({ embeds: [embed], ephemeral: true });
 
     // Wait for the user to post a picture
