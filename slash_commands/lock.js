@@ -4,6 +4,7 @@ const { getShinyReport } = require('../database.js');
 const { modLog } = require('../other/mod/functions.js');
 const { otherSymbols } = require('../other/shinySquad.js');
 
+// TODO: mark as locked
 module.exports = {
   name        : 'lock',
   aliases     : [],

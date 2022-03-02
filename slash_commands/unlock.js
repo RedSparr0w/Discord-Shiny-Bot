@@ -4,6 +4,7 @@ const { getShinyReport, setShinyReportDate } = require('../database.js');
 const { modLog } = require('../other/mod/functions.js');
 const { otherSymbols } = require('../other/shinySquad.js');
 
+// TODO: mark as unlocked
 module.exports = {
   name        : 'unlock',
   aliases     : [],
