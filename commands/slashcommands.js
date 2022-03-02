@@ -13,7 +13,7 @@ const { prefix } = require('../config');
 // TODO: update alias list
 module.exports = {
   name        : 'slashcommandinfo',
-  aliases     : ['commands','newshiny','lock','unlock','top','report','top','leaderboard','lb'],
+  aliases     : ['commands','newshiny','lock','unlock','top','report','top','leaderboard','lb','reports','verifications','rank'],
   description : 'Slash command info',
   args        : [],
   guildOnly   : true,

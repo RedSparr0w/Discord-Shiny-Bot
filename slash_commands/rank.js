@@ -3,7 +3,7 @@ const { getRank } = require('../database');
 
 module.exports = {
   name        : 'rank',
-  aliases     : [],
+  aliases     : ['reports', 'verifications'],
   description : 'Get your current rank',
   args        : [],
   guildOnly   : false,
