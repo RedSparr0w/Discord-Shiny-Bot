@@ -61,7 +61,7 @@ module.exports = {
       .setTitle('USER BANNED')
       .setAuthor({ name: user.tag, iconURL: user.displayAvatarURL() })
       .setDescription(user.toString())
-      .setColor('RANDOM')
+      .setColor('#3498db')
       .setThumbnail(user.displayAvatarURL())
       .addField('Status:', member?.presence?.status || 'offline')
       .addField('Joined Discord:', `<t:${Math.floor(+joinDiscord / 1000)}:R>`)

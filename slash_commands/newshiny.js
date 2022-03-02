@@ -99,7 +99,7 @@ module.exports = {
       **Thread:** ${thread}`);
 
     const embed = new MessageEmbed()
-      .setColor('RANDOM')
+      .setColor('#2ecc71')
       .setDescription(`New thread created successfully:\n${thread}`);
     return interaction.reply({ embeds: [embed], ephemeral: true });
   },

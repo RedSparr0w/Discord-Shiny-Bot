@@ -34,7 +34,7 @@ module.exports = {
     const results = await getShinyReports();
 
     const embed = new MessageEmbed()
-      .setColor('RANDOM')
+      .setColor('#2ecc71')
       .setDescription(`Adding ${user.toString()} as <@&${shinyVerifierRoleID}>`);
     interaction.reply({ embeds: [embed] });
 
