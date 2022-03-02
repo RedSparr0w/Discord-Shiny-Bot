@@ -16,10 +16,10 @@ module.exports = {
   userperms   : ['MANAGE_THREADS'],
   execute     : async (interaction, args) => {
     const thread = interaction.channel;
-    const pokemon = thread.name.substring(0, thread.name.indexOf('|') - 1);
+    const thread_ID = thread.id;
 
     // Check if this channel is for shiny reports
-    const report = await getShinyReport(pokemon);
+    const report = await getShinyReport(thread_ID);
     if (!report) {
       const embed = new MessageEmbed()
         .setColor('#e74c3c')

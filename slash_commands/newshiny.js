@@ -70,7 +70,7 @@ module.exports = {
     }
 
     // Check the thread doesn't already exist
-    const thread_exist = interaction.guild.channels.cache.find(channel => channel.type == 'GUILD_PUBLIC_THREAD' && channel.name.toLowerCase().startsWith(pokemon.toLowerCase()));
+    const thread_exist = interaction.guild.channels.cache.find(channel => channel.type == 'GUILD_PUBLIC_THREAD' && channel.name.toLowerCase().startsWith(`${pokemon.toLowerCase().trim()} |`));
     if (thread_exist) {
       const embed = new MessageEmbed()
         .setColor('#e74c3c')
@@ -101,6 +101,6 @@ module.exports = {
     const embed = new MessageEmbed()
       .setColor('#2ecc71')
       .setDescription(`New thread created successfully:\n${thread}`);
-    return interaction.reply({ embeds: [embed], ephemeral: true });
+    return interaction.reply({ embeds: [embed] });
   },
 };

@@ -258,8 +258,7 @@ client.on('error', e => error('Client error thrown:', e))
               const date = new Date(date_str);
 
               // Update the date we last reported
-              const pokemon = interaction.channel.name.substring(0, interaction.channel.name.indexOf('|') - 1);
-              await setShinyReportDate(pokemon, date);
+              await setShinyReportDate(interaction.channel.id, date);
 
               // Add points to reporter & verifier
               // TODO: apply reporter roles
@@ -276,8 +275,7 @@ client.on('error', e => error('Client error thrown:', e))
 
               await interaction.reply({ content: '***__Latest report:__***', embeds: [latest_embed] });
 
-              // TODO: update the thread title (make sure to await as will be archived)
-              await updateThreadName(pokemon, interaction.channel);
+              await updateThreadName(interaction.channel);
             } else {
               embed.setColor('#e74c3c')
                 .setFooter({ text: '🚫 report denied..' });

@@ -1,7 +1,8 @@
 const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
 const { shinyVerifierRoleID } = require('../config.js');
-const { getShinyReport } = require('../database.js');
+const { getDB } = require('../database.js');
 const { error, MINUTE } = require('../helpers.js');
+const FuzzySet = require('fuzzyset');
 
 module.exports = {
   name        : 'report',
@@ -29,17 +30,45 @@ module.exports = {
   execute     : async (interaction, args) => {
     const pokemon = interaction.options.get('pokemon').value;
     let date_string = interaction.options.get('date')?.value;
-    let date;
+    let date, report;
 
-    const report = await getShinyReport(pokemon);
-    const report_date = +report.date ? new Date(+report.date) : 0;
+    const db = await getDB();
+    const results = await db.all('SELECT * FROM shiny_reports');
 
-    if (!report.thread) {
+    // If no results, thread probably doesn't exist
+    if (!results || !results.length) {
+      const embed = new MessageEmbed()
+        .setColor('#e74c3c')
+        .setDescription('Couldn\'t find a thread for this Pokemon.\nTry again soon, or contact one of the moderators.1');
+  
+      return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
+
+    const fuzzySearch = FuzzySet(results.map(r => r.pokemon.toLowerCase().replace(/[^\w\s]/g, '')), false, 1, 2);
+    const pokemonName = fuzzySearch.get(pokemon.toLowerCase());
+    if (pokemonName) {
+      report = results.find(res => res.pokemon.toLowerCase().replace(/[^\w\s]/g, '') == pokemonName[0][1]);
+    }
+
+    // If we have no report, it probably doesn't exist
+    if (!report) {
+      const embed = new MessageEmbed()
+        .setColor('#e74c3c')
+        .setDescription('Couldn\'t find a thread for this Pokemon.\nTry again soon, or contact one of the moderators.2');
+  
+      return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
+
+    // Find the thread
+    const thread = await interaction.guild.channels.fetch(report.thread).catch(e => {});
+    if (!thread) {
       const embed = new MessageEmbed()
         .setColor('#e74c3c')
         .setDescription(`Couldn't find a thread for this pokemon \`${pokemon}\``);
       return interaction.reply({ embeds: [embed], ephemeral: true });
     }
+
+    const report_date = +report.date ? new Date(+report.date) : 0;
     
     // Get our date object
     if (date_string) {
@@ -56,7 +85,7 @@ module.exports = {
         if (date <= report_date) {
           const embed = new MessageEmbed()
             .setColor('#e74c3c')
-            .setDescription(`Thank you for your report,\nBut we already have a report for that date or newer!\nLatest report: ${report_date.getFullYear()}-${(report_date.getMonth() + 1).toString().padStart(2, 0)}-${report_date.getDate().toString().padStart(2, 0)}`);
+            .setDescription(`Thank you for your report,\nBut we already have a report for that date or newer!\n${thread}\nLatest report: ${report_date.getFullYear()}-${(report_date.getMonth() + 1).toString().padStart(2, 0)}-${report_date.getDate().toString().padStart(2, 0)}`);
           return interaction.reply({ embeds: [embed], ephemeral: true });
         }
       } else {
@@ -67,15 +96,6 @@ module.exports = {
           .setDescription(`Please try again with the date formatted as YYYY-MM-DD or MM-DD\nExample: ${temp_date.getFullYear()}-${(temp_date.getMonth() + 1).toString().padStart(2, 0)}-${temp_date.getDate().toString().padStart(2, 0)}`);
         return interaction.reply({ embeds: [embed], ephemeral: true });
       }
-    }
-
-    // Find the thread
-    const thread = await interaction.guild.channels.fetch(report.thread).catch(e => {});
-    if (!thread) {
-      const embed = new MessageEmbed()
-        .setColor('#e74c3c')
-        .setDescription(`Couldn't find a thread for this pokemon \`${pokemon}\``);
-      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     // If thread locked, we aren't accepting reports currently

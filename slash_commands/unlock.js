@@ -16,10 +16,10 @@ module.exports = {
   userperms   : ['MANAGE_THREADS'],
   execute     : async (interaction, args) => {
     const thread = interaction.channel;
-    const pokemon = thread.name.substring(0, thread.name.indexOf('|') - 1);
+    const thread_ID = thread.id;
 
     // Check if this channel is for shiny reports
-    const report = await getShinyReport(pokemon);
+    const report = await getShinyReport(thread_ID);
     if (!report) {
       const embed = new MessageEmbed()
         .setColor('#e74c3c')
@@ -35,7 +35,7 @@ module.exports = {
     await interaction.reply({ embeds: [embed] });
     
     // replace everything after the last | with the new symbol (should only replace the last symbol)
-    await setShinyReportDate(pokemon, new Date(0));
+    await setShinyReportDate(thread_ID, new Date(0));
     const updatedChannelName = thread.name.replace(/[^|]+$/, ` ${otherSymbols.new}`);
 
     // Unarchive thread (if it is), update channel name, lock thread

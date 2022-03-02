@@ -62,9 +62,12 @@ function getSymbolFromDate(date = new Date()){
     return sightingSymbols.danger;
 }
 
-async function updateThreadName(pokemon, thread){
+async function updateThreadName(thread){
+  // Check we recieved a thread
+  if (!thread) return;
+
   // Get report data
-  const report = await getShinyReport(pokemon);
+  const report = await getShinyReport(thread.id);
   if (!report) return;
 
   // If no reports ever
@@ -103,7 +106,7 @@ async function updateThreadNames(guild){
     if (!thread) continue;
 
     // Update the thread name
-    await updateThreadName(result.pokemon, thread);
+    await updateThreadName(thread);
   }
   debug('Updated thread names');
 }
@@ -190,6 +193,7 @@ async function updateLeaderboard(guild) {
 }
 
 async function updateShinyStatuses(guild) {
+  // TODO: exclude locked threads
   // Find leaderboard channel
   const shinyStatusChannel = await guild.channels.fetch(shinyStatus?.channelID).catch(e => {});
   if (!shinyStatusChannel) return;
@@ -222,9 +226,6 @@ async function updateShinyStatuses(guild) {
     }
     i++;
   }
-
-  // Update the message
-  // await leaderboardMessage.edit({ content: output });
 }
 
 async function addReport(member, amount = 1) {

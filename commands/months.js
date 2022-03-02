@@ -26,10 +26,10 @@ module.exports = {
     // Get Pokemon name
     const channel = msg.channel;
     const member = msg.author;
-    const pokemon = channel.name.substring(0, channel.name.indexOf('|') - 1);
+    const thread_ID = channel.id;
 
     // Check if this channel is for shiny reports
-    const report = await getShinyReport(pokemon);
+    const report = await getShinyReport(thread_ID);
     if (!report) {
       const embed = new MessageEmbed()
         .setColor('#e74c3c')
@@ -60,8 +60,8 @@ module.exports = {
     const bot_message = await channel.send({ content: '***__Latest report:__***', embeds: [latest_embed] });
     
     // Update the report date and channel name
-    await setShinyReportDate(pokemon, date);
-    updateThreadName(pokemon, channel);
+    await setShinyReportDate(thread_ID, date);
+    updateThreadName(channel);
 
     // Add 1 point to the verifier
     addAmount(member, 1, 'verifications');

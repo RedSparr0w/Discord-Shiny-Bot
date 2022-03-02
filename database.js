@@ -387,9 +387,9 @@ async function newShinyReportThread(pokemon, thread, symbols){
   db.close();
 }
 
-async function getShinyReport(pokemon){
+async function getShinyReport(thread_ID){
   const db = await getDB();
-  const result = await db.get('SELECT * FROM shiny_reports WHERE pokemon=? COLLATE NOCASE', pokemon);
+  const result = await db.get('SELECT * FROM shiny_reports WHERE thread=?', thread_ID);
   db.close();
 
   // If no result, return empty object
@@ -405,9 +405,9 @@ async function getShinyReports(){
   return results || [];
 }
 
-async function setShinyReportDate(pokemon, date = new Date()){
+async function setShinyReportDate(thread_ID, date = new Date()){
   const db = await getDB();
-  await db.run('UPDATE shiny_reports set date=? WHERE pokemon=?', date.getTime().toString(), pokemon);
+  await db.run('UPDATE shiny_reports set date=? WHERE thread=?', date.getTime().toString(), thread_ID);
   db.close();
 }
 

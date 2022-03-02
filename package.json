@@ -15,6 +15,7 @@
   "dependencies": {
     "discord.js": "^13.6.0",
     "eslint": "^7.32.0",
+    "fuzzyset": "^1.0.7",
     "sqlite": "^4.0.23",
     "sqlite3": "^5.0.2"
   }
