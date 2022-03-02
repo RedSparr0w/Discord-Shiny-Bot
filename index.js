@@ -141,18 +141,6 @@ client.on('error', e => error('Client error thrown:', e))
     // Make sure the bot is up and running correctly
     if (!client.application || !client.application.owner) await client.application.fetch();
 
-    // Mute users who mass ping (4 or more users)
-    if (message.mentions.users.size >= 4) {
-      try {
-        message.delete().catch(e=>{});
-        // TODO: timeout user
-        message.member.roles.add('123', `User muted for mass ping (${message.mentions.users.size} users)`);
-        return message.reply('You have been muted, Do not mass ping!');
-      } catch (e) {
-        error('Unable to mute user for mass ping:\n', e);
-      }
-    }
-
     // Non command messages
     if (!message.content.startsWith(prefix)) {
       // Add points for each message sent (every 30 seconds)
