@@ -145,7 +145,6 @@ async function updateChampion(guild) {
   const championRoleID = reporterRoles[reporterRoles.length - 1].id;
   // Get the top x results (incase top member has left the server)
   const results = await getTop(50, 'reports');
-  // TODO: get current champion
   const currentChampion = guild.members.cache.find(m => m.roles.cache.has(championRoleID));
 
   for (const result of results){

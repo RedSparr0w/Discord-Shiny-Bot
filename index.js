@@ -344,7 +344,6 @@ client.on('error', e => error('Client error thrown:', e))
               let date_str = embeds[0].description.match(/(\d{4}-\d{2}-\d{2})/)?.[1];
               // Check if date supplied or get one from verifier
               if (!date_str) {
-                // TODO: get a date from the verifier
                 await interaction.reply({ content: 'Report has no date, please supply a date (YYYY-MM-DD or MM-DD):', ephemeral: true });
                 
                 const filter = m => m.author.id === interaction.member.id && /^(\d{4}-)?\d{2}-\d{2}$/.test(m.content);
@@ -373,7 +372,6 @@ client.on('error', e => error('Client error thrown:', e))
               await setShinyReportDate(interaction.channel.id, date);
 
               // Add points to reporter & verifier
-              // TODO: apply reporter roles
               const reporter = await interaction.guild.members.fetch(reporter_id).catch(error);
               if (reporter) addReport(reporter, 1);
               addAmount(interaction.user, 1, 'verifications');

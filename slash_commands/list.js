@@ -21,6 +21,11 @@ module.exports = {
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES', 'EMBED_LINKS'],
   userperms   : [],
+  channels    : [
+    'prof-willow-admins',
+    'prof-willow-mods',
+    'talk-to-the-prof',
+  ],
   execute     : async (interaction) => {
     const results = await getShinyReports();
     const resultsText = results

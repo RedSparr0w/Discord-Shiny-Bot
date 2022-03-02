@@ -21,6 +21,7 @@ module.exports = {
 
     const output = [msg.author, '', 'Unmuted the following users:'];
 
+    // TODO: use timeouts
     for (const [, member] of [...msg.mentions.members]) {
       if (msg.member === member) {
         modLog(msg.guild,

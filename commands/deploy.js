@@ -1,7 +1,6 @@
 const { MessageEmbed } = require('discord.js');
 const { error, info } = require('../helpers.js');
 
-// TODO: update alias list
 module.exports = {
   name        : 'deploy',
   aliases     : [],
@@ -10,7 +9,7 @@ module.exports = {
   guildOnly   : true,
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES', 'EMBED_LINKS'],
-  userperms   : ['MANAGE_GUILD'],
+  userperms   : ['ADMINISTRATOR'],
   execute     : async (msg, args) => {
     // Get our client object
     const client = msg.client;

@@ -18,7 +18,6 @@ module.exports = {
       name: 'date',
       type: 'STRING',
       description: 'Date you are reporting for (YYYY-MM-DD or MM-DD)',
-      // TODO: should this be a requirement, makes things easier for verifiers
       required: true,
     },
   ],
@@ -26,7 +25,12 @@ module.exports = {
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES', 'MANAGE_CHANNELS', 'MANAGE_THREADS'],
   userperms   : ['SEND_MESSAGES'],
-  // TODO: lock to certain channels
+  channels    : [
+    'prof-willow-admins',
+    'prof-willow-mods',
+    'talk-to-the-prof',
+    'submit-a-report',
+  ],
   execute     : async (interaction, args) => {
     const pokemon = interaction.options.get('pokemon').value;
     let date_string = interaction.options.get('date')?.value;

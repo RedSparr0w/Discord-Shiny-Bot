@@ -8,8 +8,11 @@ module.exports = {
   guildOnly   : true,
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES', 'EMBED_LINKS'],
-  userperms   : ['MANAGE_GUILD'],
-  channels    : [],
+  userperms   : ['MUTE_MEMBERS'],
+  channels    : [
+    'prof-willow-admins',
+    'prof-willow-mods',
+  ],
   execute     : async (msg, args) => {
     const guild = msg.guild;
 

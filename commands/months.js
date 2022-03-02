@@ -1,4 +1,3 @@
-// TODO: this whole file
 const { MessageEmbed } = require('discord.js');
 const { addAmount, setShinyReportDate, getShinyReport } = require('../database.js');
 const {
@@ -21,7 +20,7 @@ module.exports = {
   guildOnly   : true,
   cooldown    : 3,
   botperms    : ['MANAGE_CHANNELS', 'MANAGE_MESSAGES', 'SEND_MESSAGES'],
-  userperms   : ['MANAGE_MESSAGES'],
+  userperms   : ['MANAGE_THREADS'],
   execute     : async (msg, args, month) => {
     // Get Pokemon name
     const channel = msg.channel;

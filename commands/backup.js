@@ -2,16 +2,15 @@ const { MessageEmbed } = require('discord.js');
 const { backupDB } = require('../database.js');
 
 module.exports = {
-  type        : 'message',
   name        : 'backup',
   aliases     : [],
-  description : 'Backup database',
+  description : 'Backup the database',
   args        : [],
   guildOnly   : true,
-  cooldown    : 0.1,
+  cooldown    : 30,
   botperms    : ['ATTACH_FILES'],
-  userperms   : ['MANAGE_GUILD'],
-  channels    : ['prof-willow-backup'], // default restricted channels
+  userperms   : ['MUTE_MEMBERS'],
+  channels    : ['prof-willow-backup'],
   execute     : async (msg, args) => {
     backupDB(msg.guild);
     msg.channel.send({

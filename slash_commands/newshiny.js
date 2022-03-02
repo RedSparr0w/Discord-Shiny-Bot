@@ -38,7 +38,6 @@ module.exports = {
       required: false,
       choices: Object.entries(obtainMethodSymbols).map(([key, symbol]) => ({ name: key, value: symbol })),
     },
-    // TODO: if we use CHANNEL type, it is required, should we use this?
     {
       name: 'channel',
       type: 'STRING',
@@ -50,6 +49,12 @@ module.exports = {
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES', 'MANAGE_CHANNELS', 'MANAGE_THREADS'],
   userperms   : ['MANAGE_THREADS'],
+  channels    : [
+    'prof-willow-admins',
+    'prof-willow-mods',
+    'talk-to-the-prof',
+    'submit-a-report',
+  ],
   execute     : async (interaction, args) => {
     const pokemon = interaction.options.get('pokemon').value;
     const symbol = interaction.options.get('symbol')?.value;

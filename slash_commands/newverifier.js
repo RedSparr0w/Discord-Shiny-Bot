@@ -19,7 +19,10 @@ module.exports = {
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES', 'MANAGE_CHANNELS', 'MANAGE_THREADS', 'MANAGE_ROLES'],
   userperms   : ['MUTE_MEMBERS'],
-  // TODO: Restrict to mod channels
+  channels    : [
+    'prof-willow-admins',
+    'prof-willow-mods',
+  ],
   execute     : async (interaction, args) => {
     const id = interaction.options.get('user').value;
 

@@ -7,12 +7,12 @@ const { MINUTE } = require('../helpers/constants.js');
 module.exports = {
   name        : 'clearoldthreads',
   aliases     : [],
-  description : 'Clear out any missing threads',
+  description : 'Clear out any missing threads from the database',
   args        : ['code'],
   guildOnly   : true,
   cooldown    : 0.1,
   botperms    : ['SEND_MESSAGES'],
-  userperms   : ['MANAGE_GUILD'],
+  userperms   : ['MUTE_MEMBERS'],
   execute     : async (msg, args) => {
     if (!ownerID || msg.author.id !== ownerID) return;
     try {
