@@ -9,7 +9,7 @@ module.exports = {
     {
       name: 'type',
       type: 'STRING',
-      description: 'How many lines you want to play (default 3)',
+      description: 'Leaderboard category',
       required: false,
       choices: [
         {
