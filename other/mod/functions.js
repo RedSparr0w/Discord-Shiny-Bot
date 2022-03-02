@@ -1,5 +1,5 @@
 const { MessageEmbed } = require('discord.js');
-const { modLogChannelID, mutedRoleID } = require('../../config');
+const { modLogChannelID } = require('../../config');
 const { addScheduleItem } = require('../../database');
 const { HOUR, error, formatDateToString } = require('../../helpers.js');
 
@@ -10,21 +10,20 @@ const modLog = (guild, logMessage) => {
   }
 };
 
-const mute = (member, time = 0) => {
+const mute = (member, time = 1 * HOUR) => {
   try {
-    // TODO: apply timeout
-    member.roles.add(mutedRoleID, `User muted by ${member.guild.me.displayName}-${member.guild.me.id}`).catch(e => error('Unable to assign role:', e));
+    member.timeout(time, `User timedout by ${member.guild.me.displayName}-${member.guild.me.id}`).catch(e => error('Unable to timeout member:', e));
     if (time) {
       unmute(member, time);
     }
   } catch (e) {
-    error('Unable to mute member\n', e);
+    error('Unable to timeout member\n', e);
   }
 };
 
 const unmute = (member, time = 1 * HOUR) => {
   const date = Date.now();
-  addScheduleItem('un-mute', member.user, +date + time, `${member.guild.id}|${formatDateToString(time)}`);
+  addScheduleItem('un-timeout', member.user, +date + time, `${member.guild.id}|${formatDateToString(time)}`);
 };
 
 module.exports = {

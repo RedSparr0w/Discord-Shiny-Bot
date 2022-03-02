@@ -1,4 +1,3 @@
-const { mutedRoleID } = require('../../config.js');
 const { getScheduleItems, clearScheduleItems } = require('../../database.js');
 const { error } = require('../../helpers.js');
 const { modLog } = require('../mod/functions.js');
@@ -8,7 +7,7 @@ const checkScheduledItems = async (client) => {
   scheduled.forEach(item => {
     try {
       switch(item.type) {
-        case 'un-mute':
+        case 'un-timeout':
           return unmute(client, item);
       }
     } catch (e){
@@ -25,11 +24,11 @@ const unmute = async (client, item) => {
   const [, guildID, time] = item.value.match(/(\d+)\|([\w\s]+)/);
   const member = await getMember(client, guildID, userID);
   if (member) {
-    await member.roles.remove(mutedRoleID, `User unmuted (scheduled - ${time})`);
+    await member.timeout(null, `User untimedout (scheduled - ${time})`);
     modLog(member.guild,
       `**Mod:** ${member.guild.me.toString()}
       **User:** ${member.toString()}
-      **Action:** Unmuted
+      **Action:** Untimedout
       **Reason:** _Scheduled_
       **Duration:** _${time}_`);
   }

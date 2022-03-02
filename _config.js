@@ -1,5 +1,3 @@
-const { SECOND, HOUR } = require('./helpers.js');
-
 module.exports = {
   development: true,
   prefix: '!',
@@ -24,18 +22,4 @@ module.exports = {
     { id: '947703619879309360', name: 'Shiny Legend', amount: 100 },
     { id: '947703619879309361', name: 'Shiny Champion', amount: Infinity },
   ],
-  // Spam detection settings
-  spamDetection: {
-    ignoreChannels: ['channel-name'], // channel names or IDs
-    spam: {
-      amount: 4, // how many messages within timeframe count as spam (0 to disable)
-      time: 3 * SECOND, // message count within x ms
-      mute: 1 * HOUR, // how long to mute the user in ms
-    },
-    dupe: {
-      amount: 3, // how many duplicate messages within timeframe count as spam (0 to disable)
-      time: 30 * SECOND, // message count within x ms
-      mute: 1 * HOUR, // how long to mute the user in ms
-    },
-  },
 };
