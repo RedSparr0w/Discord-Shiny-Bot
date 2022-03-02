@@ -3,8 +3,8 @@ const { addAmount, setShinyReportDate, getShinyReport } = require('../database.j
 const {
   error,
   warn,
+  MINUTE,
 } = require('../helpers.js');
-const { MINUTE } = require('../helpers.js');
 const { updateThreadName, updateLeaderboard, addReport } = require('../other/shinySquad.js');
 
 module.exports = {
