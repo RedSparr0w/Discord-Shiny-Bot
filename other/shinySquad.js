@@ -75,12 +75,12 @@ async function updateThreadName(pokemon, thread){
 
   // replace everything after the last | with the new symbol (should only replace the last symbol)
   const updatedChannelName = thread.name.replace(/[^|]+$/, ` ${symbol}`);
-  debug(`Updated channel status ${thread.name} → ${symbol}`);
 
   // Check if thread was archived beforehand, re-archive if it was
   const archived = thread.archived;
   if (archived) await thread.setArchived(false);
-  await thread.edit({ name: updatedChannelName }).catch(error);
+  debug(`Updating channel name ${thread.name} → ${symbol}`);
+  await thread.edit({ name: updatedChannelName }).catch(e => error('Unable to update thread name:', e));
   if (archived) await thread.setArchived(true);
 }
 
