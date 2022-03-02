@@ -11,11 +11,11 @@ module.exports = {
   cooldown    : 0.1,
   botperms    : ['ATTACH_FILES'],
   userperms   : ['MANAGE_GUILD'],
-  channels    : [], // default restricted channels
+  channels    : ['prof-willow-backup'], // default restricted channels
   execute     : async (msg, args) => {
+    backupDB(msg.guild);
     msg.channel.send({
       embeds: [new MessageEmbed().setColor('#2ecc71').setDescription('Backed up database!')],
     });
-    backupDB(msg.guild);
   },
 };
