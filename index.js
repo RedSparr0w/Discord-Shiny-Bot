@@ -167,14 +167,14 @@ client.on('error', e => error('Client error thrown:', e))
         const report = await getShinyReport(message.channel.id);
         if (!report || !report.pokemon) return;
 
-        let date_string = message.content.match(/(\d{4}-)?\d{2}-\d{2}/)?.[0];
+        let date_string = message.content.match(/(\d{4}-)?\d{1,2}-\d{1,2}/)?.[0];
         const report_date = +report.date ? new Date(+report.date) : 0;
         
         // Get our date object
         let date;
-        if (/^(\d{4}-)?\d{2}-\d{2}$/.test(date_string)) {
+        if (/^(20\d{2}-)?(0?[1-9]|1[1-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_string)) {
           // If year not included, add it ourselves (assume this year)
-          if (/^\d{2}-\d{2}$/.test(date_string)) {
+          if (/^(0?[1-9]|1[1-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_string)) {
             date_string = `${new Date().getFullYear()}-${date_string}`;
           }
 
@@ -198,7 +198,7 @@ client.on('error', e => error('Client error thrown:', e))
           new Discord.MessageEmbed()
             .setColor('#3498db')
             .setImage(attachments.shift().url)
-            .setDescription(`**Reporter:** ${message.author.toString()}${date ? `\n**Date:** ${date_string}` : ''}${message.content ? `\n\n${message.content.replace(/(\d{4}-)?\d{2}-\d{2}/, '')}` : ''}`),
+            .setDescription(`**Reporter:** ${message.author.toString()}${date ? `\n**Date:** ${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, 0)}-${date.getDate().toString().padStart(2, 0)}` : ''}${message.content ? `\n\n${message.content.replace(/(\d{4}-)?\d{1,2}-\d{1,2}/, '')}` : ''}`),
         ];
 
         while (attachments.length) {
@@ -217,6 +217,10 @@ client.on('error', e => error('Client error thrown:', e))
               .setLabel('accept')
               .setStyle('SUCCESS')
               .setEmoji('✨'),
+            new Discord.MessageButton()
+              .setCustomId('report-date')
+              .setStyle('SUCCESS')
+              .setEmoji('📅'),
             new Discord.MessageButton()
               .setCustomId('report-deny')
               .setLabel('deny')
@@ -325,22 +329,22 @@ client.on('error', e => error('Client error thrown:', e))
               return;
             }
 
-            if (interaction.customId == 'report-accept') {
+            if (interaction.customId == 'report-accept' || interaction.customId == 'report-date') {
               const reporter_id = embeds[0].description.match(/<@!?(\d+)>/)[1];
               let date_str = embeds[0].description.match(/(\d{4}-\d{2}-\d{2})/)?.[1];
               // Check if date supplied or get one from verifier
-              if (!date_str) {
+              if (!date_str || interaction.customId == 'report-date') {
                 await interaction.reply({ content: 'Report has no date, please supply a date (YYYY-MM-DD or MM-DD):', ephemeral: true });
                 
-                const filter = m => m.author.id === interaction.member.id && /^(\d{4}-)?\d{2}-\d{2}$/.test(m.content);
+                const filter = m => m.author.id === interaction.member.id && /^(\d{4}-)?\d{1,2}-\d{1,2}$/.test(m.content);
                 // errors: ['time'] treats ending because of the time limit as an error
                 await interaction.channel.awaitMessages({filter, max: 1, time: 1 * MINUTE, errors: ['time'] })
                   .then(async collected => {
                     const m = collected.first();
                     date_str = m.content;
-                    if (/^(\d{4}-)?\d{2}-\d{2}$/.test(date_str)) {
+                    if (/^(20\d{2}-)?(0?[1-9]|1[1-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_str)) {
                       // If year not included, add it ourselves (assume this year)
-                      if (/^\d{2}-\d{2}$/.test(date_str)) {
+                      if (/^(0?[1-9]|1[1-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_str)) {
                         date_str = `${new Date().getFullYear()}-${date_str}`;
                       }
                     }
