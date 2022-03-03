@@ -411,6 +411,12 @@ async function setShinyReportDate(thread_ID, date = new Date()){
   db.close();
 }
 
+async function setShinyReportUnlocked(thread_ID, unlocked = true){
+  const db = await getDB();
+  await db.run('UPDATE shiny_reports set unlocked=? WHERE thread=?', unlocked, thread_ID);
+  db.close();
+}
+
 module.exports = {
   getDB,
   setupDB,
@@ -435,4 +441,5 @@ module.exports = {
   getShinyReport,
   getShinyReports,
   setShinyReportDate,
+  setShinyReportUnlocked,
 };

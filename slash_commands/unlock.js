@@ -1,10 +1,9 @@
 const { MessageEmbed } = require('discord.js');
 const { error, debug } = require('../helpers.js');
-const { getShinyReport, setShinyReportDate } = require('../database.js');
+const { getShinyReport, setShinyReportDate, setShinyReportUnlocked } = require('../database.js');
 const { modLog } = require('../other/mod/functions.js');
 const { otherSymbols } = require('../other/shinySquad.js');
 
-// TODO: mark as unlocked
 module.exports = {
   name        : 'unlock',
   aliases     : [],
@@ -33,9 +32,14 @@ module.exports = {
       .setColor('#e74c3c')
       .setDescription(`Thread has been unlocked ${otherSymbols.unlocked}\n**Verifier:** ${interaction.member.toString()}`);
     await interaction.reply({ embeds: [embed] });
+
+    // Set status to locked
+    await setShinyReportUnlocked(thread_ID, true);
+
+    // Reset the date
+    await setShinyReportDate(thread_ID, new Date(0));
     
     // replace everything after the last | with the new symbol (should only replace the last symbol)
-    await setShinyReportDate(thread_ID, new Date(0));
     const updatedChannelName = thread.name.replace(/[^|]+$/, ` ${otherSymbols.new}`);
 
     // Unarchive thread (if it is), update channel name, lock thread

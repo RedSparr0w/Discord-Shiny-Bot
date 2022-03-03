@@ -1,10 +1,9 @@
 const { MessageEmbed } = require('discord.js');
 const { error, debug } = require('../helpers.js');
-const { getShinyReport } = require('../database.js');
+const { getShinyReport, setShinyReportUnlocked } = require('../database.js');
 const { modLog } = require('../other/mod/functions.js');
 const { otherSymbols } = require('../other/shinySquad.js');
 
-// TODO: mark as locked
 module.exports = {
   name        : 'lock',
   aliases     : [],
@@ -33,6 +32,9 @@ module.exports = {
       .setColor('#e74c3c')
       .setDescription(`Thread now locked ${otherSymbols.locked}\n**Verifier:** ${interaction.member.toString()}`);
     await interaction.reply({ embeds: [embed] });
+
+    // Set status to locked
+    await setShinyReportUnlocked(thread_ID, false);
     
     // replace everything after the last | with the new symbol (should only replace the last symbol)
     const updatedChannelName = thread.name.replace(/[^|]+$/, ` ${otherSymbols.locked}`);
