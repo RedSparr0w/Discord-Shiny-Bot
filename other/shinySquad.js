@@ -1,4 +1,4 @@
-const { error, debug } = require('../helpers.js');
+const { error, warn, debug } = require('../helpers.js');
 const {
   getTop,
   getShinyReport,
@@ -75,6 +75,21 @@ async function updateThreadName(thread){
 
   // If channel is out of rotation then DO NOT update the name
   if (thread.locked) return;
+
+  // If channel is out of rotation but isn't locked, re-lock it
+  if (!report.unlocked && !thread.locked) {
+    // replace everything after the last | with the new symbol (should only replace the last symbol)
+    const updatedChannelName = thread.name.replace(/[^|]+$/, ` ${otherSymbols.locked}`);
+
+    // Unarchive thread (if it is), update channel name, lock thread
+    await thread.setArchived(false).catch(error);
+    warn(`Re-locked shiny thread ${thread.name} → ${otherSymbols.locked}`);
+    await thread.edit({ name: updatedChannelName }).catch(e => error('Unable to update thread name:', e));
+    // Lock, then archive
+    await thread.setLocked(true).catch(error);
+    await thread.setArchived(true).catch(error);
+    return;
+  }
 
   const date = new Date(+report.date);
   const symbol = getSymbolFromDate(date);
