@@ -207,7 +207,7 @@ async function updateLeaderboard(guild) {
 }
 
 async function updateShinyStatuses(guild) {
-  // TODO: exclude locked threads
+  // TODO: exclude locked threads?
   // Find leaderboard channel
   const shinyStatusChannel = await guild.channels.fetch(shinyStatusChannelID).catch(e => {});
   if (!shinyStatusChannel) return;

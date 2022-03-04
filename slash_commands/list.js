@@ -11,8 +11,6 @@ const symbolValues = [
   '🟢',
 ];
 
-// TODO: exclude locked threads
-// TODO: add filter for symbols
 module.exports = {
   name        : 'list',
   aliases     : [],
@@ -42,6 +40,7 @@ module.exports = {
     const filter = interaction.options.get('filter')?.value;
 
     let results = await getShinyReports();
+    // TODO: exclude locked threads?
     // Filter based on symbols if thread unlocked
     // Filter based on locked/unlocked status otherwise
     if (filter) results = results?.filter(result => (result.unlocked && (result.symbols.split('').includes(filter) || getSymbolFromDate(result.date) == filter)) || filter == (result.unlocked ? statusSymbols.unlocked : statusSymbols.locked));

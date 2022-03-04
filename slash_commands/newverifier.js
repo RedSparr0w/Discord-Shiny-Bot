@@ -51,11 +51,12 @@ module.exports = {
       // If thread doesn't exist or archived, we will just ignore it
       if (!thread || thread.locked) continue;
 
-      // TODO: check if user already joined this thread
-
-      const archived = thread.archived;
+      // Check if user already joined this thread
+      // Disabled as it hits the rate limit far too quickly
+      // if (thread.members.fetch(id)) continue;
 
       // Toggle archived, reset if was previously archived
+      const archived = thread.archived;
       if (archived) await thread.setArchived(false).catch(error);
       const m = await thread.send(`${user.toString()}`).catch(e=>{});
       await m.delete().catch(e=>{});
