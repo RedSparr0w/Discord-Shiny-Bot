@@ -121,24 +121,14 @@ module.exports = {
     interaction.channel.awaitMessages({filter, max: 1, time: 5 * MINUTE, errors: ['time'] })
       .then(async collected => {
         const m = collected.first();
-        const attachments = [...m.attachments].map(a => a[1]);
+        const files = [...m.attachments].map(a => a[1].url);
 
         // Send through the report
         const embeds = [
           new MessageEmbed()
             .setColor('#3498db')
-            .setImage(attachments.shift().url)
             .setDescription(`**Reporter:** ${m.author.toString()}${date ? `\n**Date:** ${date_string}` : ''}${m.content ? `\n\n${m.content}` : ''}`),
         ];
-
-        while (attachments.length) {
-          embeds.push(
-            new MessageEmbed()
-              .setColor('#3498db')
-              .setImage(attachments.shift().url)
-              .setDescription('\u200b')
-          );
-        }
           
         const row = new MessageActionRow()
           .addComponents(
@@ -158,13 +148,13 @@ module.exports = {
               .setEmoji('🚫')
           );
 
-        thread.send({ embeds, components: [row] });
+        thread.send({ embeds, components: [row], files }).catch(error);
         
         // Reply letting the user know it went through successfully
         const embed_reply = new MessageEmbed()
           .setColor('#2ecc71')
           .setDescription(`Thank you ${m.author.toString()}!\nI have sent through your shiny report successfully:\n${thread}`);
-        await m.reply({ embeds: [embed_reply], ephemeral: true });
+        await m.reply({ embeds: [embed_reply], ephemeral: true }).catch(error);
 
         // Delete the users message
         m.delete().catch(e=>error('Unable to delete message:', e));
