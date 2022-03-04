@@ -10,6 +10,8 @@ const symbolValues = [
   '🔵',
   '🟢',
 ];
+const dateSort = (a, b) => b.unlocked - a.unlocked || symbolValues.indexOf(getSymbolFromDate(a.date)) - symbolValues.indexOf(getSymbolFromDate(b.date)) || a.pokemon.localeCompare(b.pokemon);
+const nameSort = (a, b) => a.pokemon.localeCompare(b.pokemon);
 
 module.exports = {
   name        : 'list',
@@ -26,6 +28,22 @@ module.exports = {
         ...Object.entries(statusSymbols).map(([, symbol]) => ({ name: symbol, value: symbol })),
       ],
     },
+    {
+      name: 'sorting',
+      type: 'STRING',
+      description: 'Sort by option',
+      required: false,
+      choices: [
+        {
+          name: 'date',
+          value: 'date',
+        },
+        {
+          name: 'name',
+          value: 'name',
+        },
+      ],
+    },
   ],
   guildOnly   : true,
   cooldown    : 3,
@@ -38,6 +56,7 @@ module.exports = {
   ],
   execute     : async (interaction) => {
     const filter = interaction.options.get('filter')?.value;
+    const sorting = interaction.options.get('sorting')?.value;
 
     let results = await getShinyReports();
     // TODO: exclude locked threads?
@@ -53,8 +72,8 @@ module.exports = {
     }
 
     const resultsText = results
-      .sort((a,b) => b.unlocked - a.unlocked || symbolValues.indexOf(getSymbolFromDate(a.date)) - symbolValues.indexOf(getSymbolFromDate(b.date)) || a.pokemon.localeCompare(b.pokemon))
-      .map((res) => `<#${res.thread}>`);
+      .sort(sorting == 'name' ? nameSort : dateSort)
+      .map((res) => `[**${res.unlocked ? getSymbolFromDate(res.date) : statusSymbols.locked}\t${res.pokemon}${res.symbols ? `| ${res.symbols.join(' | ')}` : ''}**](https://discord.com/channels/${interaction.guild.id}/${res.thread})`);
     const items_per_page = 30;
 
 

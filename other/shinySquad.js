@@ -220,7 +220,7 @@ async function updateShinyStatuses(guild) {
   const results = await getShinyReports();
   const resultsText = results
     .sort((a,b) => a.pokemon.localeCompare(b.pokemon))
-    .map((res) => `<#${res.thread}>`);
+    .map((res) => `[**${res.unlocked ? getSymbolFromDate(res.date) : otherSymbols.locked}\t${res.pokemon}${res.symbols ? `| ${res.symbols.join(' | ')}` : ''}**](https://discord.com/channels/${guild.id}/${res.thread})`);
   const items_per_page = 50;
 
   const pages = new Array(Math.ceil(resultsText.length / items_per_page)).fill('').map(page => {
