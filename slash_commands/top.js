@@ -36,9 +36,9 @@ module.exports = {
   botperms    : ['SEND_MESSAGES', 'EMBED_LINKS'],
   userperms   : [],
   channels    : [
-    'prof-willow-admins',
-    'prof-willow-mods',
     'talk-to-the-prof',
+    'prof-willow-mods',
+    'prof-willow-admins',
   ],
   execute     : async (interaction) => {
     const type = interaction.options.get('type')?.value || 'reports';

@@ -26,10 +26,10 @@ module.exports = {
   botperms    : ['SEND_MESSAGES', 'MANAGE_CHANNELS', 'MANAGE_THREADS'],
   userperms   : ['SEND_MESSAGES'],
   channels    : [
-    'prof-willow-admins',
-    'prof-willow-mods',
-    'talk-to-the-prof',
     'submit-a-report',
+    'talk-to-the-prof',
+    'prof-willow-mods',
+    'prof-willow-admins',
   ],
   execute     : async (interaction, args) => {
     const pokemon = interaction.options.get('pokemon').value;

@@ -10,8 +10,8 @@ module.exports = {
   botperms    : ['SEND_MESSAGES'],
   userperms   : ['MANAGE_GUILD'],
   channels    : [
-    'prof-willow-admins',
     'prof-willow-mods',
+    'prof-willow-admins',
   ],
   execute     : async (msg, args) => {
     const [, message_id] = args;

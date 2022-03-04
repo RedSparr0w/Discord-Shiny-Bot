@@ -20,8 +20,8 @@ module.exports = {
   botperms    : ['SEND_MESSAGES', 'MANAGE_CHANNELS', 'MANAGE_THREADS', 'MANAGE_ROLES'],
   userperms   : ['MUTE_MEMBERS'],
   channels    : [
-    'prof-willow-admins',
     'prof-willow-mods',
+    'prof-willow-admins',
   ],
   execute     : async (interaction, args) => {
     const id = interaction.options.get('user').value;

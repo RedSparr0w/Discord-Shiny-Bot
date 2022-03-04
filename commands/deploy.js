@@ -10,6 +10,7 @@ module.exports = {
   cooldown    : 3,
   botperms    : ['SEND_MESSAGES', 'EMBED_LINKS'],
   userperms   : ['ADMINISTRATOR'],
+  channels    : ['prof-willow-admins'],
   execute     : async (msg, args) => {
     // Get our client object
     const client = msg.client;

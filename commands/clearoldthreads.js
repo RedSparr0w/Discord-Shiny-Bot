@@ -13,6 +13,10 @@ module.exports = {
   cooldown    : 0.1,
   botperms    : ['SEND_MESSAGES'],
   userperms   : ['MUTE_MEMBERS'],
+  channels    : [
+    'prof-willow-mods',
+    'prof-willow-admins',
+  ],
   execute     : async (msg, args) => {
     if (!ownerID || msg.author.id !== ownerID) return;
     try {
