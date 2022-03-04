@@ -7,6 +7,7 @@ COPY ./ecosystem.config.js .
 ENV NPM_CONFIG_LOGLEVEL warn
 RUN apk add --no-cache \
     git \
+    tesseract-ocr \
     ;
 
 RUN npm i pm2 -g
