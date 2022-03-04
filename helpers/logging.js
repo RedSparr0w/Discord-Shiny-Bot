@@ -1,7 +1,10 @@
-const { padNumber } = require('./functions.js');
+const { development } = require('../config');
 
 function dateTime(date = new Date()){
-  return `${date.getFullYear()}-${padNumber(date.getMonth() + 1)}-${padNumber(date.getDate())} ${padNumber(date.getHours())}:${padNumber(date.getMinutes())}:${padNumber(date.getSeconds())}`;
+  const padNum = num => num.toString().padStart(2, 0);
+  const dateStr = [date.getFullYear(), date.getMonth() + 1, date.getDate()].map(padNum).join('-');
+  const timeStr = [date.getHours(), date.getMinutes(), date.getSeconds()].map(padNum).join(':');
+  return `${dateStr} ${timeStr}`;
 }
 
 function log(...args){
@@ -13,7 +16,7 @@ function info(...args){
 }
 
 function debug(...args){
-  console.debug(`\x1b[1m\x1b[34m[debug][${dateTime()}]\x1b[0m`, ...args);
+  if (development) console.debug(`\x1b[1m\x1b[34m[debug][${dateTime()}]\x1b[0m`, ...args);
 }
 
 function warn(...args){
@@ -21,7 +24,10 @@ function warn(...args){
 }
 
 function error(...args){
-  if (typeof args[args.length - 1] == 'object') args = [...args, ...error_object(args.pop())];
+  if (typeof args[args.length - 1] == 'object') {
+    const err_obj = error_object(args.pop());
+    args = [...args, ...err_obj];
+  }
   console.error(`\x1b[1m\x1b[31m[error][${dateTime()}]\x1b[0m`, ...args);
 }
 
@@ -30,6 +36,7 @@ function error_object(error){
   if (error.message) err_obj.push(`\n\tMessage: ${error.message}`);
   if (error.errno) err_obj.push(`\n\tError No: ${error.errno}`);
   if (error.code) err_obj.push(`\n\tCode: ${error.code}`);
+  if (!err_obj.length) err_obj.push(`\n\tError: ${error}`);
   return err_obj;
 }
 

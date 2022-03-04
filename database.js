@@ -1,126 +1,445 @@
 const sqlite = require('sqlite');
-const fs = require('fs');
-const { error } = require('./helpers/logging.js');
-const { backup_channel_id } = require('./config.json');
+const sqlite3 = require('sqlite3');
+const { backupChannelID } = require('./config.js');
+const { MessageAttachment } = require('discord.js');
+const { warn, info, consoleProgress } = require('./helpers.js');
+const { version: botVersion } = require('./package.json');
+
+// current version, possibly older version
+// eslint-disable-next-line no-unused-vars
+const isOlderVersion = (version, compareVersion) => compareVersion.localeCompare(version, undefined, { numeric: true }) === 1;
 
 const database_dir = './db/';
 const database_filename = 'database.sqlite';
 const database_fullpath = database_dir + database_filename;
 
-const tables = {
-  'reports': 'reporters',
-  'verifications': 'verifiers',
-  'entries': 'entries',
-};
-
 async function getDB(){
-  try {
-    return await sqlite.open(database_fullpath);
-  } catch(O_o){
-    // We couldn't access the database
-    return undefined;
-  }
-}
-
-async function setupDB(){
-  // If the database directory doesn't exist, create it.
-  if (!fs.existsSync(database_dir)){
-    fs.mkdirSync(database_dir);
-  }
-
-  const db = await getDB();
-
-  // If we couldn't create/access the database, quit the program.
-  if (!db){
-    error('Could not connect to database! Please ensure the "db" directory exist.');
-    process.exit(1);
-  }
-
-  // Create our tables
-  await Promise.all([
-    db.run(`CREATE TABLE IF NOT EXISTS reports(user TEXT(64) PRIMARY KEY UNIQUE NOT NULL, points BIGINT(12) NOT NULL default '0')`),
-    db.run(`CREATE TABLE IF NOT EXISTS verifications(user TEXT(64) PRIMARY KEY UNIQUE NOT NULL, points BIGINT(12) NOT NULL default '0')`),
-    db.run(`CREATE TABLE IF NOT EXISTS entries(user TEXT(64) PRIMARY KEY UNIQUE NOT NULL, points BIGINT(12) NOT NULL default '0')`),
-  ]);
-  db.close();
-  return;
-}
-
-function backupDB(guild){
-  const backup_channel = guild.channels.cache.get(backup_channel_id);
-  if (!backup_channel) return error('Backup channel not found!');
-
-  backup_channel.send(`__***Backup ${new Date().toJSON().replace(/T/g,' ').replace(/\.\w+$/,'')}***__`, {
-    file: {
-      attachment: database_fullpath,
-      name: `database.backup.sqlite`,
-    }
+  return await sqlite.open({
+    filename: database_fullpath,
+    driver: sqlite3.Database,
   });
 }
 
-async function getPoints(user, table){
+async function setupDB(){
   const db = await getDB();
+  await Promise.all([
+    // Keep track of any application data we need
+    db.run('CREATE TABLE IF NOT EXISTS application(name TEXT(1024) UNIQUE ON CONFLICT IGNORE NOT NULL, value TEXT(1024) NOT NULL, PRIMARY KEY (name))'),
+    // User data
+    db.run('CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT, user TEXT(32) UNIQUE ON CONFLICT IGNORE NOT NULL, tag TEXT(64) NOT NULL)'),
+    // User tables
+    db.run('CREATE TABLE IF NOT EXISTS reports(user INTEGER NOT NULL, amount BIGINT(12) NOT NULL default \'0\', PRIMARY KEY (user), FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE, UNIQUE(user) ON CONFLICT REPLACE)'),
+    db.run('CREATE TABLE IF NOT EXISTS verifications(user INTEGER NOT NULL, amount BIGINT(12) NOT NULL default \'0\', PRIMARY KEY (user), FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE, UNIQUE(user) ON CONFLICT REPLACE)'),
+    // Pokemon shiny reports
+    db.run('CREATE TABLE IF NOT EXISTS shiny_reports(pokemon TEXT(1024) UNIQUE ON CONFLICT IGNORE NOT NULL, thread TEXT(32) NOT NULL, unlocked INT(1) NOT NULL default \'1\', symbols TEXT(32) NOT NULL default \'\', date TEXT(32), PRIMARY KEY (pokemon))'),
+    // User Statistics
+    db.run('CREATE TABLE IF NOT EXISTS statistic_types(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT(32) UNIQUE ON CONFLICT IGNORE NOT NULL)'),
+    db.run('CREATE TABLE IF NOT EXISTS statistics(user INTEGER NOT NULL, type TEXT(1024) NOT NULL, value BIGINT(12) NOT NULL default \'0\', PRIMARY KEY (user, type), FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE, FOREIGN KEY (type) REFERENCES statistic_types (id) ON DELETE CASCADE, UNIQUE(user, type) ON CONFLICT REPLACE)'),
+    // Checked on interval
+    db.run('CREATE TABLE IF NOT EXISTS schedule_types(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT(32) UNIQUE ON CONFLICT IGNORE NOT NULL)'),
+    db.run('CREATE TABLE IF NOT EXISTS schedule(id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT(1024) NOT NULL, user INTEGER NOT NULL, datetime TEXT(24) NOT NULL, value TEXT(2048) NOT NULL default \'\', FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE, FOREIGN KEY (type) REFERENCES schedule_types (id) ON DELETE CASCADE)'),
+  ]);
 
-  const results = await db.get(`SELECT points FROM ${table} WHERE user=?`, user) || { points: 0 };
   db.close();
-
-  return +results.points;
+  await updateDB();
+  return;
 }
 
-async function addPoints(user, table, points = 1){
-  // Check points is valid
-  points = +points;
-  if (isNaN(points)) return;
-
+async function updateDB(){
   const db = await getDB();
-  points += await getPoints(user, table);
+  let version = await db.get('SELECT * FROM application WHERE name=?', 'version');
 
-  user = {
-    $user: user,
-    $points: points,
+  // Will only update the version if it doesn't already exist
+  if (!version || !version.value) {
+    info('Updating database... this might take awhile...');
+    // Get our user data
+    const reports = await db.all('SELECT * FROM reports');
+    const verifications = await db.all('SELECT * FROM verifications');
+    // Delete our old tables
+    await db.run('DROP TABLE reports');
+    await db.run('DROP TABLE verifications');
+    await db.run('DROP TABLE entries');
+    // Create the new table structure
+    await db.run('CREATE TABLE IF NOT EXISTS reports(user INTEGER NOT NULL, amount BIGINT(12) NOT NULL default \'0\', PRIMARY KEY (user), FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE, UNIQUE(user) ON CONFLICT REPLACE)');
+    await db.run('CREATE TABLE IF NOT EXISTS verifications(user INTEGER NOT NULL, amount BIGINT(12) NOT NULL default \'0\', PRIMARY KEY (user), FOREIGN KEY (user) REFERENCES users (id) ON DELETE CASCADE, UNIQUE(user) ON CONFLICT REPLACE)');
+    // Populate the data
+    info('Processing reports:');
+    let i = 0;
+    for (const res of reports) {
+      await addAmount({
+        id: res.user,
+        tag: 'unknown#1234',
+      }, res.points, 'reports');
+      consoleProgress(`${++i}/${reports.length}`, i, reports.length);
+    }
+
+    info('Processing verifications:');
+    i = 0;
+    for (const res of verifications) {
+      await addAmount({
+        id: res.user,
+        tag: 'unknown#1234',
+      }, res.points, 'verifications');
+      consoleProgress(`${++i}/${verifications.length}`, i, verifications.length);
+    }
+    info('Database updated!');
+
+    // Add a version for our tables
+    await db.run('INSERT INTO application (name, value) values (?, ?)', 'version', botVersion);
+    version = botVersion;
+  } else {
+    version = version.value;
+  }
+
+  // Example changing tables etc
+  // if (isOlderVersion(version, '3.0.1')) {
+  //   version = '3.0.1';
+  //   await db.run('ALTER TABLE x ADD x ...');
+  //   await db.run('INSERT OR REPLACE INTO application (name, value) values (?, ?)', 'version', version);
+  // }
+  
+  await db.run('INSERT OR REPLACE INTO application (name, value) values (?, ?)', 'version', botVersion);
+
+  db.close();
+}
+
+async function backupDB(guild){
+  // Check if this guild has a backup channel
+  const backup_channel = await guild.channels.cache.find(c => c.id == backupChannelID);
+  if (!backup_channel) return warn('Backup channel not found!');
+
+  const attachment = await new MessageAttachment().setFile(database_fullpath, 'database.backup.sqlite');
+
+  backup_channel.send({
+    content: `__***Database Backup:***__\n_${new Date().toJSON().replace(/T/g,' ').replace(/\.\w+$/,'')}_`,
+    files: [attachment],
+  }).catch(warn);
+}
+
+async function getUserID(user){
+  const data = {
+    $user: user.id,
+    $tag: user.tag,
   };
 
-  await db.run(`INSERT OR REPLACE INTO ${table} (user, points) VALUES ($user, $points)`, user);
+  const db = await getDB();
+  await db.run('INSERT OR REPLACE INTO users (id, user, tag) values ((SELECT id FROM users WHERE user = $user), $user, $tag);', data);
+  const { user_id = 0 } = await db.get('SELECT last_insert_rowid() AS user_id;');
   db.close();
-  return points;
+
+  return user_id;
+}
+
+async function getAmount(user, table = 'reports'){
+  const [
+    db,
+    user_id,
+  ] = await Promise.all([
+    getDB(),
+    getUserID(user),
+  ]);
+
+  let result = await db.get(`SELECT amount FROM ${table} WHERE user=?`, user_id);
+  // If user doesn't exist yet, set them up (with 0 reports)
+  if (!result) {
+    await db.run(`INSERT OR REPLACE INTO ${table} (user, amount) VALUES (?, 0)`, user_id);
+    // try get the users points again
+    result = await db.get(`SELECT amount FROM ${table} WHERE user=?`, user_id);
+  }
+  db.close();
+
+  const { amount = 0 } = result || {};
+
+  return +amount;
+}
+
+async function addAmount(user, amount = 1, table = 'reports'){
+  // Check amount is valid
+  amount = +amount;
+  if (isNaN(amount)) return;
+  amount += await getAmount(user, table);
+
+  const [
+    db,
+    user_id,
+  ] = await Promise.all([
+    getDB(),
+    getUserID(user),
+  ]);
+
+  const data = {
+    $user_id: user_id,
+    $amount: amount,
+  };
+
+  await db.run(`UPDATE ${table} SET amount=$amount WHERE user=$user_id`, data);
+  db.close();
+
+  return amount;
+}
+
+async function removeAmount(user, amount = 1, table = 'reports'){
+  return await addAmount(user, -amount, table);
+}
+
+async function setAmount(user, amount = 1, table = 'reports'){
+  // Check amount is valid
+  amount = +amount;
+  if (isNaN(amount)) return;
+
+  const [
+    db,
+    user_id,
+  ] = await Promise.all([
+    getDB(),
+    getUserID(user),
+  ]);
+
+  const data = {
+    $user_id: user_id,
+    $amount: amount,
+  };
+
+  await db.run(`UPDATE ${table} SET amount=$amount WHERE user=$user_id`, data);
+  db.close();
+
+  return amount;
 }
 
 async function getTop(amount = 10, table = 'reports'){
-  // amount must be between 1 - 50
-  amount = Math.max(1, Math.min(50, amount));
+  if (isNaN(amount)) amount = 10;
+  amount = Math.max(1, amount);
+
+  let results = [];
+
+  // TODO: statistics stuff?
   const db = await getDB();
-  const results = await db.all(`SELECT * FROM ${table} ORDER BY points DESC LIMIT ${amount}`);
+  switch (table) {
+    case 'reports':
+    case 'verifications':
+      results = await db.all(`SELECT users.user, amount, RANK () OVER ( ORDER BY amount DESC ) rank FROM ${table} INNER JOIN users ON users.id = ${table}.user ORDER BY amount DESC LIMIT ${amount}`);
+      break;
+    default:
+      results = await db.all(`SELECT users.user, value AS amount, RANK () OVER ( ORDER BY value DESC ) rank FROM statistics INNER JOIN statistic_types ON statistics.type = statistic_types.id INNER JOIN users ON users.id = statistics.user WHERE statistic_types.name='${table}' ORDER BY amount DESC LIMIT ${amount}`);
+  }
   db.close();
+
   return results;
 }
 
-async function getAll(table = 'reports'){
-  const db = await getDB();
-  const results = await db.all(`SELECT * FROM ${table} ORDER BY points DESC`);
+async function getRank(user, table = 'reports'){
+  const [
+    db,
+    user_id,
+  ] = await Promise.all([
+    getDB(),
+    getUserID(user),
+  ]);
+
+  const result = await db.get(`SELECT * FROM ( SELECT user, amount, RANK () OVER ( ORDER BY amount DESC ) rank FROM ${table} ) WHERE user=?`, user_id);
   db.close();
+
+  return result;
+}
+
+async function getStatisticTypeID(type){
+  const data = {
+    $type: type,
+  };
+
+  const db = await getDB();
+  await db.run('INSERT OR REPLACE INTO statistic_types (id, name) values ((SELECT id FROM statistic_types WHERE name = $type), $type);', data);
+  const { type_id = 0 } = await db.get('SELECT last_insert_rowid() AS type_id;');
+  db.close();
+
+  return type_id;
+}
+
+async function getStatisticTypes(){
+  const db = await getDB();
+  const results = await db.all('SELECT * FROM statistic_types;');
+  db.close();
+
+  return results || [];
+}
+
+async function getOverallStatistic(stat_type){
+  const [
+    db,
+    type_id,
+  ] = await Promise.all([
+    getDB(),
+    getStatisticTypeID(stat_type),
+  ]);
+
+  const result = await db.get('SELECT name, COUNT(user) AS users, SUM(value) AS value FROM statistics INNER JOIN statistic_types ON statistic_types.id = type WHERE type=? GROUP BY type;', type_id);
+  db.close();
+
+  const { name = 'not found', users = 0, value = 0 } = result || {};
+
+  return { name, users, value };
+}
+
+async function getStatistic(user, type){
+  const [
+    db,
+    user_id,
+    type_id,
+  ] = await Promise.all([
+    getDB(),
+    getUserID(user),
+    getStatisticTypeID(type),
+  ]);
+
+  let result = await db.get('SELECT value FROM statistics WHERE user=? AND type=?', user_id, type_id);
+  // If user doesn't exist yet, set them up
+  if (!result) {
+    await db.run('INSERT OR REPLACE INTO statistics (user, type) VALUES (?, ?)', user_id, type_id);
+    // try get the users points again
+    result = await db.get('SELECT value FROM statistics WHERE user=? AND type=?', user_id, type_id);
+  }
+  db.close();
+
+  const { value = 0 } = result || {};
+
+  return +value;
+}
+
+async function addStatistic(user, type, amount = 1){
+  // Check amount is valid
+  amount = +amount;
+  if (isNaN(amount)) return;
+  amount += await getStatistic(user, type);
+
+  const [
+    db,
+    user_id,
+    type_id,
+  ] = await Promise.all([
+    getDB(),
+    getUserID(user),
+    getStatisticTypeID(type),
+  ]);
+
+  const data = {
+    $type_id: type_id,
+    $user_id: user_id,
+    $amount: amount,
+  };
+
+  await db.run('UPDATE statistics SET value=$amount WHERE user=$user_id AND type=$type_id', data);
+  db.close();
+
+  return amount;
+}
+
+async function getScheduleTypeID(type){
+  const data = {
+    $type: type,
+  };
+
+  const db = await getDB();
+  await db.run('INSERT OR REPLACE INTO schedule_types (id, name) values ((SELECT id FROM schedule_types WHERE name = $type), $type);', data);
+  const { type_id = 0 } = await db.get('SELECT last_insert_rowid() AS type_id;');
+  db.close();
+
+  return type_id;
+}
+
+async function getScheduleItems(date = Date.now()){
+  const db = await getDB();
+
+  const results = await db.all(`SELECT schedule.id, schedule_types.name AS type, users.user, schedule.value, schedule.datetime FROM schedule INNER JOIN users ON users.id = schedule.user INNER JOIN schedule_types ON schedule_types.id = type WHERE schedule.datetime <= ${+date} ORDER BY schedule.id ASC`);
+  db.close();
+
   return results;
 }
 
-// ALIASES
-const getUserReports = async (user) => await getPoints(user, 'reports');
-const addUserReport = async (user) => await addPoints(user, 'reports');
-const getUserVerifications = async (user) => await getPoints(user, 'verifications');
-const addUserVerification = async (user) => await addPoints(user, 'verifications');
-const getEntriesPoints = async (user) => await getPoints(user, 'entries');
-const addEntriesPoint = async (user) => await addPoints(user, 'entries');
+async function addScheduleItem(type, user, time, value = ''){
+  const [
+    db,
+    user_id,
+    type_id,
+  ] = await Promise.all([
+    getDB(),
+    getUserID(user),
+    getScheduleTypeID(type),
+  ]);
+
+  const result = await db.run('INSERT INTO schedule (type, user, datetime, value) VALUES (?, ?, ?, ?)', type_id, user_id, Math.floor(+time), value);
+  db.close();
+
+  return result;
+}
+
+async function clearScheduleItems(ids = []){
+  const db = await getDB();
+
+  const results = await db.run(`DELETE FROM schedule WHERE schedule.id IN (${ids.join(',')})`);
+  db.close();
+
+  return results;
+}
+
+async function newShinyReportThread(pokemon, thread, symbols){
+  const db = await getDB();
+  await db.run('INSERT OR REPLACE INTO shiny_reports (pokemon, thread, symbols) VALUES (?, ?, ?)', pokemon, thread, symbols);
+  db.close();
+}
+
+async function getShinyReport(thread_ID){
+  const db = await getDB();
+  const result = await db.get('SELECT * FROM shiny_reports WHERE thread=?', thread_ID);
+  db.close();
+
+  // If no result, return empty object
+  return result;
+}
+
+async function getShinyReports(){
+  const db = await getDB();
+  const results = await db.all('SELECT * FROM shiny_reports');
+  db.close();
+
+  // If no result, return empty object
+  return results || [];
+}
+
+async function setShinyReportDate(thread_ID, date = new Date()){
+  const db = await getDB();
+  await db.run('UPDATE shiny_reports set date=? WHERE thread=?', date.getTime().toString(), thread_ID);
+  db.close();
+}
+
+async function setShinyReportUnlocked(thread_ID, unlocked = true){
+  const db = await getDB();
+  await db.run('UPDATE shiny_reports set unlocked=? WHERE thread=?', unlocked, thread_ID);
+  db.close();
+}
 
 module.exports = {
-  tables,
+  getDB,
   setupDB,
   backupDB,
-  getPoints,
-  addPoints,
+  getUserID,
+  getAmount,
+  addAmount,
+  setAmount,
+  removeAmount,
   getTop,
-  getAll,
-  getUserReports,
-  addUserReport,
-  getUserVerifications,
-  addUserVerification,
-  getEntriesPoints,
-  addEntriesPoint,
+  getRank,
+  getStatisticTypeID,
+  getStatisticTypes,
+  getOverallStatistic,
+  getStatistic,
+  addStatistic,
+  getScheduleTypeID,
+  getScheduleItems,
+  addScheduleItem,
+  clearScheduleItems,
+  newShinyReportThread,
+  getShinyReport,
+  getShinyReports,
+  setShinyReportDate,
+  setShinyReportUnlocked,
 };

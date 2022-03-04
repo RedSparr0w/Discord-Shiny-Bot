@@ -1,5 +1,6 @@
 class RunOnInterval {
-  constructor(interval_in_ms, function_to_run, only_run_once = false) {
+  constructor(interval_in_ms, function_to_run, { run_now = false, run_once = false, timezone_offset = new Date().getTimezoneOffset() * 6e4 } = {}) {
+    if (run_now) function_to_run();
     // "Private" fields
     this.__timeout = 0;
     this.__running = false;
@@ -7,13 +8,17 @@ class RunOnInterval {
       true: 'running',
       false: 'paused',
     };
-    this.__calculateTimeout = () => this.__interval_in_ms - (Date.now() - new Date().getTimezoneOffset() * 6e4) % this.__interval_in_ms;
+    this.__timezone_offset = timezone_offset;
     this.__interval_in_ms = +interval_in_ms;
     this.__function_to_run = function_to_run;
-    this.__only_run_once = !!only_run_once;
+    this.__run_once = !!run_once;
 
     // Start the initial run
     this.start();
+  }
+
+  __calculateTimeout() {
+    return this.__interval_in_ms - (Date.now() - this.__timezone_offset) % this.__interval_in_ms;
   }
 
   // define our getters and setters
@@ -22,11 +27,10 @@ class RunOnInterval {
   }
 
   set interval_in_ms(v){
-    if (isNaN(+v)) return false;
+    if (isNaN(+v)) return;
     // Set interval, restart timeout
     this.__interval_in_ms = +v;
     this.start();
-    return this.__interval_in_ms;
   }
 
   get function_to_run(){
@@ -34,18 +38,17 @@ class RunOnInterval {
   }
 
   set function_to_run(f){
-    if (typeof f !== 'function') return false;
+    if (typeof f !== 'function') return;
     this.__function_to_run = f;
     this.start();
-    return f;
   }
 
-  get only_run_once(){
-    return this.__only_run_once;
+  get run_once(){
+    return this.__run_once;
   }
 
-  set only_run_once(v){
-    return this.__only_run_once = !!v;
+  set run_once(v){
+    this.__run_once = !!v;
   }
 
   start() {
@@ -54,7 +57,7 @@ class RunOnInterval {
     // Wait until we reach the specified timeout
     this.__timeout = setTimeout(() => {
       this.__function_to_run();
-      if (!this.__only_run_once) this.start();
+      if (!this.__run_once) this.start();
       else this.pause();
     }, this.__calculateTimeout());
     // Set state to running
