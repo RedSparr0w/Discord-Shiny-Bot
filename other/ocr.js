@@ -17,12 +17,11 @@ const extractMessageDate = async (msg, files) => {
     const now = new Date();
     const date1 = new Date(`${year}-${month}-${day}`);
     const date2 = new Date(`${year}-${day}-${month}`);
-    console.log(date1, date2, now);
+
     // If date1 invalid, assume date2
     // If date2 invalid, assume date1
     // If both valid dates, use the date that is the closest to today
     const date = isNaN(date1) ? date2 : isNaN(date2) || Math.abs(now - +date1) < Math.abs(now - +date2) ? date1 : date2;
-    console.log(date);
     if (!+date) return;
 
     const lines = msg.embeds[0].description.split('\n');
