@@ -186,7 +186,12 @@ client.on('error', e => error('Client error thrown:', e))
           if (date <= report_date) {
             const embed = new Discord.MessageEmbed()
               .setColor('#e74c3c')
-              .setDescription(`${message.author}, Thank you for your report!\nBut we already have a report for that date or newer!\nLatest report: ${report_date.getFullYear()}-${(report_date.getMonth() + 1).toString().padStart(2, 0)}-${report_date.getDate().toString().padStart(2, 0)}`);
+              .setDescription([
+                `${message.author}, Thank you for your report!`,
+                'But we already have a report for that date or newer!',
+                `Your report: ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`,
+                `Latest report: ${report_date.toLocaleString('en-us', { month: 'long' })} ${report_date.getDate()}, ${report_date.getFullYear()}`,
+              ].join('\n'));
             const reply = await message.reply({ embeds: [embed], ephemeral: true });
             setTimeout(() => reply.delete().catch(e=>error('Unable to delete message:', e)), 10 * SECOND);
             return message.delete().catch(e => {});
@@ -362,6 +367,8 @@ client.on('error', e => error('Client error thrown:', e))
                     m.delete();
                   })
                   .catch(e=>{});
+
+                // If no date supplied
                 if (!date_str) {
                   return debug('No date supplied');
                 }
@@ -382,7 +389,7 @@ client.on('error', e => error('Client error thrown:', e))
 
               const latest_embed = new Discord.MessageEmbed()
                 .setColor('#3498db')
-                .setDescription(`**Date:** ${date_str}\n**Reported by:** ${reporter}\n**Verified by:** ${interaction.member.toString()}`);
+                .setDescription(`**Date:** ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}\n**Reported by:** ${reporter}\n**Verified by:** ${interaction.member.toString()}`);
 
               await interaction.replied ? interaction.followUp({ content: '***__Latest report:__***', embeds: [latest_embed] }) : interaction.reply({ content: '***__Latest report:__***', embeds: [latest_embed] });
 

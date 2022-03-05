@@ -98,7 +98,12 @@ module.exports = {
         if (date <= report_date) {
           const embed = new MessageEmbed()
             .setColor('#e74c3c')
-            .setDescription(`Thank you for your report,\nBut we already have a report for that date or newer!\n${thread}\nLatest report: ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`);
+            .setDescription([
+              `${interaction.member.toString()}, Thank you for your report!`,
+              'But we already have a report for that date or newer!',
+              `Your report: ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`,
+              `Latest report: ${report_date.toLocaleString('en-us', { month: 'long' })} ${report_date.getDate()}, ${report_date.getFullYear()}`,
+            ].join('\n'));
           return interaction.reply({ embeds: [embed], ephemeral: true });
         }
       } else {
