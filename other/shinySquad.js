@@ -225,7 +225,9 @@ async function updateShinyStatuses(guild) {
   // Sort and apply to categories
   results.sort((a,b) => a.pokemon.localeCompare(b.pokemon))
     .forEach((res) => {
-      const category = (res.pokemon.match(/\((\w*)\)/)?.[1] || res.pokemon[0]).toUpperCase();
+      // Sort by first letter of pokemon name
+      // const category = (res.pokemon.match(/\((\w*)\)/)?.[1] || res.pokemon[0]).toUpperCase();
+      const category = res.pokemon[0].toUpperCase();
       const output = `[**${res.unlocked ? getSymbolFromDate(res.date) : otherSymbols.locked}\t${res.pokemon}${res.symbols ? `| ${res.symbols.join(' | ')}` : ''}**](https://discord.com/channels/${guild.id}/${res.thread})`;
       if (!categories[category]) categories[category] = [];
       categories[category].push(output);
