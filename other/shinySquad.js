@@ -215,13 +215,10 @@ async function updateShinyStatuses(guild) {
   // Find leaderboard message
   let leaderboardMessages = [...await shinyStatusChannel.messages.fetch({ limit: 100 }).catch(e => {})];
   if (!leaderboardMessages) return;
-  leaderboardMessages = leaderboardMessages.sort(([,a], [,b]) => {
-    console.log(a.createdTimestamp);
-    return a.createdTimestamp - b.createdTimestamp;
-  });
+  leaderboardMessages = leaderboardMessages.sort(([,a], [,b]) => a.createdTimestamp - b.createdTimestamp);
 
   // Get our shiny reports
-  const items_per_page = 15;
+  const items_per_page = 50;
   const results = await getShinyReports();
   const categories = {};
 
@@ -241,21 +238,32 @@ async function updateShinyStatuses(guild) {
     if (b.length > 1 && a.length <= 1) return 1;
     return a.localeCompare(b);
   }).forEach(([category, values]) => {
-    output.push(`\n***__${category}:__***`);
-    output.push(...values);
+    output.push([`\n***__${category}:__***`, ...values]);
   });
 
   // Create our pages
-  const pages = new Array(Math.ceil(output.length / items_per_page)).fill('').map(page => {
-    const embed = new MessageEmbed().setColor('#3498db');
+  const pages = new Array(Math.ceil(output.flat().length / items_per_page)).fill('').map(page => {
+    // Description split into categories
+    const description = [];
+    while (output.length && description.length + output[0].length <= items_per_page) {
+      description.push(...output.splice(0, 1).flat());
+    }
+
+    if (!description.length && output.length) description.push(...output.splice(0, 1).flat());
+
+    if (!description.length) return undefined;
+    
     // Setup our embeds
-    embed.setDescription(output.splice(0, items_per_page).join('\n'));
+    const embed = new MessageEmbed()
+      .setColor('#3498db')
+      .setDescription(description.join('\n'));
     // Return our message object
     return { embeds: [embed] };
   });
 
   let i = 0;
   for(const page of pages) {
+    if (!page) break;
     if (leaderboardMessages[i]) {
       await leaderboardMessages[i][1].edit(page);
     } else {
