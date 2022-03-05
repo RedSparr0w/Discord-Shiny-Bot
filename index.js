@@ -34,6 +34,7 @@ const {
   updateShinyStatuses,
   otherSymbols,
 } = require('./other/shinySquad.js');
+const { extractMessageDate } = require('./other/ocr.js');
 
 const client = new Discord.Client({
   intents: [
@@ -168,7 +169,7 @@ client.on('error', e => error('Client error thrown:', e))
         if (!report || !report.pokemon) return;
 
         let date_string = message.content.match(/(\d{4}-)?\d{1,2}-\d{1,2}/)?.[0];
-        const report_date = +report.date ? new Date(+report.date) : 0;
+        const report_date = +report?.date ? new Date(+report.date) : 0;
         
         // Get our date object
         let date;
@@ -185,20 +186,44 @@ client.on('error', e => error('Client error thrown:', e))
           if (date <= report_date) {
             const embed = new Discord.MessageEmbed()
               .setColor('#e74c3c')
-              .setDescription(`${message.author}, Thank you for your report!\nBut we already have a report for that date or newer!\nLatest report: ${report_date.getFullYear()}-${(report_date.getMonth() + 1).toString().padStart(2, 0)}-${report_date.getDate().toString().padStart(2, 0)}`);
+              .setDescription([
+                `${message.author}, Thank you for your report!`,
+                'But we already have a report for that date or newer!',
+                `Your report: ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`,
+                `Latest report: ${report_date.toLocaleString('en-us', { month: 'long' })} ${report_date.getDate()}, ${report_date.getFullYear()}`,
+              ].join('\n'));
             const reply = await message.reply({ embeds: [embed], ephemeral: true });
             setTimeout(() => reply.delete().catch(e=>error('Unable to delete message:', e)), 10 * SECOND);
             return message.delete().catch(e => {});
           }
         }
 
-        const files = [...message.attachments].map(a => a[1].url);
+        const files = [...message.attachments].map(a => a[1].proxyURL);
+
+        // If no date, try read the date with OCR
+        if (!date) {
+          date = await extractMessageDate(files.map(f => f.replace('cdn.discordapp.com', 'media.discordapp.net')));
+
+          if (+date && date <= report_date) {
+            const embed = new Discord.MessageEmbed()
+              .setColor('#e74c3c')
+              .setDescription([
+                `${message.author}, Thank you for your report!`,
+                'But we already have a report for that date or newer!',
+                `Your report: ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`,
+                `Latest report: ${report_date.toLocaleString('en-us', { month: 'long' })} ${report_date.getDate()}, ${report_date.getFullYear()}`,
+              ].join('\n'));
+            const reply = await message.reply({ embeds: [embed], ephemeral: true });
+            setTimeout(() => reply.delete().catch(e=>error('Unable to delete message:', e)), 10 * SECOND);
+            return message.delete().catch(e => {});
+          }
+        }
 
         // Send through the report
         const embeds = [
           new Discord.MessageEmbed()
             .setColor('#3498db')
-            .setDescription(`**Reporter:** ${message.author.toString()}${date ? `\n**Date:** ${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, 0)}-${date.getDate().toString().padStart(2, 0)}` : ''}${message.content ? `\n\n${message.content.replace(/(\d{4}-)?\d{1,2}-\d{1,2}/, '')}` : ''}`),
+            .setDescription(`**Reporter:** ${message.author.toString()}${+date ? `\n**Date:** ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}` : ''}${message.content ? `\n\n${message.content.replace(/(\d{4}-)?\d{1,2}-\d{1,2}/, '')}` : ''}`),
         ];
           
         const row = new Discord.MessageActionRow()
@@ -219,7 +244,7 @@ client.on('error', e => error('Client error thrown:', e))
               .setEmoji('🚫')
           );
 
-        message.channel.send({ embeds, components: [row], files }).catch(error);
+        await message.channel.send({ embeds, components: [row], files }).catch(error);
         
         // Reply letting the user know it went through successfully
         const embed_reply = new Discord.MessageEmbed()
@@ -322,7 +347,7 @@ client.on('error', e => error('Client error thrown:', e))
 
             if (interaction.customId == 'report-accept' || interaction.customId == 'report-date') {
               const reporter_id = embeds[0].description.match(/<@!?(\d+)>/)[1];
-              let date_str = embeds[0].description.match(/(\d{4}-\d{2}-\d{2})/)?.[1];
+              let date_str = embeds[0].description.match(/Date:\*\* (\w+ \d+, \d+)/)?.[1];
               // Check if date supplied or get one from verifier
               if (!date_str || interaction.customId == 'report-date') {
                 await interaction.reply({ content: 'Report has no date, please supply a date (YYYY-MM-DD or MM-DD):', ephemeral: true });
@@ -342,6 +367,8 @@ client.on('error', e => error('Client error thrown:', e))
                     m.delete();
                   })
                   .catch(e=>{});
+
+                // If no date supplied
                 if (!date_str) {
                   return debug('No date supplied');
                 }
@@ -362,7 +389,7 @@ client.on('error', e => error('Client error thrown:', e))
 
               const latest_embed = new Discord.MessageEmbed()
                 .setColor('#3498db')
-                .setDescription(`**Date:** ${date_str}\n**Reported by:** ${reporter}\n**Verified by:** ${interaction.member.toString()}`);
+                .setDescription(`**Date:** ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}\n**Reported by:** ${reporter}\n**Verified by:** ${interaction.member.toString()}`);
 
               await interaction.replied ? interaction.followUp({ content: '***__Latest report:__***', embeds: [latest_embed] }) : interaction.reply({ content: '***__Latest report:__***', embeds: [latest_embed] });
 

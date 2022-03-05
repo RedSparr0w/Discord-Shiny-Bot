@@ -1,8 +1,9 @@
 const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
 const { shinyVerifierRoleID } = require('../config.js');
 const { getDB } = require('../database.js');
-const { error, MINUTE } = require('../helpers.js');
+const { error, MINUTE, SECOND } = require('../helpers.js');
 const FuzzySet = require('fuzzyset');
+const { extractMessageDate } = require('../other/ocr.js');
 
 module.exports = {
   name        : 'report',
@@ -18,7 +19,7 @@ module.exports = {
       name: 'date',
       type: 'STRING',
       description: 'Date you are reporting for (YYYY-MM-DD or MM-DD)',
-      required: true,
+      required: false,
     },
   ],
   guildOnly   : true,
@@ -97,7 +98,12 @@ module.exports = {
         if (date <= report_date) {
           const embed = new MessageEmbed()
             .setColor('#e74c3c')
-            .setDescription(`Thank you for your report,\nBut we already have a report for that date or newer!\n${thread}\nLatest report: ${report_date.getFullYear()}-${(report_date.getMonth() + 1).toString().padStart(2, 0)}-${report_date.getDate().toString().padStart(2, 0)}`);
+            .setDescription([
+              `${interaction.member.toString()}, Thank you for your report!`,
+              'But we already have a report for that date or newer!',
+              `Your report: ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`,
+              `Latest report: ${report_date.toLocaleString('en-us', { month: 'long' })} ${report_date.getDate()}, ${report_date.getFullYear()}`,
+            ].join('\n'));
           return interaction.reply({ embeds: [embed], ephemeral: true });
         }
       } else {
@@ -117,17 +123,36 @@ module.exports = {
 
     // Wait for the user to post a picture
     const filter = m => m.attachments.size && m.author.id === interaction.user.id;
-    // errors: ['time'] treats ending because of the time limit as an error (5 minutes)
-    interaction.channel.awaitMessages({filter, max: 1, time: 5 * MINUTE, errors: ['time'] })
+    // errors: ['time'] treats ending because of the time limit as an error (2 minutes)
+    interaction.channel.awaitMessages({filter, max: 1, time: 2 * MINUTE, errors: ['time'] })
       .then(async collected => {
         const m = collected.first();
-        const files = [...m.attachments].map(a => a[1].url);
+        const files = [...m.attachments].map(a => a[1].proxyURL);
+
+        // If no date, try read the date with OCR
+        if (!date) {
+          date = await extractMessageDate(files.map(f => f.replace('cdn.discordapp.com', 'media.discordapp.net')));
+
+          if (+date && date <= report_date) {
+            const embed = new MessageEmbed()
+              .setColor('#e74c3c')
+              .setDescription([
+                `${m.author}, Thank you for your report!`,
+                'But we already have a report for that date or newer!',
+                `Your report: ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`,
+                `Latest report: ${report_date.toLocaleString('en-us', { month: 'long' })} ${report_date.getDate()}, ${report_date.getFullYear()}`,
+              ].join('\n'));
+            const reply = await m.reply({ embeds: [embed], ephemeral: true });
+            setTimeout(() => reply.delete().catch(e=>error('Unable to delete message:', e)), 10 * SECOND);
+            return m.delete().catch(e => {});
+          }
+        }
 
         // Send through the report
         const embeds = [
           new MessageEmbed()
             .setColor('#3498db')
-            .setDescription(`**Reporter:** ${m.author.toString()}${date ? `\n**Date:** ${date_string}` : ''}${m.content ? `\n\n${m.content}` : ''}`),
+            .setDescription(`**Reporter:** ${m.author.toString()}${+date ? `\n**Date:** ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}` : ''}${m.content ? `\n\n${m.content}` : ''}`),
         ];
           
         const row = new MessageActionRow()
@@ -154,7 +179,7 @@ module.exports = {
         const embed_reply = new MessageEmbed()
           .setColor('#2ecc71')
           .setDescription(`Thank you ${m.author.toString()}!\nI have sent through your shiny report successfully:\n${thread}`);
-        await m.reply({ embeds: [embed_reply], ephemeral: true }).catch(error);
+        await m.reply({ embeds: [embed_reply] }).catch(error);
 
         // Delete the users message
         m.delete().catch(e=>error('Unable to delete message:', e));
