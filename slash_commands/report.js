@@ -124,11 +124,16 @@ module.exports = {
         const m = collected.first();
         const files = [...m.attachments].map(a => a[1].proxyURL);
 
+        // If no date, try read the date with OCR
+        if (!date) {
+          date = await extractMessageDate(files.map(f => f.replace('cdn.discordapp.com', 'media.discordapp.net')));
+        }
+
         // Send through the report
         const embeds = [
           new MessageEmbed()
             .setColor('#3498db')
-            .setDescription(`**Reporter:** ${m.author.toString()}${date ? `\n**Date:** ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}` : ''}${m.content ? `\n\n${m.content}` : ''}`),
+            .setDescription(`**Reporter:** ${m.author.toString()}${+date ? `\n**Date:** ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}` : ''}${m.content ? `\n\n${m.content}` : ''}`),
         ];
           
         const row = new MessageActionRow()
@@ -149,18 +154,13 @@ module.exports = {
               .setEmoji('🚫')
           );
 
-        const report_message = await thread.send({ embeds, components: [row], files }).catch(error);
-
-        // If no date, try read the date with OCR
-        if (!date) {
-          extractMessageDate(report_message, files.map(f => f.replace('cdn.discordapp.com', 'media.discordapp.net')));
-        }
+        thread.send({ embeds, components: [row], files }).catch(error);
         
         // Reply letting the user know it went through successfully
         const embed_reply = new MessageEmbed()
           .setColor('#2ecc71')
           .setDescription(`Thank you ${m.author.toString()}!\nI have sent through your shiny report successfully:\n${thread}`);
-        await m.reply({ embeds: [embed_reply], ephemeral: true }).catch(error);
+        await m.reply({ embeds: [embed_reply] }).catch(error);
 
         // Delete the users message
         m.delete().catch(e=>error('Unable to delete message:', e));

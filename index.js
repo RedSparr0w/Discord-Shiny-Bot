@@ -192,21 +192,19 @@ client.on('error', e => error('Client error thrown:', e))
             return message.delete().catch(e => {});
           }
         }
-        
-        // Reply letting the user know it went through successfully
-        const embed_reply = new Discord.MessageEmbed()
-          .setColor('#2ecc71')
-          .setDescription(`Thank you ${message.author.toString()}!\nSending through your shiny report now!`);
-        const reply = await message.reply({ embeds: [embed_reply], ephemeral: true }).catch(error);
-        setTimeout(() => reply.delete().catch(e=>error('Unable to delete message:', e)), 10 * SECOND);
 
         const files = [...message.attachments].map(a => a[1].proxyURL);
+
+        // If no date, try read the date with OCR
+        if (!date) {
+          date = await extractMessageDate(files.map(f => f.replace('cdn.discordapp.com', 'media.discordapp.net')));
+        }
 
         // Send through the report
         const embeds = [
           new Discord.MessageEmbed()
             .setColor('#3498db')
-            .setDescription(`**Reporter:** ${message.author.toString()}${date ? `\n**Date:** ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}` : ''}${message.content ? `\n\n${message.content.replace(/(\d{4}-)?\d{1,2}-\d{1,2}/, '')}` : ''}`),
+            .setDescription(`**Reporter:** ${message.author.toString()}${+date ? `\n**Date:** ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}` : ''}${message.content ? `\n\n${message.content.replace(/(\d{4}-)?\d{1,2}-\d{1,2}/, '')}` : ''}`),
         ];
           
         const row = new Discord.MessageActionRow()
@@ -227,12 +225,14 @@ client.on('error', e => error('Client error thrown:', e))
               .setEmoji('🚫')
           );
 
-        const report_message = await message.channel.send({ embeds, components: [row], files }).catch(error);
-
-        // If no date, try read the date with OCR
-        if (!date) {
-          extractMessageDate(report_message, files.map(f => f.replace('cdn.discordapp.com', 'media.discordapp.net')));
-        }
+        await message.channel.send({ embeds, components: [row], files }).catch(error);
+        
+        // Reply letting the user know it went through successfully
+        const embed_reply = new Discord.MessageEmbed()
+          .setColor('#2ecc71')
+          .setDescription(`Thank you ${message.author.toString()}!\nI have sent through your shiny report successfully!`);
+        const reply = await message.reply({ embeds: [embed_reply], ephemeral: true }).catch(error);
+        setTimeout(() => reply.delete().catch(e=>error('Unable to delete message:', e)), 10 * SECOND);
 
         // Delete the users message
         return message.delete().catch(e=>error('Unable to delete message:', e));

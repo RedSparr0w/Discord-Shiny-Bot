@@ -1,6 +1,6 @@
 const { recognize } = require('node-tesseract-ocr');
 
-const extractMessageDate = async (msg, files) => {
+const extractMessageDate = async (files) => {
   try {
     let output = '';
     for (const file of files) {
@@ -22,13 +22,12 @@ const extractMessageDate = async (msg, files) => {
     // If date2 invalid, assume date1
     // If both valid dates, use the date that is the closest to today
     const date = isNaN(date1) ? date2 : isNaN(date2) || Math.abs(now - +date1) < Math.abs(now - +date2) ? date1 : date2;
-    if (!+date) return;
 
-    const lines = msg.embeds[0].description.split('\n');
-    lines.splice(1, 0, `**Date:** ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`);
-    msg.embeds[0].setDescription(lines.join('\n'));
-    msg.edit({ embeds: msg.embeds }).catch(e=>{});
-  } catch(e){}
+    // Return 0 date or date we got
+    return !+date ? new Date(0) : date;
+  } catch(e){
+    return new Date(0);
+  }
 };
 
 module.exports = {
