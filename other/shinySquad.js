@@ -242,7 +242,7 @@ async function updateShinyStatuses(guild) {
   });
 
   // Create our pages
-  const pages = new Array(Math.ceil(output.flat().length / items_per_page)).fill('').map(page => {
+  const pages = new Array(output.flat().length).fill('').map(page => {
     // Description split into categories
     const description = [];
     while (output.length && description.length + output[0].length <= items_per_page) {
