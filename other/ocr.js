@@ -4,7 +4,9 @@ const extractMessageDate = async (files) => {
   try {
     let output = '';
     for (const file of files) {
-      output += await recognize(file, {}).catch(e=>{});
+      output += await recognize(file, {
+        tessedit_char_whitelist: '0123456789-/',
+      }).catch(e=>{});
     }
     output = output?.split('\n').join(' ');
 

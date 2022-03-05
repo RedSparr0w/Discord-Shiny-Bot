@@ -198,6 +198,20 @@ client.on('error', e => error('Client error thrown:', e))
         // If no date, try read the date with OCR
         if (!date) {
           date = await extractMessageDate(files.map(f => f.replace('cdn.discordapp.com', 'media.discordapp.net')));
+
+          if (+date && date <= report_date) {
+            const embed = new Discord.MessageEmbed()
+              .setColor('#e74c3c')
+              .setDescription([
+                `${message.author}, Thank you for your report!`,
+                'But we already have a report for that date or newer!',
+                `Your report: ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`,
+                `Latest report: ${report_date.toLocaleString('en-us', { month: 'long' })} ${report_date.getDate()}, ${report_date.getFullYear()}`,
+              ].join('\n'));
+            const reply = await message.reply({ embeds: [embed], ephemeral: true });
+            setTimeout(() => reply.delete().catch(e=>error('Unable to delete message:', e)), 10 * SECOND);
+            return message.delete().catch(e => {});
+          }
         }
 
         // Send through the report

@@ -1,7 +1,7 @@
 const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
 const { shinyVerifierRoleID } = require('../config.js');
 const { getDB } = require('../database.js');
-const { error, MINUTE } = require('../helpers.js');
+const { error, MINUTE, SECOND } = require('../helpers.js');
 const FuzzySet = require('fuzzyset');
 const { extractMessageDate } = require('../other/ocr.js');
 
@@ -118,8 +118,8 @@ module.exports = {
 
     // Wait for the user to post a picture
     const filter = m => m.attachments.size && m.author.id === interaction.user.id;
-    // errors: ['time'] treats ending because of the time limit as an error (5 minutes)
-    interaction.channel.awaitMessages({filter, max: 1, time: 5 * MINUTE, errors: ['time'] })
+    // errors: ['time'] treats ending because of the time limit as an error (2 minutes)
+    interaction.channel.awaitMessages({filter, max: 1, time: 2 * MINUTE, errors: ['time'] })
       .then(async collected => {
         const m = collected.first();
         const files = [...m.attachments].map(a => a[1].proxyURL);
@@ -127,6 +127,20 @@ module.exports = {
         // If no date, try read the date with OCR
         if (!date) {
           date = await extractMessageDate(files.map(f => f.replace('cdn.discordapp.com', 'media.discordapp.net')));
+
+          if (+date && date <= report_date) {
+            const embed = new MessageEmbed()
+              .setColor('#e74c3c')
+              .setDescription([
+                `${m.author}, Thank you for your report!`,
+                'But we already have a report for that date or newer!',
+                `Your report: ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`,
+                `Latest report: ${report_date.toLocaleString('en-us', { month: 'long' })} ${report_date.getDate()}, ${report_date.getFullYear()}`,
+              ].join('\n'));
+            const reply = await m.reply({ embeds: [embed], ephemeral: true });
+            setTimeout(() => reply.delete().catch(e=>error('Unable to delete message:', e)), 10 * SECOND);
+            return m.delete().catch(e => {});
+          }
         }
 
         // Send through the report
