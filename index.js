@@ -34,6 +34,7 @@ const {
   updateShinyStatuses,
   otherSymbols,
 } = require('./other/shinySquad.js');
+const { extractMessageDate } = require('./other/ocr.js');
 
 const client = new Discord.Client({
   intents: [
@@ -168,7 +169,7 @@ client.on('error', e => error('Client error thrown:', e))
         if (!report || !report.pokemon) return;
 
         let date_string = message.content.match(/(\d{4}-)?\d{1,2}-\d{1,2}/)?.[0];
-        const report_date = +report.date ? new Date(+report.date) : 0;
+        const report_date = +report?.date ? new Date(+report.date) : 0;
         
         // Get our date object
         let date;
@@ -191,14 +192,21 @@ client.on('error', e => error('Client error thrown:', e))
             return message.delete().catch(e => {});
           }
         }
+        
+        // Reply letting the user know it went through successfully
+        const embed_reply = new Discord.MessageEmbed()
+          .setColor('#2ecc71')
+          .setDescription(`Thank you ${message.author.toString()}!\nSending through your shiny report now!`);
+        const reply = await message.reply({ embeds: [embed_reply], ephemeral: true }).catch(error);
+        setTimeout(() => reply.delete().catch(e=>error('Unable to delete message:', e)), 10 * SECOND);
 
-        const files = [...message.attachments].map(a => a[1].url);
+        const files = [...message.attachments].map(a => a[1].proxyURL);
 
         // Send through the report
         const embeds = [
           new Discord.MessageEmbed()
             .setColor('#3498db')
-            .setDescription(`**Reporter:** ${message.author.toString()}${date ? `\n**Date:** ${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, 0)}-${date.getDate().toString().padStart(2, 0)}` : ''}${message.content ? `\n\n${message.content.replace(/(\d{4}-)?\d{1,2}-\d{1,2}/, '')}` : ''}`),
+            .setDescription(`**Reporter:** ${message.author.toString()}${date ? `\n**Date:** ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}` : ''}${message.content ? `\n\n${message.content.replace(/(\d{4}-)?\d{1,2}-\d{1,2}/, '')}` : ''}`),
         ];
           
         const row = new Discord.MessageActionRow()
@@ -219,14 +227,12 @@ client.on('error', e => error('Client error thrown:', e))
               .setEmoji('🚫')
           );
 
-        message.channel.send({ embeds, components: [row], files }).catch(error);
-        
-        // Reply letting the user know it went through successfully
-        const embed_reply = new Discord.MessageEmbed()
-          .setColor('#2ecc71')
-          .setDescription(`Thank you ${message.author.toString()}!\nI have sent through your shiny report successfully!`);
-        const reply = await message.reply({ embeds: [embed_reply], ephemeral: true }).catch(error);
-        setTimeout(() => reply.delete().catch(e=>error('Unable to delete message:', e)), 10 * SECOND);
+        const report_message = await message.channel.send({ embeds, components: [row], files }).catch(error);
+
+        // If no date, try read the date with OCR
+        if (!date) {
+          extractMessageDate(report_message, files.map(f => f.replace('cdn.discordapp.com', 'media.discordapp.net')));
+        }
 
         // Delete the users message
         return message.delete().catch(e=>error('Unable to delete message:', e));
@@ -322,7 +328,7 @@ client.on('error', e => error('Client error thrown:', e))
 
             if (interaction.customId == 'report-accept' || interaction.customId == 'report-date') {
               const reporter_id = embeds[0].description.match(/<@!?(\d+)>/)[1];
-              let date_str = embeds[0].description.match(/(\d{4}-\d{2}-\d{2})/)?.[1];
+              let date_str = embeds[0].description.match(/Date:\*\* (\w+ \d+, \d+)/)?.[1];
               // Check if date supplied or get one from verifier
               if (!date_str || interaction.customId == 'report-date') {
                 await interaction.reply({ content: 'Report has no date, please supply a date (YYYY-MM-DD or MM-DD):', ephemeral: true });

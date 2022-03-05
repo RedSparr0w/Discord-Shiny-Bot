@@ -3,6 +3,7 @@ const { shinyVerifierRoleID } = require('../config.js');
 const { getDB } = require('../database.js');
 const { error, MINUTE } = require('../helpers.js');
 const FuzzySet = require('fuzzyset');
+const { extractMessageDate } = require('../other/ocr.js');
 
 module.exports = {
   name        : 'report',
@@ -18,7 +19,7 @@ module.exports = {
       name: 'date',
       type: 'STRING',
       description: 'Date you are reporting for (YYYY-MM-DD or MM-DD)',
-      required: true,
+      required: false,
     },
   ],
   guildOnly   : true,
@@ -97,7 +98,7 @@ module.exports = {
         if (date <= report_date) {
           const embed = new MessageEmbed()
             .setColor('#e74c3c')
-            .setDescription(`Thank you for your report,\nBut we already have a report for that date or newer!\n${thread}\nLatest report: ${report_date.getFullYear()}-${(report_date.getMonth() + 1).toString().padStart(2, 0)}-${report_date.getDate().toString().padStart(2, 0)}`);
+            .setDescription(`Thank you for your report,\nBut we already have a report for that date or newer!\n${thread}\nLatest report: ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`);
           return interaction.reply({ embeds: [embed], ephemeral: true });
         }
       } else {
@@ -121,13 +122,13 @@ module.exports = {
     interaction.channel.awaitMessages({filter, max: 1, time: 5 * MINUTE, errors: ['time'] })
       .then(async collected => {
         const m = collected.first();
-        const files = [...m.attachments].map(a => a[1].url);
+        const files = [...m.attachments].map(a => a[1].proxyURL);
 
         // Send through the report
         const embeds = [
           new MessageEmbed()
             .setColor('#3498db')
-            .setDescription(`**Reporter:** ${m.author.toString()}${date ? `\n**Date:** ${date_string}` : ''}${m.content ? `\n\n${m.content}` : ''}`),
+            .setDescription(`**Reporter:** ${m.author.toString()}${date ? `\n**Date:** ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}` : ''}${m.content ? `\n\n${m.content}` : ''}`),
         ];
           
         const row = new MessageActionRow()
@@ -148,7 +149,12 @@ module.exports = {
               .setEmoji('🚫')
           );
 
-        thread.send({ embeds, components: [row], files }).catch(error);
+        const report_message = await thread.send({ embeds, components: [row], files }).catch(error);
+
+        // If no date, try read the date with OCR
+        if (!date) {
+          extractMessageDate(report_message, files.map(f => f.replace('cdn.discordapp.com', 'media.discordapp.net')));
+        }
         
         // Reply letting the user know it went through successfully
         const embed_reply = new MessageEmbed()
