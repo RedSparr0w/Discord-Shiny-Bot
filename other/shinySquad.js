@@ -213,20 +213,43 @@ async function updateShinyStatuses(guild) {
   if (!shinyStatusChannel) return;
 
   // Find leaderboard message
-  const leaderboardMessages = [...await shinyStatusChannel.messages.fetch({ limit: 100 }).catch(e => {})];
+  let leaderboardMessages = [...await shinyStatusChannel.messages.fetch({ limit: 100 }).catch(e => {})];
   if (!leaderboardMessages) return;
+  leaderboardMessages = leaderboardMessages.sort(([,a], [,b]) => {
+    console.log(a.createdTimestamp);
+    return a.createdTimestamp - b.createdTimestamp;
+  });
 
   // Get our shiny reports
+  const items_per_page = 15;
   const results = await getShinyReports();
-  const resultsText = results
-    .sort((a,b) => a.pokemon.localeCompare(b.pokemon))
-    .map((res) => `[**${res.unlocked ? getSymbolFromDate(res.date) : otherSymbols.locked}\t${res.pokemon}${res.symbols ? `| ${res.symbols.join(' | ')}` : ''}**](https://discord.com/channels/${guild.id}/${res.thread})`);
-  const items_per_page = 50;
+  const categories = {};
 
-  const pages = new Array(Math.ceil(resultsText.length / items_per_page)).fill('').map(page => {
+  // Sort and apply to categories
+  results.sort((a,b) => a.pokemon.localeCompare(b.pokemon))
+    .forEach((res) => {
+      const category = (res.pokemon.match(/\((\w*)\)/)?.[1] || res.pokemon[0]).toUpperCase();
+      const output = `[**${res.unlocked ? getSymbolFromDate(res.date) : otherSymbols.locked}\t${res.pokemon}${res.symbols ? `| ${res.symbols.join(' | ')}` : ''}**](https://discord.com/channels/${guild.id}/${res.thread})`;
+      if (!categories[category]) categories[category] = [];
+      categories[category].push(output);
+    });
+
+  // Create our output
+  const output = [];
+  Object.entries(categories).sort(([a], [b]) => {
+    if (a.length > 1 && b.length <= 1) return -1;
+    if (b.length > 1 && a.length <= 1) return 1;
+    return a.localeCompare(b);
+  }).forEach(([category, values]) => {
+    output.push(`\n***__${category}:__***`);
+    output.push(...values);
+  });
+
+  // Create our pages
+  const pages = new Array(Math.ceil(output.length / items_per_page)).fill('').map(page => {
     const embed = new MessageEmbed().setColor('#3498db');
     // Setup our embeds
-    embed.setDescription(resultsText.splice(0, items_per_page).join('\n'));
+    embed.setDescription(output.splice(0, items_per_page).join('\n'));
     // Return our message object
     return { embeds: [embed] };
   });
