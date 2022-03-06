@@ -1,6 +1,21 @@
 const { recognize } = require('node-tesseract-ocr');
+const { debug } = require('../helpers.js');
+let tesseractInstalled = false;
+(async () => {
+  try {
+    const util = require('util');
+    const exec = util.promisify(require('child_process').exec);
+    tesseractInstalled = !!(await exec('tesseract --version'));
+  } catch (e) {
+    tesseractInstalled = false;
+  }
+  debug('Tesseract Installed:', tesseractInstalled);
+})();
 
 const extractMessageDate = async (files) => {
+  // Check if tesseract installed
+  if (!tesseractInstalled) return new Date(0);
+  // Proccess the data
   try {
     let output = '';
     for (const file of files) {
