@@ -1,8 +1,7 @@
-const { error, randomString } = require('../helpers.js');
+const { error, randomString, MINUTE } = require('../helpers.js');
 const { ownerID } = require('../config.js');
 const { getDB, getShinyReports } = require('../database.js');
 const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
-const { MINUTE } = require('../helpers/constants.js');
 
 module.exports = {
   name        : 'clearoldthreads',
