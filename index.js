@@ -202,7 +202,7 @@ client.on('error', e => error('Client error thrown:', e))
               `Latest report: ${report_date.toLocaleString('en-us', { month: 'long' })} ${report_date.getDate()}, ${report_date.getFullYear()}`,
             ].join('\n'));
           const reply = await message.reply({ embeds: [embed], ephemeral: true });
-          setTimeout(() => reply.delete().catch(e=>error('Unable to delete message:', e)), 5 * SECOND);
+          setTimeout(() => reply.delete().catch(e=>error('Unable to delete message:', e)), 10 * SECOND);
           message.delete().catch(e => {});
           return;
         }
