@@ -218,9 +218,10 @@ async function updateShinyStatuses(guild) {
   leaderboardMessages = leaderboardMessages.sort(([,a], [,b]) => a.createdTimestamp - b.createdTimestamp);
 
   // Get our shiny reports
-  const items_per_page = 50;
   const results = await getShinyReports();
   const categories = {};
+  // Limit to 30 per page due to possible description limitations
+  const items_per_page = 30;
 
   // Sort and apply to categories
   results.sort((a,b) => a.pokemon.localeCompare(b.pokemon))
