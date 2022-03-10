@@ -14,10 +14,12 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "^13.6.0",
-    "eslint": "^7.32.0",
     "fuzzyset": "^1.0.7",
     "node-tesseract-ocr": "^2.2.1",
     "sqlite": "^4.0.23",
     "sqlite3": "^5.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.10.0"
   }
 }
