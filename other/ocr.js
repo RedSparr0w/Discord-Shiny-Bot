@@ -25,10 +25,10 @@ const extractMessageDate = async (files) => {
     }
     output = output?.split('\n').join(' ');
 
-    let [month, day, year] = (output.match(/(\d{1,2}\/\d{1,2}\/\d{4}|\d{1,2}-\d{1,2}-\d{4})/i) || [''])?.[0]?.split(/[-/]/);
+    let [month, day, year] = (output.match(/(\d{1,2}\/\d{1,2}\/\d{4}|\d{1,2}-\d{1,2}-\d{4})/i)?.[0] || '').split(/[-/]/);
 
     if (day == undefined || month == undefined || year == undefined) {
-      [year, month, day] = (output.match(/(\d{4}-\d{1,2}-\d{1,2})/i) || [''])?.[0]?.split(/[-/]/);
+      [year, month, day] = (output.match(/(\d{4}-\d{1,2}-\d{1,2})/i)?.[0] || '').split(/[-/]/);
     }
 
     const now = new Date();
