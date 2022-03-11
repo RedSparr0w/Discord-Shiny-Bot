@@ -103,7 +103,7 @@ async function updateThreadName(thread){
   // Check if thread was archived beforehand, re-archive if it was
   const archived = thread.archived;
   if (archived) await thread.setArchived(false).catch(error);
-  debug(`Updating channel name ${thread.name} → ${symbol}`);
+  debug(`Updating thread name ${thread.name} → ${symbol}`);
   await thread.edit({ name: updatedChannelName }).catch(e => error('Unable to update thread name:', e));
   if (archived) await thread.setArchived(true).catch(error);
 }

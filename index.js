@@ -108,12 +108,12 @@ client.once('ready', async() => {
     // Set our status
     client.user.setActivity('Shiny hunting');
     // Update guild stuff
-    client.guilds.cache.forEach(guild => {
-      updateThreadNames(guild);
-      applyShinySquadRole(guild);
-      updateChampion(guild);
-      updateLeaderboard(guild);
-      updateShinyStatuses(guild);
+    client.guilds.cache.forEach(async guild => {
+      await updateThreadNames(guild);
+      await applyShinySquadRole(guild);
+      await updateChampion(guild);
+      await updateLeaderboard(guild);
+      await updateShinyStatuses(guild);
     });
   }, { run_now: true });
 

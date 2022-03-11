@@ -417,6 +417,12 @@ async function setShinyReportUnlocked(thread_ID, unlocked = true){
   db.close();
 }
 
+async function setShinyReportSymbols(thread_ID, symbols = ''){
+  const db = await getDB();
+  await db.run('UPDATE shiny_reports set symbols=? WHERE thread=?', symbols, thread_ID);
+  db.close();
+}
+
 module.exports = {
   getDB,
   setupDB,
@@ -442,4 +448,5 @@ module.exports = {
   getShinyReports,
   setShinyReportDate,
   setShinyReportUnlocked,
+  setShinyReportSymbols,
 };
