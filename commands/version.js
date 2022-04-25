@@ -1,5 +1,5 @@
 const { MessageEmbed } = require('discord.js');
-const { version: botVersion } = require('./package.json');
+const { version: botVersion } = require('../package.json');
 
 module.exports = {
   name        : 'version',
