@@ -1,4 +1,4 @@
-const { error, warn, debug } = require('../helpers.js');
+const { error, warn, debug, SECOND } = require('../helpers.js');
 const {
   getTop,
   getShinyReport,
@@ -267,10 +267,17 @@ async function updateShinyStatuses(guild) {
   let i = 0;
   for(const page of pages) {
     if (!page) break;
-    if (leaderboardMessages[i]) {
-      await leaderboardMessages[i][1].edit(page);
+    const leaderboardMessage = leaderboardMessages[i];
+    if (leaderboardMessage) {
+      // TODO: figure out a better solution to the rate limiting
+      setTimeout(() => {
+        leaderboardMessage[1].edit(page);
+      }, i * SECOND * 5);
     } else {
-      await shinyStatusChannel.send(page);
+      // TODO: figure out a better solution to the rate limiting
+      setTimeout(() => {
+        shinyStatusChannel.send(page);
+      }, i * SECOND * 5);
     }
     i++;
   }
