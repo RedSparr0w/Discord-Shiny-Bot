@@ -387,6 +387,12 @@ async function newShinyReportThread(pokemon, thread, symbols){
   db.close();
 }
 
+async function deleteShinyReportThread(thread){
+  const db = await getDB();
+  await db.run('DELETE FROM shiny_reports where thread=?', thread);
+  db.close();
+}
+
 async function getShinyReport(thread_ID){
   const db = await getDB();
   const result = await db.get('SELECT * FROM shiny_reports WHERE thread=?', thread_ID);
@@ -444,6 +450,7 @@ module.exports = {
   addScheduleItem,
   clearScheduleItems,
   newShinyReportThread,
+  deleteShinyReportThread,
   getShinyReport,
   getShinyReports,
   setShinyReportDate,
