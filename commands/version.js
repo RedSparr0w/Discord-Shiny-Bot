@@ -6,7 +6,7 @@ module.exports = {
   aliases     : ['v'],
   description : 'Check the bots currently deployed version',
   args        : [],
-  guildOnly   : true,
+  guildOnly   : false,
   cooldown    : 30,
   botperms    : ['ATTACH_FILES'],
   userperms   : ['MUTE_MEMBERS'],

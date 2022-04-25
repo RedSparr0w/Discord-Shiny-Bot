@@ -47,7 +47,7 @@ const client = new Discord.Client({
     Discord.Intents.FLAGS.DIRECT_MESSAGES,
     Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
   ],
-  rejectOnRateLimit: () => true,
+  // rejectOnRateLimit: () => true,
 });
 
 // Gather our available commands
