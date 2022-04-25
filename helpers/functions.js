@@ -1,4 +1,5 @@
 const { MessageActionRow, MessageButton } = require('discord.js');
+const readline = require('readline');
 
 const postPages = async (interaction, pages, page = 1, msgEdit = false) => {
   const updateButtons = async (i, editPost = true) => {
@@ -102,8 +103,7 @@ const randomString = (length = 6) => {
 };
 
 const consoleProgress = (msg, progress, total = 100) => {
-  process.stdout.clearLine(1);
-  process.stdout.cursorTo(0);
+  readline.cursorTo(process.stdout, 0);
   const progressPercent = progress / total * 100;
   process.stdout.write(`${msg} [${'#'.repeat(Math.floor(progressPercent / 2))}${'-'.repeat(50 - Math.ceil(progressPercent / 2))}] ${progressPercent.toFixed(1)}%`);
   if (progress >= total) {
