@@ -169,7 +169,7 @@ client.on('error', e => error('Client error thrown:', e))
         if (!report || !report.pokemon) return;
 
         let date_string = message.content.match(/(\d{4}-)?\d{1,2}-\d{1,2}/)?.[0];
-        const report_date = +report?.date ? new Date(+report.date) : 0;
+        const report_date = +report?.date ? new Date(+report.date) : new Date(0);
         
         // Get our date object
         let date;

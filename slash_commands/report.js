@@ -81,7 +81,7 @@ module.exports = {
       return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
-    const report_date = +report.date ? new Date(+report.date) : 0;
+    const report_date = +report.date ? new Date(+report.date) : new Date(0);
     
     // Get our date object
     if (date_string) {
