@@ -8,7 +8,7 @@ module.exports = {
   args        : [],
   guildOnly   : false,
   cooldown    : 30,
-  botperms    : ['ATTACH_FILES'],
+  botperms    : ['EMBED_LINKS'],
   userperms   : ['MUTE_MEMBERS'],
   channels    : [
     'prof-willow-mods',

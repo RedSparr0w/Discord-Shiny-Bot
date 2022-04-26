@@ -109,6 +109,9 @@ client.once('ready', async() => {
     client.user.setActivity('Shiny hunting');
     // Update guild stuff
     client.guilds.cache.forEach(async guild => {
+      // Update our channel cache
+      await guild.channels.fetch(undefined, { force: true });
+      // Do other things
       await updateThreadNames(guild);
       await applyShinySquadRole(guild);
       await updateChampion(guild);
