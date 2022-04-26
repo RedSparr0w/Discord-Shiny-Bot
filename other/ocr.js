@@ -22,13 +22,13 @@ const extractMessageDate = async (files) => {
     let output = '';
     for (const file of files) {
       output += await recognize(file, {
-        tessedit_char_whitelist: '0123456789-/',
+        tessedit_char_whitelist: '0123456789-/.: ',
       }).catch(e=>{});
     }
     output = output?.split('\n').join(' ');
 
     // Try find a date in the text
-    let [month, day, year] = (output.match(/(\d{1,2}\/\d{1,2}\/\d{4}|\d{1,2}-\d{1,2}-\d{4})/i)?.[0] || '').split(/[-/]/);
+    let [month, day, year] = (output.match(/(\d{1,2}\/\d{1,2}\/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2}\.\d{1,2}\.\d{4})/i)?.[0] || '').split(/[-/.]/);
 
     // If no date, try with year first
     if (day == undefined || month == undefined || year == undefined) {
