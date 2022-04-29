@@ -101,11 +101,12 @@ module.exports = {
     modLog(interaction.guild,
       `**Mod:** ${interaction.member.toString()}
       **Action:** Created new shiny thread
-      **Thread:** ${thread}`);
+      **Thread:** [${thread.name}](https://discord.com/channels/${interaction.guild.id}/${thread.id})
+      **Link:** ${thread}`);
 
     const embed = new MessageEmbed()
       .setColor('#2ecc71')
-      .setDescription(`New thread created successfully:\n${thread}`);
+      .setDescription(`New thread created successfully:\n[**${thread.name}**](https://discord.com/channels/${interaction.guild.id}/${thread.id})`);
     return interaction.reply({ embeds: [embed] });
   },
 };

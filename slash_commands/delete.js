@@ -47,7 +47,8 @@ module.exports = {
     modLog(interaction.guild,
       `**Mod:** ${interaction.member.toString()}
       **Action:** Deleted shiny thread
-      **Thread:** ${thread.name}`);
+      **Thread:** [${thread.name}](https://discord.com/channels/${interaction.guild.id}/${thread.id})
+      **Link:** ${thread}`);
 
     // Delete from the database
     deleteShinyReportThread(thread_ID);

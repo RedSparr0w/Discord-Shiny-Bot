@@ -77,7 +77,7 @@ module.exports = {
     if (thread.locked) {
       const embed = new MessageEmbed()
         .setColor('#e74c3c')
-        .setDescription(`${thread} is currently locked for reports.\nIf you believe this is a mistake, please contact someone from <@&${shinyVerifierRoleID}> to get it unlocked.`);
+        .setDescription(`[**${thread.name}**](https://discord.com/channels/${interaction.guild.id}/${thread.id}) is currently locked for reports.\nIf you believe this is a mistake, please contact someone from <@&${shinyVerifierRoleID}> to get it unlocked.`);
       return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
@@ -118,7 +118,7 @@ module.exports = {
 
     const embed = new MessageEmbed()
       .setColor('#3498db')
-      .setDescription(`Please upload an image of your report for ${thread} and i'll send it through!`);
+      .setDescription(`Please upload an image of your report for [**${thread.name}**](https://discord.com/channels/${interaction.guild.id}/${thread.id}) and i'll send it through!`);
     await interaction.reply({ embeds: [embed], ephemeral: true });
 
     // Wait for the user to post a picture
@@ -178,7 +178,7 @@ module.exports = {
         // Reply letting the user know it went through successfully
         const embed_reply = new MessageEmbed()
           .setColor('#2ecc71')
-          .setDescription(`Thank you ${m.author.toString()}!\nI have sent through your shiny report successfully:\n${thread}`);
+          .setDescription(`Thank you ${m.author.toString()}!\nI have sent through your shiny report successfully:\n[**${thread.name}**](https://discord.com/channels/${interaction.guild.id}/${thread.id})`);
         await m.reply({ embeds: [embed_reply] }).catch(error);
 
         // Delete the users message

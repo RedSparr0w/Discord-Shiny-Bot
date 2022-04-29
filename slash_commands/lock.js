@@ -50,7 +50,8 @@ module.exports = {
 
     modLog(interaction.guild,
       `**Mod:** ${interaction.member.toString()}
-      **Thread:** ${thread}
-      **Action:** Locked thread ${otherSymbols.locked}`);
+      **Action:** Locked thread ${otherSymbols.locked}
+      **Thread:** [${thread.name}](https://discord.com/channels/${interaction.guild.id}/${thread.id})
+      **Link:** ${thread}`);
   },
 };
