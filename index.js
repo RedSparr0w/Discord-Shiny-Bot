@@ -30,7 +30,6 @@ const {
   updateLeaderboard,
   applyShinySquadRole,
   addReport,
-  keepThreadsActive,
   updateShinyStatuses,
   otherSymbols,
 } = require('./other/shinySquad.js');
@@ -125,8 +124,6 @@ client.once('ready', async() => {
     client.guilds.cache.forEach(guild => {
       // Backup the database file
       if (+backupChannelID) backupDB(guild);
-      // Keep threads active
-      keepThreadsActive(guild);
     });
   }, { timezone_offset: 0 });
 });
