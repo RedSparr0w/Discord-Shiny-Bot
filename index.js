@@ -222,14 +222,14 @@ client.on('error', e => error('Client error thrown:', e))
               .setStyle('SUCCESS')
               .setEmoji('✨'),
             new Discord.MessageButton()
+              .setCustomId('report-date')
+              .setStyle('PRIMARY')
+              .setEmoji('📅'),
+            new Discord.MessageButton()
               .setCustomId('report-deny')
               .setLabel('deny')
               .setStyle('SECONDARY')
-              .setEmoji('🚫'),
-            new Discord.MessageButton()
-              .setCustomId('report-date')
-              .setStyle('PRIMARY')
-              .setEmoji('📅')
+              .setEmoji('🚫')
           );
 
         await message.channel.send({ embeds, components: [row], files }).catch(error);
