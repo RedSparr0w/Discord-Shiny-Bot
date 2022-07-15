@@ -37,6 +37,8 @@ module.exports = {
     let date_string = interaction.options.get('date')?.value;
     let date, report;
 
+    await interaction.deferReply({ ephemeral: true });
+
     const db = await getDB();
     const results = await db.all('SELECT * FROM shiny_reports');
 
@@ -46,7 +48,7 @@ module.exports = {
         .setColor('#e74c3c')
         .setDescription('Couldn\'t find a thread for this Pokemon.\nTry again soon, or contact one of the moderators.1');
   
-      return interaction.reply({ embeds: [embed], ephemeral: true });
+      return interaction.editReply({ embeds: [embed], ephemeral: true });
     }
 
     const fuzzySearch = FuzzySet(results.map(r => r.pokemon.toLowerCase().replace(/[^\w\s]/g, '')), false, 1, 2);
@@ -61,7 +63,7 @@ module.exports = {
         .setColor('#e74c3c')
         .setDescription('Couldn\'t find a thread for this Pokemon.\nTry again soon, or contact one of the moderators.2');
   
-      return interaction.reply({ embeds: [embed], ephemeral: true });
+      return interaction.editReply({ embeds: [embed], ephemeral: true });
     }
 
     // Find the thread
@@ -70,7 +72,7 @@ module.exports = {
       const embed = new MessageEmbed()
         .setColor('#e74c3c')
         .setDescription(`Couldn't find a thread for this pokemon \`${pokemon}\``);
-      return interaction.reply({ embeds: [embed], ephemeral: true });
+      return interaction.editReply({ embeds: [embed], ephemeral: true });
     }
 
     // If thread locked, we aren't accepting reports currently
@@ -78,7 +80,7 @@ module.exports = {
       const embed = new MessageEmbed()
         .setColor('#e74c3c')
         .setDescription(`[**${thread.name}**](https://discord.com/channels/${interaction.guild.id}/${thread.id}) is currently locked for reports.\nIf you believe this is a mistake, please contact someone from <@&${shinyVerifierRoleID}> to get it unlocked.`);
-      return interaction.reply({ embeds: [embed], ephemeral: true });
+      return interaction.editReply({ embeds: [embed], ephemeral: true });
     }
 
     const report_date = +report.date ? new Date(+report.date) : new Date(0);
@@ -104,7 +106,7 @@ module.exports = {
               `Your report: ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`,
               `Latest report: ${report_date.toLocaleString('en-us', { month: 'long' })} ${report_date.getDate()}, ${report_date.getFullYear()}`,
             ].join('\n'));
-          return interaction.reply({ embeds: [embed], ephemeral: true });
+          return interaction.editReply({ embeds: [embed], ephemeral: true });
         }
       } else {
         // Date formatted incorrectly
@@ -112,14 +114,14 @@ module.exports = {
         const embed = new MessageEmbed()
           .setColor('#e74c3c')
           .setDescription(`Please try again with the date formatted as YYYY-MM-DD or MM-DD\nExample: ${temp_date.getFullYear()}-${(temp_date.getMonth() + 1).toString().padStart(2, 0)}-${temp_date.getDate().toString().padStart(2, 0)}`);
-        return interaction.reply({ embeds: [embed], ephemeral: true });
+        return interaction.editReply({ embeds: [embed], ephemeral: true });
       }
     }
 
     const embed = new MessageEmbed()
       .setColor('#3498db')
       .setDescription(`Please upload an image of your report for [**${thread.name}**](https://discord.com/channels/${interaction.guild.id}/${thread.id}) and i'll send it through!`);
-    await interaction.reply({ embeds: [embed], ephemeral: true });
+    await interaction.editReply({ embeds: [embed], ephemeral: true });
 
     // Wait for the user to post a picture
     const filter = m => m.attachments.size && m.author.id === interaction.user.id;
