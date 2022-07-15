@@ -163,14 +163,14 @@ module.exports = {
               .setStyle('SUCCESS')
               .setEmoji('✨'),
             new MessageButton()
-              .setCustomId('report-date')
-              .setStyle('SUCCESS')
-              .setEmoji('📅'),
-            new MessageButton()
               .setCustomId('report-deny')
               .setLabel('deny')
               .setStyle('SECONDARY')
-              .setEmoji('🚫')
+              .setEmoji('🚫'),
+            new MessageButton()
+              .setCustomId('report-date')
+              .setStyle('PRIMARY')
+              .setEmoji('📅')
           );
 
         thread.send({ embeds, components: [row], files }).catch(error);

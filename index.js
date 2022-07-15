@@ -222,14 +222,14 @@ client.on('error', e => error('Client error thrown:', e))
               .setStyle('SUCCESS')
               .setEmoji('✨'),
             new Discord.MessageButton()
-              .setCustomId('report-date')
-              .setStyle('SUCCESS')
-              .setEmoji('📅'),
-            new Discord.MessageButton()
               .setCustomId('report-deny')
               .setLabel('deny')
               .setStyle('SECONDARY')
-              .setEmoji('🚫')
+              .setEmoji('🚫'),
+            new Discord.MessageButton()
+              .setCustomId('report-date')
+              .setStyle('PRIMARY')
+              .setEmoji('📅')
           );
 
         await message.channel.send({ embeds, components: [row], files }).catch(error);
@@ -392,7 +392,53 @@ client.on('error', e => error('Client error thrown:', e))
             error(e);
             return interaction.reply({ content: 'Something went wrong, please try again soon..', ephemeral: true });
           }
-        } else {
+        } else { // User not verifications role
+
+          // If user trying to correct the date
+          if (interaction.customId == 'report-date') {
+            // Get the data from the embed
+            const embeds = interaction.message.embeds;
+
+            // Get the reporter ID
+            const reporter_id = embeds[0].description.match(/<@!?(\d+)>/)[1];
+            if (reporter_id !== interaction.member.id) {
+              return interaction.reply({ content: `You need to have the <@&${shinyVerifierRoleID}> role or be the original reporter to do this`, ephemeral: true });
+            }
+
+            let date_str = '';
+            await interaction.reply({ content: 'Please supply a new date (YYYY-MM-DD or MM-DD):', ephemeral: true });
+            
+            const filter = m => m.author.id === interaction.member.id && /^(\d{4}-)?\d{1,2}-\d{1,2}$/.test(m.content);
+
+            // errors: ['time'] treats ending because of the time limit as an error
+            await interaction.channel.awaitMessages({filter, max: 1, time: 1 * MINUTE, errors: ['time'] })
+              .then(async collected => {
+                const m = collected.first();
+                date_str = m.content;
+                if (/^(20\d{2}-)?(0?[1-9]|1[1-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_str)) {
+                  // If year not included, add it ourselves (assume this year)
+                  if (/^(0?[1-9]|1[1-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_str)) {
+                    date_str = `${new Date().getFullYear()}-${date_str}`;
+                  }
+                }
+                m.delete();
+              })
+              .catch(e=>{});
+
+            // If no date supplied
+            if (!date_str) {
+              return debug('No date supplied');
+            }
+
+            // Update the date displayed
+            const date = new Date(date_str);
+            embeds[0].description = embeds[0].description.replace(/Date:\*\* \w+ \d+, \d+/, `Date:** ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`);
+
+            // Edit the embed
+            await interaction.message.edit({ embeds });
+            return interaction.followUp({ content: `Updated report date successfully!\n${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`, ephemeral: true });
+          }
+
           // User not a shiny verifier
           return interaction.reply({ content: `You need to have the <@&${shinyVerifierRoleID}> role to do this`, ephemeral: true });
         }
