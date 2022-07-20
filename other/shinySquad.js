@@ -207,21 +207,18 @@ async function updateLeaderboard(guild) {
 }
 
 async function updateShinyStatuses(guild) {
-  // TODO: exclude locked threads?
-  // Find leaderboard channel
+  // Find shiny status channel
   const shinyStatusChannel = await guild.channels.fetch(shinyStatusChannelID).catch(e => {});
   if (!shinyStatusChannel) return;
 
-  // Find leaderboard message
-  let leaderboardMessages = [...await shinyStatusChannel.messages.fetch({ limit: 100 }).catch(e => {})];
-  if (!leaderboardMessages) return;
-  leaderboardMessages = leaderboardMessages.sort(([,a], [,b]) => a.createdTimestamp - b.createdTimestamp);
+  // Find shiny status message
+  let shinyStatusMessages = [...await shinyStatusChannel.messages.fetch({ limit: 100 }).catch(e => {})];
+  if (!shinyStatusMessages) return;
+  shinyStatusMessages = shinyStatusMessages.sort(([,a], [,b]) => a.createdTimestamp - b.createdTimestamp);
 
   // Get our shiny reports
   const results = await getShinyReports();
   const categories = {};
-  // Limit to 30 per page due to possible description limitations
-  const items_per_page = 30;
 
   // Sort and apply to categories
   results.sort((a,b) => a.pokemon.localeCompare(b.pokemon))
@@ -236,51 +233,45 @@ async function updateShinyStatuses(guild) {
 
   // Create our output
   const output = [];
+  let outputIndex = 0;
   Object.entries(categories).sort(([a], [b]) => {
     if (a.length > 1 && b.length <= 1) return -1;
     if (b.length > 1 && a.length <= 1) return 1;
     return a.localeCompare(b);
   }).forEach(([category, values]) => {
-    output.push([`\n***__${category}:__***`, ...values]);
+    // Add our category
+    output[outputIndex] = `${output[outputIndex] || ''}\n***__${category}:__***`;
+    values.forEach(value => {
+      // If output too large, move on to next page
+      if (output[outputIndex].length + value.length >= 3900) {
+        outputIndex++;
+        output[outputIndex] = value;
+      } else {
+        output[outputIndex] += `\n${value}`;
+      }
+    });
   });
 
-  // Create our pages
-  const pages = new Array(output.flat().length).fill('').map(page => {
-    // Description split into categories
-    const description = [];
-    while (output.length && description.length + output[0].length <= items_per_page) {
-      description.push(...output.splice(0, 1).flat());
-    }
-
-    if (!description.length && output.length) description.push(...output.splice(0, 1).flat());
-
-    if (!description.length) return undefined;
-    
+  output.forEach((page, i) => {
     // Setup our embeds
     const embed = new MessageEmbed()
       .setColor('#3498db')
-      .setDescription(description.join('\n'));
-    // Return our message object
-    return { embeds: [embed] };
-  });
+      .setDescription(page);
 
-  let i = 0;
-  for(const page of pages) {
-    if (!page) break;
-    const leaderboardMessage = leaderboardMessages[i];
+    const leaderboardMessage = shinyStatusMessages[i];
     if (leaderboardMessage) {
       // TODO: figure out a better solution to the rate limiting
       setTimeout(() => {
-        leaderboardMessage[1].edit(page);
+        leaderboardMessage[1].edit({ embeds: [embed] });
       }, i * SECOND * 5);
     } else {
       // TODO: figure out a better solution to the rate limiting
       setTimeout(() => {
-        shinyStatusChannel.send(page);
+        shinyStatusChannel.send({ embeds: [embed] });
       }, i * SECOND * 5);
     }
     i++;
-  }
+  });
 }
 
 async function addReport(member, amount = 1) {

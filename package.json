@@ -1,6 +1,6 @@
 {
   "name": "discord-bot-shiny-squad",
-  "version": "3.0.12",
+  "version": "3.0.13",
   "description": "",
   "engines": {
     "node": ">=16.0.0"
