@@ -173,9 +173,9 @@ client.on('error', e => error('Client error thrown:', e))
         
         // Get our date object
         let date;
-        if (/^(20\d{2}-)?(0?[1-9]|1[1-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_string)) {
+        if (/^(20\d{2}-)?(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_string)) {
           // If year not included, add it ourselves (assume this year)
-          if (/^(0?[1-9]|1[1-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_string)) {
+          if (/^(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_string)) {
             date_string = `${new Date().getFullYear()}-${date_string}`;
           }
 
@@ -346,9 +346,9 @@ client.on('error', e => error('Client error thrown:', e))
                   .then(async collected => {
                     const m = collected.first();
                     date_str = m.content;
-                    if (/^(20\d{2}-)?(0?[1-9]|1[1-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_str)) {
+                    if (/^(20\d{2}-)?(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_str)) {
                       // If year not included, add it ourselves (assume this year)
-                      if (/^(0?[1-9]|1[1-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_str)) {
+                      if (/^(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_str)) {
                         date_str = `${new Date().getFullYear()}-${date_str}`;
                       }
                     }
@@ -415,9 +415,9 @@ client.on('error', e => error('Client error thrown:', e))
               .then(async collected => {
                 const m = collected.first();
                 date_str = m.content;
-                if (/^(20\d{2}-)?(0?[1-9]|1[1-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_str)) {
+                if (/^(20\d{2}-)?(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_str)) {
                   // If year not included, add it ourselves (assume this year)
-                  if (/^(0?[1-9]|1[1-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_str)) {
+                  if (/^(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_str)) {
                     date_str = `${new Date().getFullYear()}-${date_str}`;
                   }
                 }
