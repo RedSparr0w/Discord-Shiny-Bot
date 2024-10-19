@@ -1,5 +1,6 @@
 const { shinyVerifierRoleID } = require('../config.js');
 const { MINUTE } = require('../helpers.js');
+const acceptReport = require('./report-accept.js');
 
 module.exports = {
   name        : 'report-date',
@@ -53,9 +54,11 @@ module.exports = {
 
     // Edit the embed
     await interaction.message.edit({ embeds });
-    return interaction.followUp({ content: `Updated report date successfully!\n${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`, ephemeral: true });
+    interaction.followUp({ content: `Updated report date successfully!\n${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`, ephemeral: true });
 
-    // TODO: Accept the report if the user is a verifier
-    // TODO: Add accept button if the user is the reporter
+    // Accept the report if the user is a verifier
+    if (interaction.member.roles.cache.has(shinyVerifierRoleID)) {
+      return acceptReport.execute(interaction, date_str);
+    }
   },
 };
