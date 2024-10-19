@@ -1,6 +1,5 @@
 const { shinyVerifierRoleID } = require('../config.js');
 const { MINUTE } = require('../helpers.js');
-const acceptReport = require('./report-accept.js');
 
 module.exports = {
   name        : 'report-date',
@@ -58,7 +57,8 @@ module.exports = {
 
     // Accept the report if the user is a verifier
     if (interaction.member.roles.cache.has(shinyVerifierRoleID)) {
-      return acceptReport.execute(interaction, date_str);
+      const acceptReport = require('./report-accept.js');
+      return acceptReport.execute(interaction);
     }
   },
 };
