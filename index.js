@@ -6,7 +6,6 @@ const {
   info,
   warn,
   error,
-  debug,
   RunOnInterval,
   formatChannelList,
   SECOND,
@@ -22,12 +21,10 @@ const {
 const regexMatches = require('./regexMatches.js');
 const { checkScheduledItems } = require('./other/scheduled/scheduled.js');
 const {
-  updateThreadName,
   updateThreadNames,
   updateChampion,
   updateLeaderboard,
   applyShinySquadRole,
-  addReport,
   updateShinyStatuses,
 } = require('./other/shinySquad.js');
 const { extractMessageDate } = require('./other/ocr.js');
