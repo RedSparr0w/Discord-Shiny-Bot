@@ -17,8 +17,6 @@ const {
   setupDB,
   backupDB,
   addStatistic,
-  setShinyReportDate,
-  addAmount,
   getShinyReport,
 } = require('./database.js');
 const regexMatches = require('./regexMatches.js');
@@ -31,7 +29,6 @@ const {
   applyShinySquadRole,
   addReport,
   updateShinyStatuses,
-  otherSymbols,
 } = require('./other/shinySquad.js');
 const { extractMessageDate } = require('./other/ocr.js');
 
@@ -65,6 +62,15 @@ for (const file of slashCommandsFiles) {
   client.slashCommands.set(command.name, command);
 }
 
+// Gather our available button commands (interactions)
+client.buttonCommands = new Discord.Collection();
+const buttonCommandsFiles = fs.readdirSync('./button_commands').filter(file => file.endsWith('.js'));
+for (const file of buttonCommandsFiles) {
+  const command = require(`./button_commands/${file}`);
+  client.buttonCommands.set(command.name, command);
+}
+
+client.votes_cast = {};
 const cooldowns = new Discord.Collection();
 
 const cooldownTimeLeft = (type, seconds, userID) => {
@@ -312,136 +318,29 @@ client.on('error', e => error('Client error thrown:', e))
   .on('interactionCreate', async interaction => {
     // Buttons
     if (interaction.isButton()) {
-      // Check if button tied to a report
-      if (interaction.customId.startsWith('report')) {
-        // Check if user is a verifier
-        if (interaction.member.roles.cache.has(shinyVerifierRoleID)) {
-          try {
-            // Get the data from the embed
-            const embeds = interaction.message.embeds;
+      // Find our button command
+      const command = client.buttonCommands.find(cmd => cmd.name === interaction.customId || cmd.aliases?.includes(interaction.customId));
 
-            if (interaction.customId == 'report-deny') {
-              embeds.forEach(e => e.setColor('#e74c3c'));
-              embeds[embeds.length - 1].setFooter({ text: '🚫 report denied..' });
+      // Not a valid command
+      if (!command) return;
+      
+      // Apply command cooldowns
+      const timeLeft = Math.ceil(cooldownTimeLeft(command.name, command.cooldown, interaction.user.id) * 10) / 10;
+      if (timeLeft > 0) {
+        return interaction.reply({ content: `Please wait ${timeLeft} more second(s) before reusing the \`${command.name}\` command.`, ephemeral: true });
+      }
 
-              // Edit the embed, then archive the thread after 10 seconds, no new reports at the moment
-              await interaction.message.edit({ embeds, components: [] });
-              // Only archive if channel not new
-              if (!interaction.channel.name.endsWith(otherSymbols.new)) {
-                setTimeout(() => interaction.channel.setArchived(true).catch(error), 10 * SECOND);
-              }
-              return;
-            }
-
-            if (interaction.customId == 'report-accept' || interaction.customId == 'report-date') {
-              const reporter_id = embeds[0].description.match(/<@!?(\d+)>/)[1];
-              let date_str = embeds[0].description.match(/Date:\*\* (\w+ \d+, \d+)/)?.[1];
-              // Check if date supplied or get one from verifier
-              if (!date_str || interaction.customId == 'report-date') {
-                await interaction.reply({ content: 'Report has no date, please supply a date (YYYY-MM-DD or MM-DD):', ephemeral: true });
-                
-                const filter = m => m.author.id === interaction.member.id && /^(\d{4}-)?\d{1,2}-\d{1,2}$/.test(m.content);
-                // errors: ['time'] treats ending because of the time limit as an error
-                await interaction.channel.awaitMessages({filter, max: 1, time: 1 * MINUTE, errors: ['time'] })
-                  .then(async collected => {
-                    const m = collected.first();
-                    date_str = m.content;
-                    if (/^(20\d{2}-)?(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_str)) {
-                      // If year not included, add it ourselves (assume this year)
-                      if (/^(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_str)) {
-                        date_str = `${new Date().getFullYear()}-${date_str}`;
-                      }
-                    }
-                    m.delete();
-                  })
-                  .catch(e=>{});
-
-                // If no date supplied
-                if (!date_str) {
-                  return debug('No date supplied');
-                }
-              }
-  
-              const date = new Date(date_str);
-
-              // Update the date we last reported
-              await setShinyReportDate(interaction.channel.id, date);
-
-              // Add points to reporter & verifier
-              const reporter = await interaction.guild.members.fetch(reporter_id).catch(error);
-              if (reporter) addReport(reporter, 1);
-              addAmount(interaction.user, 1, 'verifications');
-
-              embeds.forEach(e => e.setColor('#2ecc71'));
-              embeds[embeds.length - 1].setFooter({ text: '✨ report accepted!' });
-
-              const latest_embed = new Discord.MessageEmbed()
-                .setColor('#3498db')
-                .setDescription(`**Date:** ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}\n**Reported by:** ${reporter}\n**Verified by:** ${interaction.member.toString()}`);
-
-              await interaction.replied ? interaction.followUp({ content: '***__Latest report:__***', embeds: [latest_embed] }) : interaction.reply({ content: '***__Latest report:__***', embeds: [latest_embed] });
-
-              await updateThreadName(interaction.channel);
-
-              // Edit the embed, then archive the thread after 10 seconds, no new reports at the moment
-              await interaction.message.edit({ embeds, components: [] });
-              return setTimeout(() => interaction.channel.setArchived(true).catch(error), 10 * SECOND);
-            }
-            
-          } catch (e) {
-            error(e);
-            return interaction.reply({ content: 'Something went wrong, please try again soon..', ephemeral: true });
-          }
-        } else { // User not verifications role
-
-          // If user trying to correct the date
-          if (interaction.customId == 'report-date') {
-            // Get the data from the embed
-            const embeds = interaction.message.embeds;
-
-            // Get the reporter ID
-            const reporter_id = embeds[0].description.match(/<@!?(\d+)>/)[1];
-            if (reporter_id !== interaction.member.id) {
-              return interaction.reply({ content: `You need to have the <@&${shinyVerifierRoleID}> role or be the original reporter to do this`, ephemeral: true });
-            }
-
-            let date_str = '';
-            await interaction.reply({ content: 'Please supply a new date (YYYY-MM-DD or MM-DD):', ephemeral: true });
-            
-            const filter = m => m.author.id === interaction.member.id && /^(\d{4}-)?\d{1,2}-\d{1,2}$/.test(m.content);
-
-            // errors: ['time'] treats ending because of the time limit as an error
-            await interaction.channel.awaitMessages({filter, max: 1, time: 1 * MINUTE, errors: ['time'] })
-              .then(async collected => {
-                const m = collected.first();
-                date_str = m.content;
-                if (/^(20\d{2}-)?(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_str)) {
-                  // If year not included, add it ourselves (assume this year)
-                  if (/^(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_str)) {
-                    date_str = `${new Date().getFullYear()}-${date_str}`;
-                  }
-                }
-                m.delete();
-              })
-              .catch(e=>{});
-
-            // If no date supplied
-            if (!date_str) {
-              return debug('No date supplied');
-            }
-
-            // Update the date displayed
-            const date = new Date(date_str);
-            embeds[0].description = embeds[0].description.replace(/Date:\*\* \w+ \d+, \d+/, `Date:** ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`);
-
-            // Edit the embed
-            await interaction.message.edit({ embeds });
-            return interaction.followUp({ content: `Updated report date successfully!\n${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`, ephemeral: true });
-          }
-
-          // User not a shiny verifier
-          return interaction.reply({ content: `You need to have the <@&${shinyVerifierRoleID}> role to do this`, ephemeral: true });
-        }
+      // Run the command
+      try {
+        // Send the message object
+        await command.execute(interaction).catch(e => {
+          throw(e);
+        });
+        addStatistic(interaction.user, `!${command.name}`);
+        addStatistic(interaction.user, 'commands');
+      } catch (err) {
+        error(`Error executing command "${command.name}":\n`, err);
+        interaction.replied ? interaction.followUp({ content: 'There was an error trying to execute that command!', ephemeral: true }) : interaction.reply({ content: 'There was an error trying to execute that command!', ephemeral: true });
       }
     }
 
