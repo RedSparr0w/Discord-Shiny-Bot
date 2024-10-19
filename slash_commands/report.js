@@ -87,9 +87,9 @@ module.exports = {
     
     // Get our date object
     if (date_string) {
-      if (/^(20\d{2}-)?(0?[1-9]|1[1-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_string)) {
+      if (/^(20\d{2}-)?(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_string)) {
         // If year not included, add it ourselves (assume this year)
-        if (/^(0?[1-9]|1[1-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_string)) {
+        if (/^(0?[1-9]|1[0-2])-(0?[1-9]|[1-2]\d|3[0-1])$/.test(date_string)) {
           date_string = `${new Date().getFullYear()}-${date_string}`;
         }
 
