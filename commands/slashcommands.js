@@ -10,7 +10,6 @@ return `'${msg.client.slashCommands.map(c => [c.name, ...(c.aliases || [])]).fla
 const { MessageEmbed } = require('discord.js');
 const { prefix } = require('../config');
 
-// TODO: update alias list
 module.exports = {
   name        : 'slashcommandinfo',
   aliases     : ['commands','newshiny','lock','unlock','top','report','top','leaderboard','lb','reports','verifications','rank'],

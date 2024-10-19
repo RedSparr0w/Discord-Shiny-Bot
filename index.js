@@ -322,7 +322,7 @@ client.on('error', e => error('Client error thrown:', e))
       const command = client.buttonCommands.find(cmd => cmd.name === interaction.customId || cmd.aliases?.includes(interaction.customId));
 
       // Not a valid command
-      if (!command) return interaction.reply({ content: 'Button action not found..', ephemeral: true });
+      if (!command) return;
       
       // Apply command cooldowns
       const timeLeft = Math.ceil(cooldownTimeLeft(command.name, command.cooldown, interaction.user.id) * 10) / 10;
