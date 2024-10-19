@@ -1,4 +1,3 @@
-const { MessageEmbed } = require('discord.js');
 const { shinyVerifierRoleID } = require('../config.js');
 const { MINUTE } = require('../helpers.js');
 

@@ -70,7 +70,7 @@ for (const file of buttonCommandsFiles) {
   client.buttonCommands.set(command.name, command);
 }
 
-const votes_cast = {};
+client.votes_cast = {};
 const cooldowns = new Discord.Collection();
 
 const cooldownTimeLeft = (type, seconds, userID) => {
