@@ -65,6 +65,7 @@ for (const file of slashCommandsFiles) {
   client.slashCommands.set(command.name, command);
 }
 
+const votes_cast = {};
 const cooldowns = new Discord.Collection();
 
 const cooldownTimeLeft = (type, seconds, userID) => {
@@ -394,6 +395,64 @@ client.on('error', e => error('Client error thrown:', e))
           }
         } else { // User not verifications role
 
+          // Accept votes to be counted
+          if (interaction.customId == 'report-accept') {
+            const reporter_id = embeds[0].description.match(/<@!?(\d+)>/)[1];
+
+            if (interaction.member.id == reporter_id) {
+              return interaction.reply({ content: 'You cannot verify your own report', ephemeral: true });
+            }
+
+            // Check if date supplied otherwise vote cannot be cast
+            let date_str = embeds[0].description.match(/Date:\*\* (\w+ \d+, \d+)/)?.[1];
+            if (!date_str) {
+              return interaction.reply({ content: 'Report has no date, unable to cast verification vote', ephemeral: true });
+            }
+            const date = new Date(date_str);
+
+            // Check if user has already voted and how many votes we have
+            let votes = embeds[0].description.match(/Verifications:\*\* (\w+ \d+, \d+)/)?.[1] || 0;
+            votes_cast[interaction.message.id] = votes_cast[interaction.message.id] || [];
+            if (votes_cast[interaction.message.id].includes(interaction.member.id)) {
+              return interaction.reply({ content: 'You have already voted on this report', ephemeral: true });
+            }
+            votes_cast[interaction.message.id].push(interaction.member.id);
+
+            votes++
+            // Update amount of verifications
+            embeds[0].setFooter(`Verifications: ${votes}/3`);
+
+            // If not enough votes yet return message
+            if (votes < 3) {
+              return interaction.reply({ content: `Thank you for your verification, this report currently has ${votes} verifications`, ephemeral: true });
+            }
+
+            // REPORT ACCEPTED
+            // TODO: Empty votes_cast for this messageID once verified by anyone
+            // Update the date we last reported
+            await setShinyReportDate(interaction.channel.id, date);
+
+            // TODO: points for everyone that verified, include everyone in the list of "Verified by"
+            // Add points to reporter & verifiers
+            const reporter = await interaction.guild.members.fetch(reporter_id).catch(error);
+            if (reporter) addReport(reporter, 1);
+            addAmount(interaction.user, 1, 'verifications');
+
+            embeds.forEach(e => e.setColor('#2ecc71'));
+            embeds[embeds.length - 1].setFooter({ text: '✨ report accepted!' });
+
+            const latest_embed = new Discord.MessageEmbed()
+              .setColor('#3498db')
+              .setDescription(`**Date:** ${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}\n**Reported by:** ${reporter}\n**Verified by:** ${interaction.member.toString()}`);
+
+            await interaction.replied ? interaction.followUp({ content: '***__Latest report:__***', embeds: [latest_embed] }) : interaction.reply({ content: '***__Latest report:__***', embeds: [latest_embed] });
+
+            await updateThreadName(interaction.channel);
+
+            // Edit the embed, then archive the thread after 10 seconds, no new reports at the moment
+            await interaction.message.edit({ embeds, components: [] });
+            return setTimeout(() => interaction.channel.setArchived(true).catch(error), 10 * SECOND);
+          }
           // If user trying to correct the date
           if (interaction.customId == 'report-date') {
             // Get the data from the embed
