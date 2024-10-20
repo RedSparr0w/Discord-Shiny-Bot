@@ -64,3 +64,6 @@ typings/
 config*.js
 # database
 database.sqlite
+
+# Visual Studio files
+/.vs

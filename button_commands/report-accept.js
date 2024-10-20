@@ -1,8 +1,11 @@
 const { MessageEmbed } = require('discord.js');
-const { shinyVerifierRoleID } = require('../config.js');
+const { shinyVerifierRoleID, reporterRoles } = require('../config.js');
 const { setShinyReportDate, addAmount } = require('../database.js');
 const { error, SECOND } = require('../helpers.js');
-const { updateThreadName, addReport } = require('../other/shinySquad.js');
+const { updateThreadName, addReport, getReports } = require('../other/shinySquad.js');
+
+// Calculate minimum reports needed to be a reporter to be able to vote on reports
+const minReportsRequired = Math.min(...reporterRoles.filter(r => r.amount > 0).map(r => r.amount));
 
 module.exports = {
   name        : 'report-accept',
@@ -36,7 +39,13 @@ module.exports = {
       if (interaction.member.id == reporter_id) {
         return interaction.reply({ content: 'You cannot verify your own report', ephemeral: true });
       }
-      
+
+      // Check if the user has submitted enough reports to be at least a 'reporter', use the amount threshold to filter as to allow the name to be changed
+      const memberReports = await getReports(interaction.member);
+      if (memberReports < minReportsRequired) {
+        return interaction.reply({ content: 'Sorry, you need to at least 5 accepted reports to begin verifying', ephemeral: true})
+      }
+	  
       // Check if user has already voted on this report
       
       if (interaction.client.votes_cast[interaction.message.id].has(interaction.member.id)) {
