@@ -7,9 +7,12 @@ COPY ./ecosystem.config.js .
 ENV NPM_CONFIG_LOGLEVEL warn
 ENV PYTHONUNBUFFERED=1
 RUN apk add --no-cache \
+    g++ gcc \
     git \
+    make \
+    python3 \
     tesseract-ocr \
-    python3 make gcc g++\
+    tesseract-ocr-data-eng \
     ;
 
 # needed for sqlite install
