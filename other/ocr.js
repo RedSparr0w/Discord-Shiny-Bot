@@ -35,20 +35,45 @@ const extractMessageDate = async (files) => {
       [year, month, day] = (output.match(/(\d{4}-\d{1,2}-\d{1,2})/i)?.[0] || '').split(/[-/]/);
     }
 
-    // If no date still, just return
-    if (day == undefined || month == undefined || year == undefined) {
+    // If no day/month still, just return. If there's no year, we'll use the current year
+    if (day == undefined || month == undefined) {
       return errorDate;
     }
 
-    // Calculate date with month/day swapped around
+    // Let's get some dates to compare against
     const now = new Date();
+
+    let tomorrow = new Date();
+      tomorrow.setDate(now.getDate() + 1); // Add a day to get tomorrow
+
+    // If no year, use current year
+    if (year == undefined) {
+        year = now.getFullYear();
+    } else {
+      const lastYear = now.getFullYear() - 1; // Last year
+
+      const yearInt = parseInt(year); // Convert year text to int
+
+      //Check if the year makes sense and if not, set it to the current year
+      if (yearInt < lastYear || yearInt > tomorrow.getFullYear()) {
+        year = now.getFullYear();
+      }
+    }
+
+
+    // Calculate date with month/day swapped around
     const date1 = new Date(`${year}-${month}-${day}`);
     const date2 = new Date(`${year}-${day}-${month}`);
 
+    // If both dates are too far in the future, assume it's wrong
+    if (date1 > tomorrow && date2 > tomorrow) {
+      return errorDate;
+    }
+
     // If date1 invalid, assume date2
     // If date2 invalid, assume date1
-    // If both valid dates, use the date that is the closest to today
-    const date = isNaN(date1) ? date2 : isNaN(date2) || Math.abs(now - +date1) < Math.abs(now - +date2) ? date1 : date2;
+    // If both valid dates, use the date that is the closest to tomorrow, but not after tomorrow
+    const date = isNaN(date1) ? date2 : isNaN(date2) || Math.abs(tomorrow - +date1) < Math.abs(tomorrow - +date2) && date1 <= tomorrow ? date1 : date2;
 
     // Return 0 date or date we got
     return !+date ? errorDate : date;
