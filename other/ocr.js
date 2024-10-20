@@ -65,8 +65,8 @@ const extractMessageDate = async (files) => {
     const date1 = new Date(`${year}-${month}-${day}`);
     const date2 = new Date(`${year}-${day}-${month}`);
 
-    // If both dates are too far in the future, assume it's wrong
-    if (date1 > tomorrow && date2 > tomorrow) {
+    // If both dates are too far in the future or invalid, assume it's wrong
+    if ((!+date1 || date1 > tomorrow) && (!+date2  || date2 > tomorrow)) {
       return errorDate;
     }
 
