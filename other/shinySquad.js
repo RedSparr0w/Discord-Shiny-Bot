@@ -4,6 +4,7 @@ const {
   getShinyReport,
   getShinyReports,
   addAmount,
+  getAmount,
 } = require('../database.js');
 const {
   reporterRoles,
@@ -289,6 +290,12 @@ async function addReport(member, amount = 1) {
   });
 }
 
+async function getReports(member) {
+  if (!member?.user) return 0;
+  const reports = await getAmount(member.user, 'reports');
+  return reports
+}
+
 module.exports = {
   sightingSymbols,
   obtainMethodSymbols,
@@ -303,4 +310,5 @@ module.exports = {
   updateLeaderboard,
   updateShinyStatuses,
   addReport,
+  getReports,
 };
