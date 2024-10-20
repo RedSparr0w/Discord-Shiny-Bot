@@ -3,6 +3,7 @@ const { shinyVerifierRoleID, reporterRoles } = require('../config.js');
 const { setShinyReportDate, addAmount } = require('../database.js');
 const { error, SECOND } = require('../helpers.js');
 const { updateThreadName, addReport, getReports } = require('../other/shinySquad.js');
+
 // Calculate minimum reports needed to be a reporter to be able to vote on reports
 const minReportsRequired = Math.min(...reporterRoles.filter(r => r.amount > 0).map(r => r.amount));
 
