@@ -6,7 +6,7 @@ const { modLog } = require('../other/mod/functions.js');
 // Calculate minimum reports needed to be a reporter to be able to vote on reports
 const minReportsRequired = Math.min(...reporterRoles.filter(r => r.amount > 0).map(r => r.amount));
 
-const votes_required = 2;
+const votes_required = 3;
 
 module.exports = {
   name        : 'report-deny',
