@@ -60,8 +60,16 @@ module.exports = {
       
       // If enough votes, continue to accept the report
     }
+    // Add the user again in case they are a verifier
+    interaction.client.votes.denied(interaction.message.id).add(interaction.member.id);
 
-    // TODO: Add points to the verifiers, unless deny is from reporter
+    // Add points to verifiers (not reporter)
+    if (interaction.member.id != reporter_id) {
+      [...interaction.client.votes.denied(interaction.message.id)].forEach(async id => {
+        const user = await interaction.client.users.fetch(id, false).catch(O_o=>{});
+        addAmount(user, 1, 'verifications');
+      });
+    }
 
     // Deny the report
     embeds.forEach(e => e.setColor('#e74c3c'));

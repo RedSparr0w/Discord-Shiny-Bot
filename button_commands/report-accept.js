@@ -83,7 +83,7 @@ module.exports = {
     // Update the date we last reported
     await setShinyReportDate(interaction.channel.id, date);
 
-    // Add points to reporter & verifier
+    // Add points to reporter & verifiers
     const reporter = await interaction.guild.members.fetch(reporter_id).catch(error);
     if (reporter) addReport(reporter, 1);
     [...interaction.client.votes.verified(interaction.message.id)].forEach(async id => {
