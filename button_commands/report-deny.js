@@ -5,6 +5,8 @@ const { SECOND, error } = require('../helpers.js');
 // Calculate minimum reports needed to be a reporter to be able to vote on reports
 const minReportsRequired = Math.min(...reporterRoles.filter(r => r.amount > 0).map(r => r.amount));
 
+const votes_required = 2;
+
 module.exports = {
   name        : 'report-deny',
   aliases     : [],
@@ -42,7 +44,7 @@ module.exports = {
       if (approved_votes) {
         embeds[0].setFooter(`Approved: ${approved_votes} | Denied: ${votes}`);
       } else { 
-        embeds[0].setFooter(`Denied: ${votes}/3`);
+        embeds[0].setFooter(`Denied: ${votes}/${votes_required}`);
       }
       await interaction.message.edit({ embeds });
 
@@ -52,7 +54,7 @@ module.exports = {
       }
 
       // If not enough votes yet return message
-      if (votes < 3) {
+      if (votes < votes_required) {
         return interaction.reply({ content: `Thank you for your verification, this report currently has ${votes} denies`, ephemeral: true });
       }
       
@@ -64,7 +66,7 @@ module.exports = {
     // Deny the report
     embeds.forEach(e => e.setColor('#e74c3c'));
     embeds[embeds.length - 1].setFooter({ text: interaction.member.id != reporter_id ? '🚫 report denied..' : '🚫 report withdrawn..'});
-    
+
     // Empty out the votes cast for this messageID
     interaction.client.votes.delete(interaction.message.id)
 

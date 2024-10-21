@@ -7,6 +7,8 @@ const { updateThreadName, addReport, getReports } = require('../other/shinySquad
 // Calculate minimum reports needed to be a reporter to be able to vote on reports
 const minReportsRequired = Math.min(...reporterRoles.filter(r => r.amount > 0).map(r => r.amount));
 
+const votes_required = 2;
+
 module.exports = {
   name        : 'report-accept',
   aliases     : [],
@@ -59,7 +61,7 @@ module.exports = {
       if (denied_votes) {
         embeds[0].setFooter(`Approved: ${votes} | Denied: ${denied_votes}`);
       } else { 
-        embeds[0].setFooter(`Approved: ${votes}/3`);
+        embeds[0].setFooter(`Approved: ${votes}/${votes_required}`);
       }
       await interaction.message.edit({ embeds });
 
@@ -69,7 +71,7 @@ module.exports = {
       }
 
       // If not enough votes yet return message
-      if (votes < 3) {
+      if (votes < votes_required) {
         return interaction.reply({ content: `Thank you for your verification, this report currently has ${votes} verifications`, ephemeral: true });
       }
       
@@ -100,7 +102,7 @@ module.exports = {
 
     await updateThreadName(interaction.channel);
     
-    // Empty out the votes_cast for this messageID
+    // Empty out the votes cast for this messageID
     interaction.client.votes.delete(interaction.message.id)
 
     // Edit the embed, then archive the thread after 10 seconds, no new reports at the moment
