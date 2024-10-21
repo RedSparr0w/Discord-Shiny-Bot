@@ -2,6 +2,9 @@ const { shinyVerifierRoleID } = require('../config.js');
 const { otherSymbols } = require('../other/shinySquad.js');
 const { SECOND, error } = require('../helpers.js');
 
+// Calculate minimum reports needed to be a reporter to be able to vote on reports
+const minReportsRequired = Math.min(...reporterRoles.filter(r => r.amount > 0).map(r => r.amount));
+
 module.exports = {
   name        : 'report-deny',
   aliases     : [],
