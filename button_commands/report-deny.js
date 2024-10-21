@@ -46,13 +46,14 @@ module.exports = {
       }
       await interaction.message.edit({ embeds });
 
+      // In dispute status, return message
+      if (denied_votes) {
+        return interaction.reply({ content: `Thank you for your verification, this report currently has ${votes + approved_votes} votes`, ephemeral: true });
+      }
+
       // If not enough votes yet return message
       if (votes < 3) {
         return interaction.reply({ content: `Thank you for your verification, this report currently has ${votes} denies`, ephemeral: true });
-      }
-
-      if (denied_votes) {
-        return interaction.reply({ content: `Thank you for your verification, this report currently has ${votes + approved_votes} votes`, ephemeral: true });
       }
       
       // If enough votes, continue to accept the report

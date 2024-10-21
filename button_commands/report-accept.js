@@ -64,16 +64,16 @@ module.exports = {
       } else { 
         embeds[0].setFooter(`Approved: ${votes}/3`);
       }
-      embeds[0].setFooter(`Approved: ${votes}/3`);
       await interaction.message.edit({ embeds });
+
+      // In dispute status, return message
+      if (denied_votes) {
+        return interaction.reply({ content: `Thank you for your verification, this report currently has ${votes + denied_votes} votes`, ephemeral: true });
+      }
 
       // If not enough votes yet return message
       if (votes < 3) {
         return interaction.reply({ content: `Thank you for your verification, this report currently has ${votes} verifications`, ephemeral: true });
-      }
-
-      if (denied_votes) {
-        return interaction.reply({ content: `Thank you for your verification, this report currently has ${votes + denied_votes} votes`, ephemeral: true });
       }
       
       // If enough votes, continue to accept the report
