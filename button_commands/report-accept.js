@@ -70,7 +70,8 @@ module.exports = {
         // Mod log if this is the first approve vote
         if (votes <= 1) {
           modLog(interaction.guild,
-`**Dispute:** <#${interaction.channel.id}> has gone into a dispute status..
+`**Dispute:** ${interaction.message.url}
+${interaction.channel.name} has gone into a dispute status..
 
 **Approved:** ${votes}
 ${[...interaction.client.votes.verified(interaction.message.id)].map(id => `<@${id}>`).join('\n')}
