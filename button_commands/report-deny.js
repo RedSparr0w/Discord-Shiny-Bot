@@ -1,4 +1,4 @@
-const { shinyVerifierRoleID } = require('../config.js');
+const { shinyVerifierRoleID, reporterRoles } = require('../config.js');
 const { otherSymbols } = require('../other/shinySquad.js');
 const { SECOND, error } = require('../helpers.js');
 
