@@ -1,6 +1,7 @@
 const { shinyVerifierRoleID, reporterRoles } = require('../config.js');
 const { otherSymbols } = require('../other/shinySquad.js');
 const { SECOND, error } = require('../helpers.js');
+const { modLog } = require('../other/mod/functions.js');
 
 // Calculate minimum reports needed to be a reporter to be able to vote on reports
 const minReportsRequired = Math.min(...reporterRoles.filter(r => r.amount > 0).map(r => r.amount));
@@ -38,10 +39,9 @@ module.exports = {
       let votes = +embeds[0].footer?.text?.match(/Denied: (\d)/)?.[1] || 0;
       votes++
 
-      // Check if dispute status
-      let approved_votes = +embeds[0].footer?.text?.match(/Approved: (\d)/)?.[1] || 0;
       // Update amount of votes
-      if (approved_votes) {
+      let approved_votes = +embeds[0].footer?.text?.match(/Approved: (\d)/)?.[1] || 0;
+      if (approved_votes) { // Dispute status
         embeds[0].setFooter(`Approved: ${approved_votes} | Denied: ${votes}`);
       } else { 
         embeds[0].setFooter(`Denied: ${votes}/${votes_required}`);
@@ -50,6 +50,17 @@ module.exports = {
 
       // In dispute status, return message
       if (approved_votes) {
+        // Mod log if this is the first deny vote
+        if (votes <= 1) {
+          modLog(interaction.guild,
+`**Dispute:** <#${interaction.channel.id}> has gone into a dispute status..
+
+**Approved:** ${approved_votes}
+${[...interaction.client.votes.verified(interaction.message.id)].map(id => `<@${id}>`).join('\n')}
+
+**Denied:** ${votes}
+${[...interaction.client.votes.denied(interaction.message.id)].map(id => `<@${id}>`).join('\n')}`);
+        }
         return interaction.reply({ content: `Thank you for your verification, this report currently has ${votes + approved_votes} votes`, ephemeral: true });
       }
 
