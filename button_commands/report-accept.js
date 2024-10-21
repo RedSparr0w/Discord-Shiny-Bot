@@ -30,7 +30,8 @@ module.exports = {
 
     const date = new Date(date_str);
 
-    // Make sure this object exists
+    // Make sure these objects exists
+    interaction.client.votes_cast_deny[interaction.message.id] = interaction.client.votes_cast_deny[interaction.message.id] || new Set();
     interaction.client.votes_cast_verify[interaction.message.id] = interaction.client.votes_cast_verify[interaction.message.id] || new Set();
     
     // Check if user is NOT a verifier
