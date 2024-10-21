@@ -31,6 +31,9 @@ COPY ./package.json /usr/src/bot
 COPY ./package-lock.json /usr/src/bot
 RUN npm ci
 
+# Trust the bot folder
+RUN git config --global --add safe.directory /usr/src/bot
+
 # Show current folder structure in logs
 RUN ls -al -R
 
