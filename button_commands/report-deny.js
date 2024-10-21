@@ -18,10 +18,6 @@ module.exports = {
     const embeds = interaction.message.embeds;
     const reporter_id = embeds[0].description.match(/<@!?(\d+)>/)[1];
 
-    // Make sure these objects exists
-    interaction.client.votes_cast_deny[interaction.message.id] = interaction.client.votes_cast_deny[interaction.message.id] || new Set();
-    interaction.client.votes_cast_verify[interaction.message.id] = interaction.client.votes_cast_verify[interaction.message.id] || new Set();
-
     // Check if user is NOT a verifier && not the reporter
     if (!interaction.member.roles.cache.has(shinyVerifierRoleID) && interaction.member.id != reporter_id) {
       // Check if the user has submitted enough reports to be at least a 'reporter', use the amount threshold to filter as to allow the name to be changed
@@ -31,17 +27,17 @@ module.exports = {
       }
 	  
       // Check if user has already voted on this report
-      if (interaction.client.votes_cast_verify[interaction.message.id].has(interaction.member.id) || interaction.client.votes_cast_deny[interaction.message.id].has(interaction.member.id)) {
+      if (interaction.client.votes.hasVoted(interaction.message.id, interaction.member.id)) {
         return interaction.reply({ content: 'You have already voted on this report', ephemeral: true });
       }
 
       // Add their vote
-      interaction.client.votes_cast_deny[interaction.message.id].add(interaction.member.id);
-      let votes = embeds[0].footer?.text?.match(/Denied: (\d)/)?.[1] || 0;
+      interaction.client.votes.denied(interaction.message.id).add(interaction.member.id);
+      let votes = +embeds[0].footer?.text?.match(/Denied: (\d)/)?.[1] || 0;
       votes++
 
       // Check if dispute status
-      let approved_votes = embeds[0].footer?.text?.match(/Approved: (\d)/)?.[1] || 0;
+      let approved_votes = +embeds[0].footer?.text?.match(/Approved: (\d)/)?.[1] || 0;
       // Update amount of votes
       if (approved_votes) {
         embeds[0].setFooter(`Approved: ${approved_votes} | Denied: ${votes}`);
@@ -51,7 +47,7 @@ module.exports = {
       await interaction.message.edit({ embeds });
 
       // In dispute status, return message
-      if (denied_votes) {
+      if (approved_votes) {
         return interaction.reply({ content: `Thank you for your verification, this report currently has ${votes + approved_votes} votes`, ephemeral: true });
       }
 
@@ -68,6 +64,9 @@ module.exports = {
     // Deny the report
     embeds.forEach(e => e.setColor('#e74c3c'));
     embeds[embeds.length - 1].setFooter({ text: interaction.member.id != reporter_id ? '🚫 report denied..' : '🚫 report withdrawn..'});
+    
+    // Empty out the votes cast for this messageID
+    interaction.client.votes.delete(interaction.message.id)
 
     // Edit the embed, then archive the thread after 10 seconds, no new reports at the moment
     await interaction.message.edit({ embeds, components: [] });

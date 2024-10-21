@@ -70,8 +70,24 @@ for (const file of buttonCommandsFiles) {
   client.buttonCommands.set(command.name, command);
 }
 
-client.votes_cast_verify = {};
-client.votes_cast_deny = {};
+class Votes { 
+  #votes_verified = {};
+  #votes_denied = {};
+  hasVoted = (messageID, userID) => {
+      return this.#votes_verified[messageID]?.has(userID) || this.#votes_denied[messageID]?.has(userID);
+  }
+  verified = (messageID) => {
+      return this.#votes_verified[messageID] = this.#votes_verified[messageID] ?? new Set();
+  };
+  denied = (messageID) => {
+      return this.#votes_denied[messageID] = this.#votes_denied[messageID] ?? new Set();
+  };
+  delete = (messageID) => {
+      return delete this.#votes_verified[messageID] && delete this.#votes_denied[messageID];
+  };
+};
+
+client.votes = new Votes();;
 const cooldowns = new Discord.Collection();
 
 const cooldownTimeLeft = (type, seconds, userID) => {
