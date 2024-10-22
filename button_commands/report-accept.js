@@ -3,9 +3,12 @@ const { shinyVerifierRoleID, reporterRoles } = require('../config.js');
 const { setShinyReportDate, addAmount } = require('../database.js');
 const { error, SECOND } = require('../helpers.js');
 const { updateThreadName, addReport, getReports } = require('../other/shinySquad.js');
+const { modLog } = require('../other/mod/functions.js');
 
 // Calculate minimum reports needed to be a reporter to be able to vote on reports
 const minReportsRequired = Math.min(...reporterRoles.filter(r => r.amount > 0).map(r => r.amount));
+
+const votes_required = 3;
 
 module.exports = {
   name        : 'report-accept',
@@ -29,9 +32,6 @@ module.exports = {
     }
 
     const date = new Date(date_str);
-
-    // Make sure this object exists
-    interaction.client.votes_cast[interaction.message.id] = interaction.client.votes_cast[interaction.message.id] || new Set();
     
     // Check if user is NOT a verifier
     if (!interaction.member.roles.cache.has(shinyVerifierRoleID)) {
@@ -47,34 +47,58 @@ module.exports = {
       }
 	  
       // Check if user has already voted on this report
-      
-      if (interaction.client.votes_cast[interaction.message.id].has(interaction.member.id)) {
+      if (interaction.client.votes.hasVoted(interaction.message.id, interaction.member.id)) {
         return interaction.reply({ content: 'You have already voted on this report', ephemeral: true });
       }
-      interaction.client.votes_cast[interaction.message.id].add(interaction.member.id);
-      let votes = embeds[0].footer?.text?.match(/Verifications: (\d)/)?.[1] || 0;
+
+      // Add their vote
+      interaction.client.votes.verified(interaction.message.id).add(interaction.member.id);
+      let votes = +embeds[0].footer?.text?.match(/Approved: (\d)/)?.[1] || 0;
       votes++
-      // Update amount of verifications
-      embeds[0].setFooter(`Verifications: ${votes}/3`);
+
+      // Update amount of votes
+      let denied_votes = +embeds[0].footer?.text?.match(/Denied: (\d)/)?.[1] || 0;
+      if (denied_votes) {
+        embeds[0].setFooter(`Approved: ${votes} | Denied: ${denied_votes}`);
+      } else { 
+        embeds[0].setFooter(`Approved: ${votes}/${votes_required}`);
+      }
       await interaction.message.edit({ embeds });
 
+      // In dispute status, return message
+      if (denied_votes) {
+        // Mod log if this is the first approve vote
+        if (votes <= 1) {
+          modLog(interaction.guild,
+`**Dispute:** ${interaction.message.url}
+${interaction.channel.name} has gone into a dispute status..
+
+**Approved:** ${votes}
+${[...interaction.client.votes.verified(interaction.message.id)].map(id => `<@${id}>`).join('\n')}
+
+**Denied:** ${denied_votes}
+${[...interaction.client.votes.denied(interaction.message.id)].map(id => `<@${id}>`).join('\n')}`);
+        }
+        return interaction.reply({ content: `Thank you for your verification, this report currently has ${votes + denied_votes} votes`, ephemeral: true });
+      }
+
       // If not enough votes yet return message
-      if (votes < 3) {
+      if (votes < votes_required) {
         return interaction.reply({ content: `Thank you for your verification, this report currently has ${votes} verifications`, ephemeral: true });
       }
       
       // If enough votes, continue to accept the report
     }
     // Add the user again in case they are a verifier
-    interaction.client.votes_cast[interaction.message.id].add(interaction.member.id);
+    interaction.client.votes.verified(interaction.message.id).add(interaction.member.id);
 
     // Update the date we last reported
     await setShinyReportDate(interaction.channel.id, date);
 
-    // Add points to reporter & verifier
+    // Add points to reporter & verifiers
     const reporter = await interaction.guild.members.fetch(reporter_id).catch(error);
     if (reporter) addReport(reporter, 1);
-    [...interaction.client.votes_cast[interaction.message.id]].forEach(async id => {
+    [...interaction.client.votes.verified(interaction.message.id)].forEach(async id => {
       const user = await interaction.client.users.fetch(id, false).catch(O_o=>{});
       addAmount(user, 1, 'verifications');
     });
@@ -84,14 +108,14 @@ module.exports = {
 
     const latest_embed = new MessageEmbed()
       .setColor('#3498db')
-      .setDescription(`**Date:**\n${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}\n\n**Reported by:**\n${reporter}\n\n**Verified by:**\n${[...interaction.client.votes_cast[interaction.message.id]].map(id => `<@${id}>`).join('\n')}`);
+      .setDescription(`**Date:**\n${date.toLocaleString('en-us', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}\n\n**Reported by:**\n${reporter}\n\n**Verified by:**\n${[...interaction.client.votes.verified(interaction.message.id)].map(id => `<@${id}>`).join('\n')}`);
 
     await interaction.replied ? interaction.followUp({ content: '***__Latest report:__***', embeds: [latest_embed] }) : interaction.reply({ content: '***__Latest report:__***', embeds: [latest_embed] });
 
     await updateThreadName(interaction.channel);
     
-    // Empty out the votes_cast for this messageID
-    delete interaction.client.votes_cast[interaction.message.id]
+    // Empty out the votes cast for this messageID
+    interaction.client.votes.delete(interaction.message.id)
 
     // Edit the embed, then archive the thread after 10 seconds, no new reports at the moment
     await interaction.message.edit({ embeds, components: [] });

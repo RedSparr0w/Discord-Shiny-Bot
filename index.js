@@ -30,6 +30,7 @@ const {
   addReport,
   updateShinyStatuses,
 } = require('./other/shinySquad.js');
+const Votes = require('./other/votes.js');
 const { extractMessageDate } = require('./other/ocr.js');
 
 const client = new Discord.Client({
@@ -70,7 +71,7 @@ for (const file of buttonCommandsFiles) {
   client.buttonCommands.set(command.name, command);
 }
 
-client.votes_cast = {};
+client.votes = new Votes(client);
 const cooldowns = new Discord.Collection();
 
 const cooldownTimeLeft = (type, seconds, userID) => {
