@@ -87,7 +87,13 @@ ${[...interaction.client.votes.denied(interaction.message.id)].map(id => `<@${id
         return interaction.reply({ content: `Thank you for your verification, this report currently has ${votes} verifications`, ephemeral: true });
       }
       
-      // If enough votes, continue to accept the report
+      // If enough votes, continue to accept the report and log the verification
+      modLog(interaction.guild,
+        `**Approved:** ${interaction.message.url}
+        ${interaction.channel.name} has been approved!
+
+        ${[...interaction.client.votes.verified(interaction.message.id)].map(id => `<@${id}>`).join('\n')}`
+      );
     }
     // Add the user again in case they are a verifier
     interaction.client.votes.verified(interaction.message.id).add(interaction.member.id);
