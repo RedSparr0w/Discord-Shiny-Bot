@@ -70,7 +70,13 @@ ${[...interaction.client.votes.denied(interaction.message.id)].map(id => `<@${id
         return interaction.reply({ content: `Thank you for your verification, this report currently has ${votes} denies`, ephemeral: true });
       }
       
-      // If enough votes, continue to accept the report
+      // If enough votes, continue to deny the report, and log this
+      modLog(interaction.guild,
+        `**Submission denied by votes:** ${interaction.message.url}
+        ❌ ${interaction.channel.name} has been denied..
+        
+        **Verifications:** ${votes}
+        ${[...interaction.client.votes.denied(interaction.message.id)].map(id => `<@${id}>`).join('\n')}`);
     }
     // Add the user again in case they are a verifier
     interaction.client.votes.denied(interaction.message.id).add(interaction.member.id);
